@@ -263,7 +263,8 @@ int nonlinear_pt_init(
 
        /* get P_NL(k) at this time */
               
-     if (print_warning == _FALSE_ && ptcounter > 0) {
+//     if (print_warning == _FALSE_ && ptcounter > 0) {
+       if (print_warning == _FALSE_) {
               
 //        if (print_warning == _FALSE_) {
           class_call(nonlinear_pt_loop(ppr,
