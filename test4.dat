@@ -1,0 +1,26 @@
+Running CLASS version v2.6.3
+Computing background
+ -> age = 13.461693 Gyr
+ -> conformal age = 13894.100411 Mpc
+Computing thermodynamics
+ -> recombination at z = 1086.845754
+    corresponding to conformal time = 278.779944 Mpc
+    with comoving sound horizon = 142.281627 Mpc
+    angular diameter distance = 12.515856 Mpc
+    and sound horizon angle 100*theta_s = 1.045011
+ -> baryon drag stops at z = 1064.690270
+    corresponding to conformal time = 283.069855 Mpc
+    with comoving sound horizon rs = 144.187065 Mpc
+ -> reionization with optical depth = 0.084365
+    corresponding to conformal time = 4458.125917 Mpc
+Computing sources
+Computing primordial spectra (analytic spectrum)
+No HALOFIT power spectra requested. Nonlinear HALOFIT module skipped.
+Computing the one-loop matter power spectrum in perturbation theory.
+Call 1-loop SPT power spectrum at z=0.000000e+00
+IR resummation skipped.
+Computing transfers
+Computing unlensed linear spectra
+ -> sigma8=0.877247 (computed till k = 109.889 h/Mpc)
+No lensing requested. Lensing module skipped.
+Writing output files in output/test_... 

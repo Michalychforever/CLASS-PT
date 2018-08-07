@@ -1,0 +1,22 @@
+non-linear module affects lensing.c, lensing.h, transfers, spectra and output
+I should make a hybrid method where one is able to choose between different methods.
+
+TODO: 
+
+1) Understand the wrapper !
+
+Shit: it complains about the gsl library. I have to implement the splines myself
+
+3) write all the FFTLog parameters in the parameter module and call them from there
+
+They are stored in input.c in the structure 
+'int input_default_precision'
+
+and their types (int, double) are defined in common.h
+
+4) Add all the bias power spectra. Better define a new function like spectra_pk_nl_at_z() 
+which would contain all the bias power spectra. 
+(Othwerwise it's messy with the 'pk_nl.dat' function) 
+
+5) Do indexing like 'k_ffltog_index'
+
