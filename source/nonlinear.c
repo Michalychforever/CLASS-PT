@@ -425,7 +425,7 @@ int nonlinear_halofit(
 
     integrand_array[index_k*ia_size + index_ia_k] = k_integrand;
     integrand_array[index_k*ia_size + index_ia_pk] = exp(lnpk_integrand);
-
+      
   }
 
   class_call(background_at_tau(pba,tau,pba->long_info,pba->inter_normal,&last_index,pvecback),

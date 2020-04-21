@@ -1701,10 +1701,13 @@ int array_interpolate_spline(
 
       
       
+ 
     if (x > x_array[sup]) {
       sprintf(errmsg,"%s(L:%d) : x=%e > x_max=%e",__func__,__LINE__,x,x_array[sup]);
       return _FAILURE_;
     }
+  
+  
       
  
 
@@ -3141,10 +3144,6 @@ int array_trapezoidal_convolution(
 
 
 /** @file fft.c Documented fast fourier transform module
- *
- * Nils Schoenberg, 12.10.2017
- *
- * This module computes the fast fourier transform (FFT) of any function
  */
 #include "fft.h"
 #include <math.h>
@@ -3287,8 +3286,10 @@ void FFT(double* input_real, double* input_imag, double* output_real, double* ou
         //Use the butterfly algorithm to compute the fft of even and odd sets
         FFT(input_real, input_imag, output_real, output_imag, N / 2, 2 * stepsize);
         FFT(input_real + stepsize, input_imag + stepsize, output_real + N / 2, output_imag + N / 2, N / 2, 2 * stepsize);
-        //Reunite even and odd sets
-        for (int i = 0 , j = N/2; i < N / 2; ++i,++j){
+        //Reunite even and odd sets//
+        int i;
+	int j;
+        for (i = 0 , j = N/2; i < N / 2; ++i,++j){
             double temp_even_real = output_real[i];
             double temp_even_imag = output_imag[i];
             double temp_odd_real = output_real[j];
@@ -3314,6 +3315,8 @@ void FFT(double* input_real, double* input_imag, double* output_real, double* ou
  *
  * Returns full output, arrays of size N
  * */
+
+/*
 void FFT_real(double* input_real_1, double* input_real_2, double* output_real_1,double* output_imag_1, double* output_real_2,double* output_imag_2, int N){
     FFT(input_real_1, input_real_2, output_real_1, output_real_2, N,1);
     //output_real_1[0] remains the same
@@ -3337,6 +3340,8 @@ void FFT_real(double* input_real_1, double* input_real_2, double* output_real_1,
         output_imag_2[i + N / 2] = - output_imag_2[N / 2 - i];
     }
 }
+*/
+
 /**
  * Computes the fast fourier transform of some purely real inputs input_real_1 and input_real_2 of size N
  * Returns the output by writing into output_real_i and output_imag_i for input_real_i with i=1,2
@@ -3347,6 +3352,7 @@ void FFT_real(double* input_real_1, double* input_real_2, double* output_real_1,
  *
  * For any real fourier transformation c_(-n) = c_n and thus c_(N-n) = c_n for finite fourier transformation of size N
  * */
+/*
 void FFT_real_short(double* input_real_1, double* input_real_2, double* output_real_1, double* output_imag_1, double* output_real_2, double* output_imag_2, int N){
     //Only computes first N/2 elements, since others are related by symmetry
     FFT(input_real_1, input_real_2, output_real_1, output_real_2, N, 1);
@@ -3364,6 +3370,7 @@ void FFT_real_short(double* input_real_1, double* input_real_2, double* output_r
         output_imag_2[i] = 0.5*(output_real_1[N - i] - temp1);
     }
 }
+*/
 /**
  * Computes the discrete cosine transform of some purely real input input of size N
  * Returns the output by writing into output_real and output_imag
@@ -3372,6 +3379,7 @@ void FFT_real_short(double* input_real_1, double* input_real_2, double* output_r
  * 
  * The DCT can be found in the output_real array in the first N elements
  * */
+/*
 #include <stdio.h>
 void DCT_real(double* input_real,double* input_imag,double* output_real,double* output_imag,int N){
     int i;double c,s;double temp;
@@ -3388,5 +3396,6 @@ void DCT_real(double* input_real,double* input_imag,double* output_real,double* 
         output_real[i] = c*temp-s*output_imag[i];
         output_imag[i] = c*output_imag[i]+s*temp;
     }
-}
 
+}
+*/

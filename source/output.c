@@ -158,7 +158,8 @@ int output_init(
       
       
       if (pnlpt->method != nlpt_none) {
-          class_call(output_pk_nl_pt(pba,ppt,psp,pop),
+          
+          class_call(output_pk_nl_pt(pba,ppt,pnlpt,psp,pop),
                      pop->error_message,
                      pop->error_message);
       }
@@ -1032,10 +1033,12 @@ int output_pk_nl(
 
 
 // Misha: my brand new output is here !!!
+// modified by Anton
 
 int output_pk_nl_pt(
                  struct background * pba,
                  struct perturbs * ppt,
+                 struct nonlinear_pt * pnlpt,
                  struct spectra * psp,
                  struct output * pop
                  ) {
@@ -1053,8 +1056,54 @@ int output_pk_nl_pt(
     double * pk_tot_Id2G2;
     double * pk_tot_IG2G2;
     double * pk_tot_IFG2;
+    double * pk_tot_IFG2_0b1;
+    double * pk_tot_IFG2_0;
+    double * pk_tot_IFG2_2;
     double * pk_tot_CTR;
-    double * pk_tot_lin;
+    double * pk_tot_CTR_2;
+    double * pk_tot_CTR_4;
+    double * pk_tot_CTR_0;
+    
+    double * pk_tot_Tree;
+    double * pk_tot_Tree_0_vv;
+    double * pk_tot_Tree_0_vd;
+    double * pk_tot_Tree_0_dd;
+    double * pk_tot_Tree_2_vv;
+    double * pk_tot_Tree_2_vd;
+    double * pk_tot_Tree_4_vv;
+    
+    double * pk_tot_0_vv;
+    double * pk_tot_0_vd;
+    double * pk_tot_0_dd;
+    double * pk_tot_2_vv;
+    double * pk_tot_2_vd;
+    double * pk_tot_2_dd;
+    double * pk_tot_4_vv;
+    double * pk_tot_4_vd;
+    double * pk_tot_4_dd;
+    double * pk_tot_0_b1b2;
+    double * pk_tot_0_b2;
+    double * pk_tot_0_b1bG2;
+    double * pk_tot_0_bG2;
+    
+    double * pk_tot_2_b1b2;
+    double * pk_tot_2_b2;
+    double * pk_tot_2_b1bG2;
+    double * pk_tot_2_bG2;
+    
+    double * pk_tot_4_b2;
+    double * pk_tot_4_bG2;
+    double * pk_tot_4_b1b2;
+    double * pk_tot_4_b1bG2;
+    
+    double * pk_tot_2_b2b2;
+    double * pk_tot_2_b2bG2;
+    double * pk_tot_2_bG2bG2;
+    
+    double * pk_tot_4_b2b2;
+    double * pk_tot_4_b2bG2;
+    double * pk_tot_4_bG2bG2;
+    
     double * pk_ic=NULL;
     
     int index_k;
@@ -1062,6 +1111,19 @@ int output_pk_nl_pt(
     
     FileName file_name;
     FileName redshift_suffix;
+    
+    FILE * out_0;
+    FileName file_name_0;
+    FileName redshift_suffix_0;
+    
+    FILE * out_2;
+    FileName file_name_2;
+    FileName redshift_suffix_2;
+    
+    FILE * out_4;
+    FileName file_name_4;
+    FileName redshift_suffix_4;
+    
     
     for (index_z = 0; index_z < pop->z_pk_num; index_z++) {
         
@@ -1071,98 +1133,191 @@ int output_pk_nl_pt(
                    pop->error_message,
                    "P(k,z) computed up to z=%f but requested at z=%f. Must increase z_max_pk in precision file.",psp->z_max_pk,pop->z_pk[index_z]);
         
-        if (pop->z_pk_num == 1)
-            redshift_suffix[0]='\0';
-        else
-            sprintf(redshift_suffix,"z%d_",index_z+1);
-        
-        /** - second, open only the relevant files, and write a heading in each of them */
-        
-        sprintf(file_name,"%s%s%s",pop->root,redshift_suffix,"pk_nl_pt.dat");
-        
-        class_call(output_open_pk_nlpt_file(pba,
-                                       psp,
-                                       pop,
-                                       &out,
-                                       file_name,
-                                       "",
-                                       pop->z_pk[index_z]
-                                       ),
-                   pop->error_message,
-                   pop->error_message);
-        
         class_alloc(pk_tot,
-                    psp->ln_k_size*sizeof(double),
+                    pnlpt->ln_k_size*sizeof(double),
                     pop->error_message);
         
         class_alloc(pk_tot_Id2d2,
-                    psp->ln_k_size*sizeof(double),
+                    pnlpt->ln_k_size*sizeof(double),
                     pop->error_message);
         
         class_alloc(pk_tot_Id2,
-                    psp->ln_k_size*sizeof(double),
+                    pnlpt->ln_k_size*sizeof(double),
                     pop->error_message);
         
         class_alloc(pk_tot_IG2,
-                    psp->ln_k_size*sizeof(double),
+                    pnlpt->ln_k_size*sizeof(double),
                     pop->error_message);
         
         class_alloc(pk_tot_Id2G2,
-                    psp->ln_k_size*sizeof(double),
+                    pnlpt->ln_k_size*sizeof(double),
                     pop->error_message);
         
         class_alloc(pk_tot_IG2G2,
-                    psp->ln_k_size*sizeof(double),
+                    pnlpt->ln_k_size*sizeof(double),
                     pop->error_message);
         
         class_alloc(pk_tot_IFG2,
-                    psp->ln_k_size*sizeof(double),
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_IFG2_0b1,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_IFG2_0,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_IFG2_2,
+                    pnlpt->ln_k_size*sizeof(double),
                     pop->error_message);
         
         class_alloc(pk_tot_CTR,
-                    psp->ln_k_size*sizeof(double),
+                    pnlpt->ln_k_size*sizeof(double),
                     pop->error_message);
         
-        class_alloc(pk_tot_lin,
-                    psp->ln_k_size*sizeof(double),
+        class_alloc(pk_tot_CTR_0,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        class_alloc(pk_tot_CTR_2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        class_alloc(pk_tot_CTR_4,
+                    pnlpt->ln_k_size*sizeof(double),
                     pop->error_message);
         
-        class_call(spectra_pk_at_z(pba,
-                                   psp,
-                                   linear,
-                                   pop->z_pk[index_z],
-                                   pk_tot_lin,
-                                   pk_ic),
-                   psp->error_message,
-                   pop->error_message);
+        class_alloc(pk_tot_Tree,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        class_alloc(pk_tot_Tree_0_vv,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        class_alloc(pk_tot_Tree_0_vd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        class_alloc(pk_tot_Tree_0_dd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        class_alloc(pk_tot_Tree_2_vv,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        class_alloc(pk_tot_Tree_2_vd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        class_alloc(pk_tot_Tree_4_vv,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
         
-        /** - third, compute P(k) for each k (if several ic's, compute it for each ic and compute also the total); if z_pk = 0, this is done by directly reading inside the pre-computed table; if not, this is done by interpolating the table at the correct value of tau. */
+        class_alloc(pk_tot_0_vv,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
         
-        /* if z_pk = 0, no interpolation needed */
+        class_alloc(pk_tot_0_vd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
         
-        if (pop->z_pk[index_z] == 0.) {
-            
-            for (index_k=0; index_k<psp->ln_k_size; index_k++) {
-                
-                pk_tot[index_k] = exp(psp->ln_pk_nl[(psp->ln_tau_size-1) * psp->ln_k_size + index_k]);
-//                pk_tot_Id2d2[index_k] = exp(psp->ln_pk_nl_Id2d2[(psp->ln_tau_size-1) * psp->ln_k_size + index_k])-exp(psp->ln_pk_l[(psp->ln_tau_size-1) * psp->ln_k_size + index_k]);
-                pk_tot_Id2d2[index_k] = exp(psp->ln_pk_nl_Id2d2[(psp->ln_tau_size-1) * psp->ln_k_size + index_k]);
-                pk_tot_Id2[index_k] = exp(psp->ln_pk_nl_Id2[(psp->ln_tau_size-1) * psp->ln_k_size + index_k]);
-                pk_tot_IG2[index_k] = exp(psp->ln_pk_nl_IG2[(psp->ln_tau_size-1) * psp->ln_k_size + index_k]);
-                pk_tot_Id2G2[index_k] = exp(psp->ln_pk_nl_Id2G2[(psp->ln_tau_size-1) * psp->ln_k_size + index_k]);
-                pk_tot_IG2G2[index_k] = exp(psp->ln_pk_nl_IG2G2[(psp->ln_tau_size-1) * psp->ln_k_size + index_k]);
-                pk_tot_IFG2[index_k] = exp(psp->ln_pk_nl_IFG2[(psp->ln_tau_size-1) * psp->ln_k_size + index_k]);
-                pk_tot_CTR[index_k] = exp(psp->ln_pk_nl_CTR[(psp->ln_tau_size-1) * psp->ln_k_size + index_k]);
-            }
-        }
+        class_alloc(pk_tot_0_dd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
         
-        /* if 0 <= z_pk <= z_max_pk, interpolation needed, */
-        else {
-            
-            class_call(spectra_pk_nl_bias_at_z(pba,
+        class_alloc(pk_tot_2_vv,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_2_vd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_2_dd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_4_vv,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_4_vd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_4_dd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_0_b1b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_0_b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_0_b1bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_0_bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_2_b1b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_2_b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_2_b1bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_2_bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_4_b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        class_alloc(pk_tot_4_bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_4_b1b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_4_b1bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_2_b2b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        class_alloc(pk_tot_2_b2bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        class_alloc(pk_tot_2_bG2bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        class_alloc(pk_tot_4_b2b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        class_alloc(pk_tot_4_b2bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        class_alloc(pk_tot_4_bG2bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        /** - third, compute P(k) for each k (if several ic's, compute it for each ic and compute also the total); all computations are made at the required value of tau. */
+                    class_call(spectra_pk_nl_bias_at_z_i(pba,
+                                          pnlpt,
                                           psp,
                                           linear,
-                                          pop->z_pk[index_z],
+                                          index_z,
                                           pk_tot,
                                           pk_tot_Id2d2,
                                           pk_tot_Id2,
@@ -1170,16 +1325,51 @@ int output_pk_nl_pt(
                                                pk_tot_Id2G2,
                                                pk_tot_IG2G2,
                                                pk_tot_IFG2,
-                                               pk_tot_CTR),
-                       psp->error_message,
+                                                         pk_tot_IFG2_0b1,
+                                                         pk_tot_IFG2_0,
+                                                         pk_tot_IFG2_2,
+                                               pk_tot_CTR,
+                                                         pk_tot_CTR_0,
+                                                         pk_tot_CTR_2,
+                                                         pk_tot_CTR_4,
+                                               pk_tot_Tree,
+                                                         pk_tot_Tree_0_vv,
+                                                         pk_tot_Tree_0_vd,
+                                                         pk_tot_Tree_0_dd,
+                                                         pk_tot_Tree_2_vv,
+                                                         pk_tot_Tree_2_vd,
+                                                         pk_tot_Tree_4_vv,
+                                               pk_tot_0_vv,
+                                               pk_tot_0_vd,
+                                                         pk_tot_0_dd,
+                                                         pk_tot_2_vv,
+                                                         pk_tot_2_vd,
+                                                         pk_tot_2_dd,
+                                                         pk_tot_4_vv,
+                                                         pk_tot_4_vd,
+                                                         pk_tot_4_dd,
+                                                         pk_tot_0_b1b2,
+                                                         pk_tot_0_b2,
+                                                         pk_tot_0_b1bG2,
+                                                         pk_tot_0_bG2,
+                                                         pk_tot_2_b1b2,
+                                                         pk_tot_2_b2,
+                                                         pk_tot_2_b1bG2,
+                                                         pk_tot_2_bG2,
+                                                         pk_tot_4_b2,
+                                                         pk_tot_4_bG2,
+                                                         pk_tot_4_b1b2,
+                                                         pk_tot_4_b1bG2,
+                                                         pk_tot_2_b2b2,
+                                                         pk_tot_2_b2bG2,
+                                                         pk_tot_2_bG2bG2,
+                                                         pk_tot_4_b2b2,
+                                                         pk_tot_4_b2bG2,
+                                                         pk_tot_4_bG2bG2),
+                       pop->error_message,
                        pop->error_message);
-            
-            
-        }
         
-        /** - fourth, write in files */
         
-
         double PoutId2d2;
         double PoutId2;
         double PoutIG2;
@@ -1188,26 +1378,55 @@ int output_pk_nl_pt(
         double PoutIFG2;
         double PoutCTR;
         
-        for (index_k=0; index_k<psp->ln_k_size; index_k++) {
+         /** - fourth, write in files */
+        
+ //if (pnlpt->rsd == rsd_yes && pnlpt->rsd_only == rsd_only_no || pnlpt->rsd == rsd_no) {
+     
+     if (pop->z_pk_num == 1)
+         redshift_suffix[0]='\0';
+     else
+         sprintf(redshift_suffix,"z%d_",index_z+1);
+     
+     /** - second, open only the relevant files, and write a heading in each of them */
+     
+     sprintf(file_name,"%s%s%s",pop->root,redshift_suffix,"pk_nl_pt.dat");
+     
+     class_call(output_open_pk_nlpt_file(pba,
+                                               pnlpt,
+                                         psp,
+                                         pop,
+                                         &out,
+                                         file_name,
+                                         "",
+                                         pop->z_pk[index_z]
+                                         ),
+                psp->error_message,
+                pop->error_message);
+     
+        
+        //printf("psp->ln_k_size=%d\n",psp->ln_k_size);
+        for (index_k=0; index_k<pnlpt->ln_k_size; index_k++) {
             
-            PoutId2d2 = -1. * pk_tot_Id2d2[index_k]*pow(pba->h,3);
-            PoutId2 = (pk_tot_Id2[index_k] -  pk_tot_lin[index_k])*pow(pba->h,3);
+            PoutId2d2 = -1. * (pk_tot_Id2d2[index_k]- 1.e7)*pow(pba->h,3);
+            PoutId2 = (pk_tot_Id2[index_k] -  10.)*pow(pba->h,3);
             PoutIG2 = -1. * (pk_tot_IG2[index_k])*pow(pba->h,3);
-            PoutId2G2 = -1. * (pk_tot_Id2G2[index_k])*pow(pba->h,3);
-            PoutIG2G2 =  pk_tot_IG2G2[index_k]*pow(pba->h,3);
-            PoutIFG2 =  -1. * pk_tot_IFG2[index_k]*pow(pba->h,3);
-            PoutCTR =  -1. * pk_tot_CTR[index_k]*pow(pba->h,1);
+            PoutId2G2 = -1. * (pk_tot_Id2G2[index_k] - 1.e7)*pow(pba->h,3);
+            PoutIG2G2 =  (pk_tot_IG2G2[index_k]- 1.e7)*pow(pba->h,3);
+            PoutIFG2 =  -1. * (pk_tot_IFG2[index_k])*pow(pba->h,3);
+            PoutCTR =  -1. * (pk_tot_CTR[index_k])*pow(pba->h,1);
+
             
             class_call(output_one_line_many_columns_of_pk(out,
-                                             exp(psp->ln_k[index_k])/pba->h,
-                                             pk_tot[index_k]*pow(pba->h,3),
+                                             exp(pnlpt->ln_k[index_k])/pba->h,
+                                             (pk_tot[index_k]-5000.)*pow(pba->h,3),
                                              PoutCTR,
                                              PoutId2d2,
                                              PoutId2,
                                              PoutIG2,
                                              PoutId2G2,
                                              PoutIG2G2,
-                                             PoutIFG2),
+                                             PoutIFG2,
+                                             pk_tot_Tree[index_k]*pow(pba->h,3)),
                        pop->error_message,
                        pop->error_message);
             
@@ -1216,10 +1435,294 @@ int output_pk_nl_pt(
         
         /** - fifth, free memory and close files */
         
-        free(pk_tot_lin);
-        fclose(out);
+        /*
         free(pk_tot);
         free(pk_tot_CTR);
+	    free(pk_tot_Tree);
+        free(pk_tot_Id2d2);
+        free(pk_tot_Id2);
+        free(pk_tot_IG2);
+        free(pk_tot_Id2G2);
+        free(pk_tot_IG2G2);
+        free(pk_tot_IFG2);
+             */
+        
+        fclose(out);
+     
+ //}// END OF RSD only conditional expression
+        
+        /// RSD here
+        
+       if (pnlpt->rsd == rsd_yes){
+           
+                
+        double Pout_0_b1b2;
+        double Pout_0_b2;
+        double Pout_0_b1bG2;
+        double Pout_0_bG2;
+        double Pout_0_IFG2;
+        double PoutCTR0;
+           
+        double Pout_0b1_IFG2;
+        
+        if (pop->z_pk_num == 1)
+            redshift_suffix_0[0]='\0';
+        else
+            sprintf(redshift_suffix_0,"z%d_",index_z+1);
+        
+        /** - second, open only the relevant files, and write a heading in each of them */
+        
+        sprintf(file_name_0,"%s%s%s",pop->root,redshift_suffix_0,"pk_rsd_0.dat");
+        
+        class_call(output_open_pk_rsd_0_file(pba,pnlpt,
+                                             psp,
+                                             pop,
+                                             &out_0,
+                                             file_name_0,
+                                             "",
+                                             pop->z_pk[index_z]
+                                             ),
+                   psp->error_message,
+                   pop->error_message);
+        
+        
+        /** - third, compute P(k) for each k (if several ic's, compute it for each ic and compute also the total); all computations are made at the required value of tau. */
+    
+        for (index_k=0; index_k<pnlpt->ln_k_size; index_k++) {
+            
+            PoutId2d2 = -1. * (pk_tot_Id2d2[index_k]-1.e7)*pow(pba->h,3);
+            PoutId2 = (pk_tot_Id2[index_k] -  1.e7)*pow(pba->h,3);
+            PoutIG2 = -1. * (pk_tot_IG2[index_k]-1.e7)*pow(pba->h,3);
+            PoutId2G2 = -1. * (pk_tot_Id2G2[index_k]-1.e7)*pow(pba->h,3);
+            PoutIG2G2 =  (pk_tot_IG2G2[index_k]-1.e7)*pow(pba->h,3);
+            PoutIFG2 =  -1. * (pk_tot_IFG2[index_k]-1.e7)*pow(pba->h,3);
+            Pout_0b1_IFG2 =  -1. * (pk_tot_IFG2_0b1[index_k]-1.e7)*pow(pba->h,3);
+            Pout_0_IFG2 =  -1. * (pk_tot_IFG2_0[index_k]-1.e7)*pow(pba->h,3);
+            PoutCTR0 =  -1. * pk_tot_CTR_0[index_k]*pow(pba->h,1);
+            
+            Pout_0_b1b2 = (pk_tot_0_b1b2[index_k] - 1.e7)*pow(pba->h,3);
+            Pout_0_b2 = (pk_tot_0_b2[index_k] - 1.e7)*pow(pba->h,3);
+            Pout_0_b1bG2 = -1.*(pk_tot_0_b1bG2[index_k] - 1.e7)*pow(pba->h,3);
+            Pout_0_bG2 = -1.*(pk_tot_0_bG2[index_k]-1.e7)*pow(pba->h,3);
+            
+            class_call(output_one_line_many_columns_of_pk_rsd(out_0,
+                                                              exp(pnlpt->ln_k[index_k])/pba->h,
+                                                              (pk_tot_0_vv[index_k]-1.e7)*pow(pba->h,3),
+                                                              (pk_tot_0_vd[index_k]-1.e7)*pow(pba->h,3),
+                                                              (pk_tot_0_dd[index_k]-1.e7)*pow(pba->h,3),
+                                                              PoutCTR0,
+                                                              PoutId2d2,
+                                                              Pout_0_b1b2,
+                                                              Pout_0_b2,
+                                                              Pout_0_b1bG2,
+                                                              Pout_0_bG2,
+                                                              PoutId2G2,
+                                                              PoutIG2G2,
+                                                              Pout_0b1_IFG2,
+                                                              Pout_0_IFG2,
+                                                              (pk_tot_Tree_0_vv[index_k]-1.e7)*pow(pba->h,3),
+                                                              (pk_tot_Tree_0_vd[index_k]-1.e7)*pow(pba->h,3),
+                                                              (pk_tot_Tree_0_dd[index_k]-1.e7)*pow(pba->h,3)
+                                                              ),
+                       pop->error_message,
+                       pop->error_message);
+            
+        }
+          
+fclose(out_0);
+           
+           double Pout_2_b1b2;
+           double Pout_2_b2;
+           double Pout_2_b1bG2;
+           double Pout_2_bG2;
+           double PoutCTR2;
+           
+           double Pout_2_b2b2;
+           double Pout_2_b2bG2;
+           double Pout_2_bG2bG2;
+
+           if (pop->z_pk_num == 1)
+               redshift_suffix_2[0]='\0';
+           else
+               sprintf(redshift_suffix_2,"z%d_",index_z+1);
+           
+           /** - second, open only the relevant files, and write a heading in each of them */
+           
+           sprintf(file_name_2,"%s%s%s",pop->root,redshift_suffix_2,"pk_rsd_2.dat");
+           
+           class_call(output_open_pk_rsd_2_file(pba,pnlpt,
+                                                psp,
+                                                pop,
+                                                &out_2,
+                                                file_name_2,
+                                                "",
+                                                pop->z_pk[index_z]
+                                                ),
+                      psp->error_message,
+                      pop->error_message);
+           
+           
+           
+           /** - third, compute P(k) for each k (if several ic's, compute it for each ic and compute also the total); all computations are made at the required value of tau. */
+           
+           for (index_k=0; index_k<pnlpt->ln_k_size; index_k++) {
+               
+               PoutIFG2 =  -1. * (pk_tot_IFG2_2[index_k]-1.e7)*pow(pba->h,3);
+               PoutCTR2 =  -1. * pk_tot_CTR_2[index_k]*pow(pba->h,1);
+               
+               Pout_2_b2b2 = (pk_tot_2_b2b2[index_k] - 1.e7)*pow(pba->h,3);
+               Pout_2_b2bG2 = (pk_tot_2_b2bG2[index_k] - 1.e7)*pow(pba->h,3);
+               Pout_2_bG2bG2 = (pk_tot_2_bG2bG2[index_k] - 1.e7)*pow(pba->h,3);
+               
+               Pout_2_b1b2 = (pk_tot_2_b1b2[index_k] - 1.e7)*pow(pba->h,3);
+               Pout_2_b2 = (pk_tot_2_b2[index_k] - 1.e7)*pow(pba->h,3);
+               Pout_2_b1bG2 = -1.*(pk_tot_2_b1bG2[index_k] - 1.e7)*pow(pba->h,3);
+               Pout_2_bG2 = -1.*(pk_tot_2_bG2[index_k]-1.e7)*pow(pba->h,3);
+               
+               class_call(output_one_line_many_columns_of_pk_rsd_2(out_2,
+                                                                 exp(pnlpt->ln_k[index_k])/pba->h,
+                                                                 (pk_tot_2_vv[index_k]-1.e7)*pow(pba->h,3),
+                                                                 (pk_tot_2_vd[index_k]-1.e7)*pow(pba->h,3),
+                                                                 (pk_tot_2_dd[index_k]-1.e7)*pow(pba->h,3),
+                                                                 PoutCTR2,
+                                                                 Pout_2_b1b2,
+                                                                 Pout_2_b2,
+                                                                 Pout_2_b1bG2,
+                                                                 Pout_2_bG2,
+                                                                 PoutIFG2,
+                                                                   Pout_2_b2b2,
+                                                                   Pout_2_b2bG2,
+                                                                   Pout_2_bG2bG2,
+                                                                   (pk_tot_Tree_2_vv[index_k]-1.e7)*pow(pba->h,3),
+                                                                   (pk_tot_Tree_2_vd[index_k]-1.e7)*pow(pba->h,3)),
+                          pop->error_message,
+                          pop->error_message);
+               
+           }
+           
+           fclose(out_2);
+           
+           
+
+           
+           if (pop->z_pk_num == 1)
+               redshift_suffix_4[0]='\0';
+           else
+               sprintf(redshift_suffix_4,"z%d_",index_z+1);
+           
+           /** - second, open only the relevant files, and write a heading in each of them */
+           
+           sprintf(file_name_4,"%s%s%s",pop->root,redshift_suffix_4,"pk_rsd_4.dat");
+           
+           class_call(output_open_pk_rsd_4_file(pba,                                                
+                                                pnlpt,
+                                                psp,
+                                                pop,
+                                                &out_4,
+                                                file_name_4,
+                                                "",
+                                                pop->z_pk[index_z]
+                                                ),
+                      psp->error_message,
+                      pop->error_message);
+           
+           
+           
+           /** - third, compute P(k) for each k (if several ic's, compute it for each ic and compute also the total); all computations are made at the required value of tau. */
+           
+           double Pout_4_b2;
+           double Pout_4_bG2;
+           double PoutCTR4;
+           double Pout_4_b1b2;
+           double Pout_4_b1bG2;
+           double Pout_4_b2b2;
+           double Pout_4_b2bG2;
+           double Pout_4_bG2bG2;
+
+           
+           for (index_k=0; index_k<pnlpt->ln_k_size; index_k++) {
+               
+               PoutCTR4 =  -1. * pk_tot_CTR_4[index_k]*pow(pba->h,1);
+               Pout_4_b2 = (pk_tot_4_b2[index_k] - 1.e7)*pow(pba->h,3);
+               Pout_4_bG2 = -1.*(pk_tot_4_bG2[index_k]-1.e7)*pow(pba->h,3);
+               Pout_4_b1b2 = (pk_tot_4_b1b2[index_k] - 1.e7)*pow(pba->h,3);
+               Pout_4_b1bG2 = (pk_tot_4_b1bG2[index_k] - 1.e7)*pow(pba->h,3);
+               Pout_4_b2b2 = (pk_tot_4_b2b2[index_k] - 1.e7)*pow(pba->h,3);
+               Pout_4_b2bG2 = (pk_tot_4_b2bG2[index_k] - 1.e7)*pow(pba->h,3);
+               Pout_4_bG2bG2 = (pk_tot_4_bG2bG2[index_k] - 1.e7)*pow(pba->h,3);
+
+               class_call(output_one_line_many_columns_of_pk_rsd_4(out_4,
+                                                                   exp(pnlpt->ln_k[index_k])/pba->h,
+                                                                   (pk_tot_4_vv[index_k]-1.e7)*pow(pba->h,3),
+                                                                   (pk_tot_4_vd[index_k]-1.e7)*pow(pba->h,3),
+                                                                   (pk_tot_4_dd[index_k]-1.e7)*pow(pba->h,3),
+                                                                   PoutCTR4,
+                                                                   Pout_4_b2,
+                                                                   Pout_4_bG2,
+                                                                   Pout_4_b1b2,
+                                                                   Pout_4_b1bG2,
+                                                                   Pout_4_b2b2,
+                                                                   Pout_4_b2bG2,
+                                                                   Pout_4_bG2bG2,
+                                                                   (pk_tot_Tree_4_vv[index_k]-1.e7)*pow(pba->h,3)),
+                          pop->error_message,
+                          pop->error_message);
+           }
+           fclose(out_4);
+           
+   }// END OF RSD conditional expression
+        
+        /** - fifth, free memory and close files */
+        
+        free(pk_tot_4_bG2);
+        free(pk_tot_4_b2);
+        
+        free(pk_tot_4_b1b2);
+        free(pk_tot_4_b1bG2);
+        
+        free(pk_tot_4_b2b2);
+        free(pk_tot_4_b2bG2);
+        free(pk_tot_4_bG2bG2);
+
+        free(pk_tot_2_b2b2);
+        free(pk_tot_2_b2bG2);
+        free(pk_tot_2_bG2bG2);
+        
+        free(pk_tot_4_vd);
+        free(pk_tot_4_dd);
+        free(pk_tot_4_vv);
+        
+        free(pk_tot_2_b1bG2);
+        free(pk_tot_2_bG2);
+        free(pk_tot_2_b1b2);
+        free(pk_tot_2_b2);
+        
+        free(pk_tot_0_b1bG2);
+        free(pk_tot_0_bG2);
+        free(pk_tot_0_b1b2);
+        free(pk_tot_0_b2);
+        free(pk_tot_0_vv);
+        free(pk_tot_0_vd);
+        free(pk_tot_0_dd);
+        
+        free(pk_tot_2_vv);
+        free(pk_tot_2_vd);
+        free(pk_tot_2_dd);
+        
+        free(pk_tot_CTR_0);
+        free(pk_tot_CTR_2);
+        free(pk_tot_CTR_4);
+        
+        free(pk_tot);
+        free(pk_tot_CTR);
+        free(pk_tot_Tree);
+        free(pk_tot_Tree_0_vv);
+        free(pk_tot_Tree_0_vd);
+        free(pk_tot_Tree_0_dd);
+        free(pk_tot_Tree_2_vv);
+        free(pk_tot_Tree_2_vd);
+        free(pk_tot_Tree_4_vv);
+        
         free(pk_tot_Id2d2);
         free(pk_tot_Id2);
         free(pk_tot_IG2);
@@ -1227,6 +1730,11 @@ int output_pk_nl_pt(
         free(pk_tot_IG2G2);
         free(pk_tot_IFG2);
         
+
+free(pk_tot_IFG2_0b1);
+free(pk_tot_IFG2_0);
+free(pk_tot_IFG2_2);          
+
     }
     
     return _SUCCESS_;
@@ -1925,6 +2433,7 @@ int output_open_pk_file(
 
 int output_open_pk_nlpt_file(
                         struct background * pba,
+                                                                                  struct nonlinear_pt * pnlpt,
                         struct spectra * psp,
                         struct output * pop,
                         FILE * * pkfile,
@@ -1937,15 +2446,15 @@ int output_open_pk_nlpt_file(
     class_open(*pkfile,filename,"w",pop->error_message);
     
     if (pop->write_header == _TRUE_) {
-        fprintf(*pkfile,"# PT power spectra for matter and bias tracers P(k), P_CTR(k) (for c_s^2 = 1 (Mpc/h)^2 ), Id2d2(k), Id2(k), IG2(k), Id2G2(k), IG2G2(k), IFG2(k) %sat redshift z=%g\n",first_line,z);
+        fprintf(*pkfile,"# PT power spectra for matter and bias tracers P, P_CTR (for c_s^2 = 1 (Mpc/h)^2 ), Id2d2, Id2, IG2, Id2G2, IG2G2, IFG2, P_Tree %sat redshift z=%g\n",first_line,z);
         fprintf(*pkfile,"# for k=%g to %g h/Mpc,\n",
-                exp(psp->ln_k[0])/pba->h,
-                exp(psp->ln_k[psp->ln_k_size-1])/pba->h);
-        fprintf(*pkfile,"# number of wavenumbers equal to %d\n",psp->ln_k_size);
+                exp(pnlpt->ln_k[0])/pba->h,
+                exp(pnlpt->ln_k[pnlpt->ln_k_size-1])/pba->h);
+        fprintf(*pkfile,"# number of wavenumbers equal to %d\n",pnlpt->ln_k_size);
         
         fprintf(*pkfile,"#");
         class_fprintf_columntitle(*pkfile,"k (h/Mpc)",_TRUE_,colnum);
-        class_fprintf_columntitle(*pkfile,"P_lin + P_1loop (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_1loop (Mpc/h)^3",_TRUE_,colnum);
         class_fprintf_columntitle(*pkfile,"P_CTR (Mpc/h)^3",_TRUE_,colnum);
         class_fprintf_columntitle(*pkfile,"Id2d2 (Mpc/h)^3",_TRUE_,colnum);
         class_fprintf_columntitle(*pkfile,"Id2 (Mpc/h)^3",_TRUE_,colnum);
@@ -1953,12 +2462,164 @@ int output_open_pk_nlpt_file(
         class_fprintf_columntitle(*pkfile,"Id2G2 (Mpc/h)^3",_TRUE_,colnum);
         class_fprintf_columntitle(*pkfile,"IG2G2 (Mpc/h)^3",_TRUE_,colnum);
         class_fprintf_columntitle(*pkfile,"IFG2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_Tree (Mpc/h)^3",_TRUE_,colnum);
         fprintf(*pkfile,"\n");
     }
+    
+    /*
+    int* addressOfX = &index_k;
+    printf("%p\n", &index_k);
+     */
     
     return _SUCCESS_;
 }
 
+
+int output_open_pk_rsd_0_file(
+                             struct background * pba,
+                                                          struct nonlinear_pt * pnlpt,
+                             struct spectra * psp,
+                             struct output * pop,
+                             FILE * * pkfile,
+                             FileName filename,
+                             char * first_line,
+                             double z
+                             ) {
+    
+    int colnum = 1;
+    class_open(*pkfile,filename,"w",pop->error_message);
+    
+    if (pop->write_header == _TRUE_) {
+        fprintf(*pkfile,"# Monopole moment of PT power spectra P_vv, P_vd, P_dd, P_CTR, Id2d2, Ib1b2, Ib2, Ib1bG2, IbG2(k), Id2G2, IG2G2, IFG2b1, IFG2, Ptree_vv, Ptree_vd, Ptree_dd %sat redshift z=%g\n",first_line,z);
+        fprintf(*pkfile,"# for k=%g to %g h/Mpc,\n",
+                exp(pnlpt->ln_k[0])/pba->h,
+                exp(pnlpt->ln_k[pnlpt->ln_k_size-1])/pba->h);
+        fprintf(*pkfile,"# number of wavenumbers equal to %d\n",pnlpt->ln_k_size);
+        
+        fprintf(*pkfile,"#");
+        class_fprintf_columntitle(*pkfile,"k (h/Mpc)",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_vv (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_vd (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_dd (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_CTR (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Id2d2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ib1b2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ib2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ib1bG2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"IbG2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Id2G2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"IG2G2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"IFG2b1 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"IFG2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"PTree_vv (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"PTree_vd (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"PTree_dd (Mpc/h)^3",_TRUE_,colnum);
+        fprintf(*pkfile,"\n");
+    }
+    
+    /*
+     int* addressOfX = &index_k;
+     printf("%p\n", &index_k);
+     */
+    
+    return _SUCCESS_;
+}
+
+
+int output_open_pk_rsd_2_file(
+                              struct background * pba,
+                                                                                        struct nonlinear_pt * pnlpt,
+                              struct spectra * psp,
+                              struct output * pop,
+                              FILE * * pkfile,
+                              FileName filename,
+                              char * first_line,
+                              double z
+                              ) {
+    
+    int colnum = 1;
+    class_open(*pkfile,filename,"w",pop->error_message);
+    
+    if (pop->write_header == _TRUE_) {
+        fprintf(*pkfile,"# Quadrupole moment of PT power spectra %sat redshift z=%g\n",first_line,z);
+        fprintf(*pkfile,"# for k=%g to %g h/Mpc,\n",
+                exp(pnlpt->ln_k[0])/pba->h,
+                exp(pnlpt->ln_k[pnlpt->ln_k_size-1])/pba->h);
+        fprintf(*pkfile,"# number of wavenumbers equal to %d\n",pnlpt->ln_k_size);
+        
+        fprintf(*pkfile,"#");
+        class_fprintf_columntitle(*pkfile,"k (h/Mpc)",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_vv (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_vd (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_dd (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_CTR (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ib1b2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ib2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ib1bG2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"IbG2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"IFG2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ib2b2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ib2bG2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"IbG2bG2 (Mpc/h)^3",_TRUE_,colnum);
+                class_fprintf_columntitle(*pkfile,"Ptree_vv (Mpc/h)^3",_TRUE_,colnum);
+                class_fprintf_columntitle(*pkfile,"Ptree_vd (Mpc/h)^3",_TRUE_,colnum);
+        fprintf(*pkfile,"\n");
+    }
+    
+    /*
+     int* addressOfX = &index_k;
+     printf("%p\n", &index_k);
+     */
+    
+    return _SUCCESS_;
+}
+
+
+int output_open_pk_rsd_4_file(
+                              struct background * pba,
+                                                                                        struct nonlinear_pt * pnlpt,
+                              struct spectra * psp,
+                              struct output * pop,
+                              FILE * * pkfile,
+                              FileName filename,
+                              char * first_line,
+                              double z
+                              ) {
+    
+    int colnum = 1;
+    class_open(*pkfile,filename,"w",pop->error_message);
+    
+    if (pop->write_header == _TRUE_) {
+        fprintf(*pkfile,"# Hexadecapole moment of PT power spectra %sat redshift z=%g\n",first_line,z);
+        fprintf(*pkfile,"# for k=%g to %g h/Mpc,\n",
+                exp(pnlpt->ln_k[0])/pba->h,
+                exp(pnlpt->ln_k[pnlpt->ln_k_size-1])/pba->h);
+        fprintf(*pkfile,"# number of wavenumbers equal to %d\n",pnlpt->ln_k_size);
+        
+        fprintf(*pkfile,"#");
+        class_fprintf_columntitle(*pkfile,"k (h/Mpc)",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_vv (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_vd (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_dd (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"P_CTR (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ib2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"IbG2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ib1b2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ib1bG2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ib2b2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ib2bG2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"IbG2bG2 (Mpc/h)^3",_TRUE_,colnum);
+        class_fprintf_columntitle(*pkfile,"Ptree_vv (Mpc/h)^3",_TRUE_,colnum);
+        fprintf(*pkfile,"\n");
+    }
+    
+    /*
+     int* addressOfX = &index_k;
+     printf("%p\n", &index_k);
+     */
+    
+    return _SUCCESS_;
+}
 
 
 
@@ -2010,7 +2671,8 @@ int output_one_line_many_columns_of_pk(
                           double five_pk,
                           double six_pk,
                           double seven_pk,
-                                       double eight_pk
+                                       double eight_pk,
+                                       double nine_pk
                           ) {
     
     fprintf(pkfile," ");
@@ -2023,8 +2685,134 @@ int output_one_line_many_columns_of_pk(
     class_fprintf_double(pkfile,six_pk,_TRUE_);
     class_fprintf_double(pkfile,seven_pk,_TRUE_);
     class_fprintf_double(pkfile,eight_pk,_TRUE_);
+    class_fprintf_double(pkfile,nine_pk,_TRUE_);
     fprintf(pkfile,"\n");
     
     return _SUCCESS_;
     
 }
+
+
+int output_one_line_many_columns_of_pk_rsd(
+                                       FILE * pkfile,
+                                       double one_k,
+                                       double one_pk,
+                                       double two_pk,
+                                       double three_pk,
+                                       double four_pk,
+                                       double five_pk,
+                                       double six_pk,
+                                       double seven_pk,
+                                       double eight_pk,
+                                       double nine_pk,
+                                       double ten_pk,
+                                       double eleven_pk,
+                                       double twelve_pk,
+                                       double thirteen_pk,
+                                           double fourteen_pk,
+                                           double fifteen_pk,
+                                           double sixteen_pk
+                                       ) {
+    
+    fprintf(pkfile," ");
+    class_fprintf_double(pkfile,one_k,_TRUE_);
+    class_fprintf_double(pkfile,one_pk,_TRUE_);
+    class_fprintf_double(pkfile,two_pk,_TRUE_);
+    class_fprintf_double(pkfile,three_pk,_TRUE_);
+    class_fprintf_double(pkfile,four_pk,_TRUE_);
+    class_fprintf_double(pkfile,five_pk,_TRUE_);
+    class_fprintf_double(pkfile,six_pk,_TRUE_);
+    class_fprintf_double(pkfile,seven_pk,_TRUE_);
+    class_fprintf_double(pkfile,eight_pk,_TRUE_);
+    class_fprintf_double(pkfile,nine_pk,_TRUE_);
+    class_fprintf_double(pkfile,ten_pk,_TRUE_);
+    class_fprintf_double(pkfile,eleven_pk,_TRUE_);
+    class_fprintf_double(pkfile,twelve_pk,_TRUE_);
+    class_fprintf_double(pkfile,thirteen_pk,_TRUE_);
+        class_fprintf_double(pkfile,fourteen_pk,_TRUE_);
+        class_fprintf_double(pkfile,fifteen_pk,_TRUE_);
+        class_fprintf_double(pkfile,sixteen_pk,_TRUE_);
+    fprintf(pkfile,"\n");
+    
+    return _SUCCESS_;
+    
+}
+
+int output_one_line_many_columns_of_pk_rsd_2(
+                                           FILE * pkfile,
+                                           double one_k,
+                                           double one_pk,
+                                           double two_pk,
+                                           double three_pk,
+                                           double four_pk,
+                                           double five_pk,
+                                           double six_pk,
+                                           double seven_pk,
+                                           double eight_pk,
+                                           double nine_pk,
+                                             double ten_pk,
+                                             double eleven_pk,
+                                             double twelve_pk,
+                                             double thirteen_pk,
+                                             double fourteen_pk
+                                           ) {
+    
+    fprintf(pkfile," ");
+    class_fprintf_double(pkfile,one_k,_TRUE_);
+    class_fprintf_double(pkfile,one_pk,_TRUE_);
+    class_fprintf_double(pkfile,two_pk,_TRUE_);
+    class_fprintf_double(pkfile,three_pk,_TRUE_);
+    class_fprintf_double(pkfile,four_pk,_TRUE_);
+    class_fprintf_double(pkfile,five_pk,_TRUE_);
+    class_fprintf_double(pkfile,six_pk,_TRUE_);
+    class_fprintf_double(pkfile,seven_pk,_TRUE_);
+    class_fprintf_double(pkfile,eight_pk,_TRUE_);
+    class_fprintf_double(pkfile,nine_pk,_TRUE_);
+    class_fprintf_double(pkfile,ten_pk,_TRUE_);
+    class_fprintf_double(pkfile,eleven_pk,_TRUE_);
+    class_fprintf_double(pkfile,twelve_pk,_TRUE_);
+    class_fprintf_double(pkfile,thirteen_pk,_TRUE_);
+    class_fprintf_double(pkfile,fourteen_pk,_TRUE_);
+    fprintf(pkfile,"\n");
+    
+    return _SUCCESS_;
+    
+}
+
+int output_one_line_many_columns_of_pk_rsd_4(
+                                             FILE * pkfile,
+                                             double one_k,
+                                             double one_pk,
+                                             double two_pk,
+                                             double three_pk,
+                                             double four_pk,
+                                             double five_pk,
+                                             double six_pk,
+                                             double seven_pk,
+                                             double eight_pk,
+                                             double nine_pk,
+                                             double ten_pk,
+                                             double eleven_pk,
+                                             double twelve_pk
+                                             ) {
+    
+    fprintf(pkfile," ");
+    class_fprintf_double(pkfile,one_k,_TRUE_);
+    class_fprintf_double(pkfile,one_pk,_TRUE_);
+    class_fprintf_double(pkfile,two_pk,_TRUE_);
+    class_fprintf_double(pkfile,three_pk,_TRUE_);
+    class_fprintf_double(pkfile,four_pk,_TRUE_);
+    class_fprintf_double(pkfile,five_pk,_TRUE_);
+    class_fprintf_double(pkfile,six_pk,_TRUE_);
+    class_fprintf_double(pkfile,seven_pk,_TRUE_);
+    class_fprintf_double(pkfile,eight_pk,_TRUE_);
+    class_fprintf_double(pkfile,nine_pk,_TRUE_);
+    class_fprintf_double(pkfile,ten_pk,_TRUE_);
+    class_fprintf_double(pkfile,eleven_pk,_TRUE_);
+    class_fprintf_double(pkfile,twelve_pk,_TRUE_);
+    fprintf(pkfile,"\n");
+    
+    return _SUCCESS_;
+    
+}
+

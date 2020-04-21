@@ -8,12 +8,16 @@
 #include "svnversion.h"
 #include <stdarg.h>
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <complex.h>
 #undef I
+
+
+#include <unistd.h>
+#include <stdio.h>
+#include <limits.h>
 
 /*
 #include <gsl/gsl_math.h>

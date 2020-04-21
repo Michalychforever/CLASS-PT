@@ -237,9 +237,105 @@ struct spectra {
     double * ln_pk_nl_IFG2;
     double * ddln_pk_nl_IFG2;
     
+    double * ln_pk_nl_IFG2_0b1;
+    double * ddln_pk_nl_IFG2_0b1;
+    
+    double * ln_pk_nl_IFG2_0;
+    double * ddln_pk_nl_IFG2_0;
+    
+    double * ln_pk_nl_IFG2_2;
+    double * ddln_pk_nl_IFG2_2;
+    
     double * ln_pk_nl_CTR;
     double * ddln_pk_nl_CTR;
     
+    double * ln_pk_nl_CTR_0;
+    double * ddln_pk_nl_CTR_0;
+    
+    double * ln_pk_nl_CTR_2;
+    double * ddln_pk_nl_CTR_2;
+    
+    double * ln_pk_nl_CTR_4;
+    double * ddln_pk_nl_CTR_4;
+   
+    double * ln_pk_nl_Tree;
+    double * ddln_pk_nl_Tree;
+    
+    double * ln_pk_nl_Tree_0_vv;
+    double * ddln_pk_nl_Tree_0_vv;
+    double * ln_pk_nl_Tree_0_vd;
+    double * ddln_pk_nl_Tree_0_vd;
+    double * ln_pk_nl_Tree_0_dd;
+    double * ddln_pk_nl_Tree_0_dd;
+    double * ln_pk_nl_Tree_2_vv;
+    double * ddln_pk_nl_Tree_2_vv;
+    double * ln_pk_nl_Tree_2_vd;
+    double * ddln_pk_nl_Tree_2_vd;
+    double * ln_pk_nl_Tree_4_vv;
+    double * ddln_pk_nl_Tree_4_vv;
+    
+    
+    double * ln_pk_0_vv;
+    double * ddln_pk_0_vv;
+    double * ln_pk_0_vd;
+    double * ddln_pk_0_vd;
+    double * ln_pk_0_dd;
+    double * ddln_pk_0_dd;
+    
+    double * ln_pk_2_vv;
+    double * ddln_pk_2_vv;
+    double * ln_pk_2_vd;
+    double * ddln_pk_2_vd;
+    double * ln_pk_2_dd;
+    double * ddln_pk_2_dd;
+    
+    double * ln_pk_4_vv;
+    double * ddln_pk_4_vv;
+    double * ln_pk_4_vd;
+    double * ddln_pk_4_vd;
+    double * ln_pk_4_dd;
+    double * ddln_pk_4_dd;
+    
+    double * ln_pk_0_b1b2;
+    double * ddln_pk_0_b1b2;
+    double * ln_pk_0_b2;
+    double * ddln_pk_0_b2;
+    double * ln_pk_0_b1bG2;
+    double * ddln_pk_0_b1bG2;
+    double * ln_pk_0_bG2;
+    double * ddln_pk_0_bG2;
+    
+    double * ln_pk_2_b1b2;
+    double * ddln_pk_2_b1b2;
+    double * ln_pk_2_b2;
+    double * ddln_pk_2_b2;
+    double * ln_pk_2_b1bG2;
+    double * ddln_pk_2_b1bG2;
+    double * ln_pk_2_bG2;
+    double * ddln_pk_2_bG2;
+    
+    double * ln_pk_4_b2;
+    double * ddln_pk_4_b2;
+    double * ln_pk_4_bG2;
+    double * ddln_pk_4_bG2;
+    double * ln_pk_4_b1b2;
+    double * ddln_pk_4_b1b2;
+    double * ln_pk_4_b1bG2;
+    double * ddln_pk_4_b1bG2;
+    
+    double * ln_pk_2_b2b2;
+    double * ddln_pk_2_b2b2;
+    double * ln_pk_2_b2bG2;
+    double * ddln_pk_2_b2bG2;
+    double * ln_pk_2_bG2bG2;
+    double * ddln_pk_2_bG2bG2;
+
+    double * ln_pk_4_b2b2;
+    double * ddln_pk_4_b2b2;
+    double * ln_pk_4_b2bG2;
+    double * ddln_pk_4_b2bG2;
+    double * ln_pk_4_bG2bG2;
+    double * ddln_pk_4_bG2bG2;
 
   int index_tr_delta_g;        /**< index of gamma density transfer function */
   int index_tr_delta_b;        /**< index of baryon density transfer function */
@@ -354,11 +450,12 @@ extern "C" {
                            double * output_tot
                            );
     
-    int spectra_pk_nl_bias_at_z(
+    int spectra_pk_nl_bias_at_z_i(
                            struct background * pba,
+                           struct nonlinear_pt *pnlpt,
                            struct spectra * psp,
                            enum linear_or_logarithmic mode,
-                           double z,
+                           int i_z,
                            double * output_tot,
                             double * output_tot_Id2d2,
                                 double * output_tot_Id2,
@@ -366,9 +463,48 @@ extern "C" {
                                 double * output_tot_Id2G2,
                                 double * output_tot_IG2G2,
                                 double * output_tot_IFG2,
-                                double * output_tot_CTR
+                                  double * output_tot_IFG2_0b1,
+                                  double * output_tot_IFG2_0,
+                                  double * output_tot_IFG2_2,
+                                double * output_tot_CTR,
+                                double * output_tot_CTR_0,
+                                double * output_tot_CTR_2,
+                                double * output_tot_CTR_4,
+				                double * output_tot_Tree,
+                                  double * output_tot_Tree_0_vv,
+                                  double * output_tot_Tree_0_vd,
+                                  double * output_tot_Tree_0_dd,
+                                  double * output_tot_Tree_2_vv,
+                                  double * output_tot_Tree_2_vd,
+                                  double * output_tot_Tree_4_vv,
+                                  double * output_tot_0_vv,
+                                  double * output_tot_0_vd,
+                                  double * output_tot_0_dd,
+                                  double * output_tot_2_vv,
+                                  double * output_tot_2_vd,
+                                  double * output_tot_2_dd,
+                                  double * output_tot_4_vv,
+                                  double * output_tot_4_vd,
+                                  double * output_tot_4_dd,
+                                  double * output_tot_0_b1b2,
+                                  double * output_tot_0_b2,
+                                  double * output_tot_0_b1bG2,
+                                  double * output_tot_0_bG2,
+                                  double * output_tot_2_b1b2,
+                                  double * output_tot_2_b2,
+                                  double * output_tot_2_b1bG2,
+                                  double * output_tot_2_bG2,
+                                  double * output_tot_4_b2,
+                                  double * output_tot_4_bG2,
+                                  double * output_tot_4_b1b2,
+                                  double * output_tot_4_b1bG2,
+                                  double * output_tot_2_b2b2,
+                                  double * output_tot_2_b2bG2,
+                                  double * output_tot_2_bG2bG2,
+                                  double * output_tot_4_b2b2,
+                                  double * output_tot_4_b2bG2,
+                                  double * output_tot_4_bG2bG2
                                 );
-    
 
   int spectra_pk_nl_at_k_and_z(
                                struct background * pba,
@@ -385,7 +521,47 @@ extern "C" {
                                double * pk_tot_Id2G2,
                                double * pk_tot_IG2G2,
                                double * pk_tot_IFG2,
-                               double * pk_tot_CTR
+                               double * pk_tot_IFG2_0b1,
+                               double * pk_tot_IFG2_0,
+                               double * pk_tot_IFG2_2,
+                               double * pk_tot_CTR,
+                               double * pk_tot_CTR_0,
+                               double * pk_tot_CTR_2,
+                               double * pk_tot_CTR_4,
+                               double * pk_tot_Tree,
+                               double * pk_tot_Tree_0_vv,
+                               double * pk_tot_Tree_0_vd,
+                               double * pk_tot_Tree_0_dd,
+                               double * pk_tot_Tree_2_vv,
+                               double * pk_tot_Tree_2_vd,
+                               double * pk_tot_Tree_4_vv,
+                               double * pk_tot_0_vv,
+                               double * pk_tot_0_vd,
+                               double * pk_tot_0_dd,
+                               double * pk_tot_2_vv,
+                               double * pk_tot_2_vd,
+                               double * pk_tot_2_dd,
+                               double * pk_tot_4_vv,
+                               double * pk_tot_4_vd,
+                               double * pk_tot_4_dd,
+                               double * pk_tot_0_b1b2,
+                               double * pk_tot_0_b2,
+                               double * pk_tot_0_b1bG2,
+                               double * pk_tot_0_bG2,
+                               double * pk_tot_2_b1b2,
+                               double * pk_tot_2_b2,
+                               double * pk_tot_2_b1bG2,
+                               double * pk_tot_2_bG2,
+                               double * pk_tot_4_b2,
+                               double * pk_tot_4_bG2,
+                               double * pk_tot_4_b1b2,
+                               double * pk_tot_4_b1bG2,
+                               double * pk_tot_2_b2b2,
+                               double * pk_tot_2_b2bG2,
+                               double * pk_tot_2_bG2bG2,
+                               double * pk_tot_4_b2b2,
+                               double * pk_tot_4_b2bG2,
+                               double * pk_tot_4_bG2bG2
                                );
     
     int spectra_pk_nl_halofit_at_k_and_z(

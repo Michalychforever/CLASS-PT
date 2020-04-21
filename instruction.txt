@@ -1,0 +1,7 @@
+1. Download optimized OpenBLAS library from http://www.openblas.net/ 
+2. Configure the package by gmake CC=gcc FC=gfortran
+3. Install the package by make install PREFIX=path/to/OpenBLAS
+4. Change the flag OPENBLAS in class_2.6.3_PT/Makefile to path/to/OpenBLAS/lib/libopenblas.a
+5. Fix extra_link_args in class_2.6.3_PT/python/setup.py according to path/to/OpenBLAS/lib/libopenblas.a
+6. Run classy
+7. You are all set!

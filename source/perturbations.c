@@ -606,6 +606,20 @@ int perturb_indices_of_perturbs(
       term t2 is always non-zero, while other terms are non-zero only
       for scalars and vectors. For polarization, the term e is always
       non-zero, while the term b is only for vectors and tensors. */
+    
+    /*
+  if (ppt->has_RSD == _TRUE_) {
+      ppt->has_source_theta_m = _TRUE_;
+    }
+    */
+    
+    if (ppt->has_cb == _TRUE_) {
+        ppt->has_source_delta_m = _TRUE_;
+        ppt->has_source_delta_cdm = _TRUE_;
+        ppt->has_source_delta_b = _TRUE_;
+        //  printf("Working!>>>>>>>>>>>>>\n");
+    }
+    
 
   if (ppt->has_cl_cmb_temperature == _TRUE_) {
     ppt->has_source_t = _TRUE_;

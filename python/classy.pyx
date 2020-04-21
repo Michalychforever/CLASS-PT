@@ -731,8 +731,47 @@ cdef class Class:
         cdef double pk_Id2G2
         cdef double pk_IG2G2
         cdef double pk_IFG2
+        cdef double pk_IFG2_0b1
+        cdef double pk_IFG2_0
+        cdef double pk_IFG2_2
         cdef double pk_CTR
-        
+        cdef double pk_CTR_0
+        cdef double pk_CTR_2
+        cdef double pk_CTR_4
+        cdef double pk_Tree
+        cdef double pk_Tree_0_vv
+        cdef double pk_Tree_0_vd
+        cdef double pk_Tree_0_dd
+        cdef double pk_Tree_2_vv
+        cdef double pk_Tree_2_vd
+        cdef double pk_Tree_4_vv
+        cdef double pk_0_vv
+        cdef double pk_0_vd
+        cdef double pk_0_dd
+        cdef double pk_2_vv
+        cdef double pk_2_vd
+        cdef double pk_2_dd
+        cdef double pk_4_vv
+        cdef double pk_4_vd
+        cdef double pk_4_dd
+        cdef double pk_0_b1b2
+        cdef double pk_0_b2
+        cdef double pk_0_b1bG2
+        cdef double pk_0_bG2
+        cdef double pk_2_b1b2
+        cdef double pk_2_b2
+        cdef double pk_2_b1bG2
+        cdef double pk_2_bG2
+        cdef double pk_4_b2
+        cdef double pk_4_bG2
+        cdef double pk_4_b1b2
+        cdef double pk_4_b1bG2
+        cdef double pk_2_b2b2
+        cdef double pk_2_b2bG2
+        cdef double pk_2_bG2bG2
+        cdef double pk_4_b2b2
+        cdef double pk_4_b2bG2
+        cdef double pk_4_bG2bG2
         cdef double pk_velo
         cdef double pk_cross
         cdef int dummy
@@ -748,12 +787,60 @@ cdef class Class:
              if spectra_pk_at_k_and_z(&self.ba,&self.pm,&self.sp,k,z,&pk,pk_ic)==_FAILURE_:
                 raise CosmoSevereError(self.sp.error_message)
         else:
-             if spectra_pk_nl_at_k_and_z(&self.ba,&self.pm,&self.sp,&self.nl,&self.nlpt,k,z,&pk,&pk_Id2d2,&pk_Id2,&pk_IG2,&pk_Id2G2,&pk_IG2G2,&pk_IFG2,&pk_CTR) ==_FAILURE_:
+             if spectra_pk_nl_at_k_and_z(&self.ba,&self.pm,&self.sp,&self.nl,&self.nlpt,k,z,&pk,&pk_Id2d2,&pk_Id2,&pk_IG2,&pk_Id2G2,&pk_IG2G2,&pk_IFG2,&pk_IFG2_0b1,&pk_IFG2_0,&pk_IFG2_2,&pk_CTR,&pk_CTR_0,&pk_CTR_2,&pk_CTR_4,&pk_Tree,&pk_Tree_0_vv,&pk_Tree_0_vd,&pk_Tree_0_dd,&pk_Tree_2_vv,&pk_Tree_2_vd,&pk_Tree_4_vv,&pk_0_vv,&pk_0_vd,&pk_0_dd,&pk_2_vv,&pk_2_vd,&pk_2_dd,&pk_4_vv,&pk_4_vd,&pk_4_dd,&pk_0_b1b2,&pk_0_b2,&pk_0_b1bG2,&pk_0_bG2,&pk_2_b1b2,&pk_2_b2,&pk_2_b1bG2,&pk_2_bG2,&pk_4_b2,&pk_4_bG2,&pk_4_b1b2,&pk_4_b1bG2,&pk_2_b2b2,&pk_2_b2bG2,&pk_2_bG2bG2,&pk_4_b2b2,&pk_4_b2bG2,&pk_4_bG2bG2) ==_FAILURE_:
                 raise CosmoSevereError(self.sp.error_message)
-
+        result = [pk-5000.]
+        result.append(-pk_Id2d2+10000000.)
+        result.append(pk_Id2-10.)
+        result.append(-pk_IG2)
+        result.append(-pk_Id2G2+10000000.)
+        result.append(pk_IG2G2-10000000.)
+        result.append(-pk_IFG2)
+        result.append(-pk_IFG2_0b1+10000000.)
+        result.append(-pk_IFG2_0+10000000.)
+        result.append(-pk_IFG2_2+10000000.)
+        result.append(-pk_CTR)
+        result.append(-pk_CTR_0)
+        result.append(-pk_CTR_2)
+        result.append(-pk_CTR_4)
+        result.append(pk_Tree)
+        result.append(pk_Tree_0_vv-10000000.)
+        result.append(pk_Tree_0_vd-10000000.)
+        result.append(pk_Tree_0_dd-10000000.)
+        result.append(pk_Tree_2_vv-10000000.)
+        result.append(pk_Tree_2_vd-10000000.)
+        result.append(pk_Tree_4_vv-10000000.)
+        result.append(pk_0_vv-10000000.)
+        result.append(pk_0_vd-10000000.)
+        result.append(pk_0_dd-10000000.)
+        result.append(pk_2_vv-10000000.)
+        result.append(pk_2_vd-10000000.)
+        result.append(pk_2_dd-10000000.)
+        result.append(pk_4_vv-10000000.)
+        result.append(pk_4_vd-10000000.)
+        result.append(pk_4_dd-10000000.)
+        result.append(pk_0_b1b2-10000000.)
+        result.append(pk_0_b2-10000000.)
+        result.append(-pk_0_b1bG2+10000000.)
+        result.append(-pk_0_bG2+10000000.)
+        result.append(pk_2_b1b2-10000000.)
+        result.append(pk_2_b2-10000000.)
+        result.append(-pk_2_b1bG2+10000000.)
+        result.append(-pk_2_bG2+10000000.)
+        result.append(pk_4_b2-10000000.)
+        result.append(-pk_4_bG2+10000000.)
+        result.append(pk_4_b1b2-10000000.)
+        result.append(pk_4_b1bG2-10000000.)
+        result.append(pk_2_b2b2-10000000.)
+        result.append(pk_2_b2bG2-10000000.)
+        result.append(pk_2_bG2bG2-10000000.)
+        result.append(pk_4_b2b2-10000000.)
+        result.append(pk_4_b2bG2-10000000.)
+        result.append(pk_4_bG2bG2-10000000.)
         free(pk_ic)
-        return pk
-
+#        return pk
+        return result    
+    
     # Gives the linear pk for a given (k,z)
     def pk_lin(self,double k,double z):
         """
@@ -845,6 +932,9 @@ cdef class Class:
     def n_s(self):
         return self.pm.n_s
 
+    def A_s(self):
+        return self.pm.A_s
+
     def tau_reio(self):
         return self.th.tau_reio
 
@@ -854,6 +944,12 @@ cdef class Class:
 
     #def Omega_r(self):
     #    return self.ba.Omega0_g+self.ba.Omega0_ur
+
+    def omegabh2(self):
+        return self.ba.Omega0_b*self.ba.h**2
+
+    def omegach2(self):
+        return self.ba.Omega0_cdm*self.ba.h**2
 
     def Omega_Lambda(self):
         return self.ba.Omega0_lambda
@@ -1526,6 +1622,8 @@ cdef class Class:
             elif name == 'alpha_RR_2_2500':
                 value = self.sp.alpha_RR_2_2500
             elif name == 'sigma8':
+                value = self.sp.sigma8
+            elif name == 'da_z':
                 value = self.sp.sigma8
             else:
                 raise CosmoSevereError("%s was not recognized as a derived parameter" % name)

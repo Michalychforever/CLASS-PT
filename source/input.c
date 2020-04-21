@@ -2460,7 +2460,7 @@ int input_read_parameters(
 
   /** (f) parameter related to the non-linear spectra computation */
     
-    /* M.I. Here I read the stuff from the .ini file */
+    /*  Here we read the stuff from the .ini file */
     
   class_call(parser_read_string(pfc,
                                 "non linear",
@@ -2474,27 +2474,67 @@ int input_read_parameters(
 
     class_test(ppt->has_perturbations == _FALSE_, errmsg, "You requested non linear computation but no linear computation. You must set output to tCl or similar.");
       
-      if ((strstr(string1,"spt") != NULL) || (strstr(string1,"Spt") != NULL) || (strstr(string1,"SPT") != NULL)) {
+      if ((strstr(string1,"pt") != NULL) || (strstr(string1,"Pt") != NULL) || (strstr(string1,"PT") != NULL)) {
           pnlpt->method = nlpt_spt;
           pnl->method = nl_none;
           ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
           pnlpt->irres = irres_yes;
           pnlpt->bias = bias_yes;
-
+          pnlpt->rsd = rsd_no;
+          pnlpt->AP_effect = AP_effect_no;
+          pnlpt->cb = _TRUE_;
       }
-      
-//      else{
 
           if ((strstr(string1,"halofit") != NULL) || (strstr(string1,"Halofit") != NULL) || (strstr(string1,"HALOFIT") != NULL)) {
       pnl->method = nl_halofit;
       pnlpt->method = nlpt_none;
-      ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
           }
-//      }
 
   }
     
-    // Here I include IR resummation
+
+    
+    /** Fiducial Om for AP */
+    class_call(parser_read_double(pfc,"Omfid",&param1,&flag1,errmsg),
+               errmsg,
+               errmsg);
+    pnlpt->OmfidAP = param1;
+
+
+    class_call(parser_read_string(pfc, "FFTLog mode",&(string1),&(flag1),errmsg), errmsg,errmsg);
+        
+        if ((strstr(string1,"Fast") != NULL) || (strstr(string1,"FAST") != NULL) || (strstr(string1,"F") != NULL)) {
+            ppr->nmax_nlpt = 128;
+        }
+        else {
+            ppr->nmax_nlpt = 256;
+        }
+
+
+    class_call(parser_read_string(pfc, "output format",&(string1),&(flag1),errmsg), errmsg,errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"Fast") != NULL) || (strstr(string1,"FAST") != NULL) || (strstr(string1,"F") != NULL)) {
+          pnlpt->fast_output = _TRUE_;
+        } else { 
+          pnlpt->fast_output = _FALSE_;
+        }      
+      }
+
+      class_call(parser_read_string(pfc,"cb",&(string1),&(flag1),errmsg),errmsg,errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"No") != NULL) || (strstr(string1,"NO") != NULL) || (strstr(string1,"N") != NULL)) {
+            pnlpt->cb = _FALSE_;
+            // ppt->has_cb = _FALSE_;
+        }
+        else {
+            pnlpt->cb = _TRUE_;
+            // ppt->has_cb = _TRUE_;
+        }
+      }
+
+
+      
+    // Here we include IR resummation
     
     if (pnlpt->method == nlpt_spt) {
     
@@ -2515,7 +2555,7 @@ int input_read_parameters(
         }
     }
     
-     // Here I include bias tracers
+     // Here we include bias tracers
     
     if (pnlpt->method == nlpt_spt) {
         
@@ -2529,11 +2569,50 @@ int input_read_parameters(
         
         if ((strstr(string1,"NO") != NULL) || (strstr(string1,"No") != NULL) || (strstr(string1,"N") != NULL)) {
             pnlpt->bias = bias_no;
+            // ppt->has_bias = _FALSE_;
         }
         
         else {
             pnlpt->bias = bias_yes;
+            // ppt->has_bias = _TRUE_;
         }
+    }
+
+    // Here we include RSD
+    
+    if (pnlpt->method == nlpt_spt) {
+        
+        class_call(parser_read_string(pfc,
+                                      "RSD",
+                                      &(string1),
+                                      &(flag1),
+                                      errmsg),
+                   errmsg,
+                   errmsg);
+        
+        if ((strstr(string1,"Y") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL)) {
+            pnlpt->rsd = rsd_yes;
+            // ppt->has_RSD = _TRUE_;
+            
+            class_call(parser_read_string(pfc,"AP",&(string1),&(flag1),errmsg),errmsg,errmsg);
+            
+            if ((strstr(string1,"Y") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL)) {
+                pnlpt->AP_effect = AP_effect_yes;
+            }
+            
+            else {
+                pnlpt->AP_effect = AP_effect_no;
+            }
+            
+            
+        }
+        
+        else {
+            pnlpt->rsd = rsd_no;
+        }
+        
+
+        
     }
     
 
@@ -3028,7 +3107,8 @@ int input_default_params(
   pth->compute_damping_scale = _FALSE_;
 
   /** - perturbation structure */
-
+  // ppt->has_RSD = _FALSE_;
+  ppt->has_cb = _TRUE_;
   ppt->has_cl_cmb_temperature = _FALSE_;
   ppt->has_cl_cmb_polarization = _FALSE_;
   ppt->has_cl_cmb_lensing_potential = _FALSE_;
@@ -3217,9 +3297,14 @@ int input_default_params(
 
   pnl->method = nl_none;
   pnlpt->method = nlpt_none;
+
     
     pnlpt->z_pk_num = 1;
     pnlpt->z_pk[0] = 0.;
+    pnlpt->OmfidAP = 0.31;
+
+  pnlpt->fast_output = _FALSE_;
+  pnlpt->cb = _TRUE_;
 
   /** - all verbose parameters */
 
@@ -3481,8 +3566,8 @@ int input_default_precision ( struct precision * ppr ) {
      * - parameters related to nonlinear one-loop module
      */
     
-  //ppr->nmax_nlpt = 240;
-    ppr->nmax_nlpt = 256;
+  ppr->nmax_nlpt = 128;
+  //  ppr->nmax_nlpt = 256;
     
     
   /**
