@@ -36,14 +36,10 @@ setup(
     url='http://www.class-code.net',
     cmdclass={'build_ext': build_ext},
     ext_modules=[Extension("classy", ["classy.pyx"],
-                           #include_dirs=["/nethome/ksardase/dist/OpenBLAS/include",nm.get_include(), "../include"],
                            include_dirs=[nm.get_include(), "../include","/home/ivanov/Desktop/Structures/OpenBLAS-0.2.20/include"],
                            libraries=liblist,
-                           #library_dirs=["/nethome/ksardase/dist/OpenBLAS/lib","../", GCCPATH],
                            library_dirs=["../", GCCPATH],
-#                           extra_link_args=['/home/ivanov/Desktop/Structures/OpenBLAS-0.2.20/lib/libopenblas.a','-lgomp'],
                            extra_link_args=['/Users/michalychforever/Dropbox/Docs/science/OpenBLAS-0.2.20/libopenblas.a','-lgomp'],
-#                           extra_link_args=['/opt/OpenBLAS/lib/libopenblas.a','-lgomp'],
                            )],
     #data_files=[('bbn', ['../bbn/sBBN.dat'])]
 )
