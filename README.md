@@ -12,7 +12,7 @@ See `instructions.pdf' for the installation details.
 
 The installation instuctions for CLASS can be found on the official code webpage https://github.com/lesgourg/class_public
 
-Once you are all set, check out the jupyter notebook *'notebooks/nonlinear_pt.ipynb'* for the examples of working sessions.
+Once you are all set, check out this [jupyter notebook](https://github.com/Michalychforever/CLASS-PT/blob/master/notebooks/nonlinear_pt.ipynb) for the examples of working sessions.
 
 You can also use the Mathematica notebook *'read_tables.nb'* to read the code output.
 
