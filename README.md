@@ -8,7 +8,7 @@ This is a modification of the CLASS code that computes the non-linear power spec
  
 # Getting started
 
-See `instructions.pdf' for the installation details.  
+Read [these instructions](https://github.com/Michalychforever/CLASS-PT/blob/master/instructions.pdf) for the installation details.  
 
 The installation instuctions for CLASS can be found on the official code webpage https://github.com/lesgourg/class_public
 
