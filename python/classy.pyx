@@ -880,6 +880,19 @@ cdef class Class:
                 for index_mu in xrange(mu_size):
                     pk[index_k,index_z,index_mu] = self.pk(k[index_k,index_z,index_mu],z[index_z])
         return pk
+    
+    def get_pk_mult(self, np.ndarray[DTYPE_t,ndim=1] k, double z, int k_size):
+        """Fast function to get the non-linear power spectrum multipole components on a k array"""
+        cdef np.ndarray[DTYPE_t, ndim = 2] pk_mult = np.zeros((48,k_size),'float64')
+        cdef np.ndarray[DTYPE_t, ndim = 1] this_pk
+        cdef int index_k, index_comb
+
+        for index_k in xrange(k_size):
+            this_pk = np.asarray(self.pk(k[index_k],z))
+            for index_comb in xrange(48):
+                pk_mult[index_comb, index_k] = this_pk[index_comb]
+
+        return pk_mult
 
     def get_pk_lin(self, np.ndarray[DTYPE_t,ndim=3] k, np.ndarray[DTYPE_t,ndim=1] z, int k_size, int z_size, int mu_size):
         """ Fast function to get the linear power spectrum on a k and z array """
