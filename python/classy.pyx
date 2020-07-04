@@ -364,7 +364,7 @@ cdef class Class:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.nl.error_message)
             self.ncp.add("nonlinear")
-            
+
         if "nonlinear_pt" in level:
             if nonlinear_pt_init(&self.pr, &self.ba, &self.th,
                               &self.pt, &self.pm, &self.nlpt) == _FAILURE_:
@@ -713,8 +713,8 @@ cdef class Class:
         return lum_distance
 
     # Gives the pk for a given (k,z)
-    def pk(self,double k,double z):    
-        
+    def pk(self,double k,double z):
+
         """
         Gives the pk for a given k and z (will be non linear if requested to Class, linear otherwise)
 
@@ -839,8 +839,8 @@ cdef class Class:
         result.append(pk_4_bG2bG2-10000000.)
         free(pk_ic)
 #        return pk
-        return result    
-    
+        return result
+
     # Gives the linear pk for a given (k,z)
     def pk_lin(self,double k,double z):
         """
@@ -880,7 +880,7 @@ cdef class Class:
                 for index_mu in xrange(mu_size):
                     pk[index_k,index_z,index_mu] = self.pk(k[index_k,index_z,index_mu],z[index_z])
         return pk
-    
+
     def get_pk_mult(self, np.ndarray[DTYPE_t,ndim=1] k, double z, int k_size):
         """Fast function to get the non-linear power spectrum multipole components on a k array"""
         cdef np.ndarray[DTYPE_t, ndim = 2] pk_mult = np.zeros((48,k_size),'float64')
@@ -891,6 +891,21 @@ cdef class Class:
             this_pk = np.asarray(self.pk(k[index_k],z))
             for index_comb in xrange(48):
                 pk_mult[index_comb, index_k] = this_pk[index_comb]
+
+        return pk_mult
+
+    def get_pk_comp(self, np.ndarray[DTYPE_t,ndim=3] k, np.ndarray[DTYPE_t,ndim=1] z, int k_size, int z_size, int mu_size):
+        """Fast function to get the non-linear power spectrum components on a k and z array"""
+        cdef np.ndarray[DTYPE_t, ndim = 4] pk_mult = np.zeros((48,k_size,z_size,mu_size),'float64')
+        cdef np.ndarray[DTYPE_t, ndim = 1] this_pk
+        cdef int index_k, index_z, index_mu, index_comb
+
+        for index_k in xrange(k_size):
+            for index_z in xrange(z_size):
+                for index_mu in xrange(mu_size):
+                    this_pk = np.asarray(self.pk(k[index_k,index_z,index_mu],z[index_z]))
+                    for index_comb in xrange(48):
+                        pk_mult[index_comb, index_k, index_z, index_mu] = this_pk[index_comb]
 
         return pk_mult
 
