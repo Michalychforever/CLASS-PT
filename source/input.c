@@ -2506,6 +2506,9 @@ int input_read_parameters(
         if ((strstr(string1,"Fast") != NULL) || (strstr(string1,"FAST") != NULL) || (strstr(string1,"F") != NULL)) {
             ppr->nmax_nlpt = 128;
         }
+	else if ((strstr(string1,"Precise") != NULL) || (strstr(string1,"PRECISE") != NULL) || (strstr(string1,"P") != NULL)) {
+	    ppr->nmax_nlpt = 512;
+	}
         else {
             ppr->nmax_nlpt = 256;
         }

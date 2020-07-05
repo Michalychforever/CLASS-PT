@@ -529,6 +529,12 @@ class_alloc(pnlpt->nl_corr_density,pnlpt->tau_size*ppt->k_size[pnlpt->index_md_s
           sprintf(file2openM22basic,"%s/pt_matrices/M22basiconeline_N128.dat",__CLASSDIR__);
           sprintf(file2openM13basic,"%s/pt_matrices/IFG2oneline_N128.dat",__CLASSDIR__);
         }
+	else if (ppr->nmax_nlpt==512){
+	  sprintf(file2openM22,"%s/pt_matrices/M22oneline_N512.dat",__CLASSDIR__);
+          sprintf(file2openM13,"%s/pt_matrices/M13oneline_N512.dat",__CLASSDIR__);
+          sprintf(file2openM22basic,"%s/pt_matrices/M22basiconeline_N512.dat",__CLASSDIR__);
+          sprintf(file2openM13basic,"%s/pt_matrices/IFG2oneline_N512.dat",__CLASSDIR__);
+	}
         else {
           sprintf(file2openM22,"%s/pt_matrices/M22oneline_N256_packed.dat",__CLASSDIR__);
           sprintf(file2openM13,"%s/pt_matrices/M13oneline_N256.dat",__CLASSDIR__);
