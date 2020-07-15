@@ -14,7 +14,7 @@ GCCPATH_STRING = sbp.Popen(
 GCCPATH = osp.normpath(osp.dirname(GCCPATH_STRING)).decode()
 
 #liblist = ["openblas","class"]
-liblist = ["class"]
+liblist = ["class","gsl","gslcblas"]
 MVEC_STRING = sbp.Popen(
     ['gcc', '-lmvec'],
     stderr=sbp.PIPE).communicate()[1]
@@ -36,10 +36,10 @@ setup(
     url='http://www.class-code.net',
     cmdclass={'build_ext': build_ext},
     ext_modules=[Extension("classy", ["classy.pyx"],
-                           include_dirs=[nm.get_include(), "../include","/home/ivanov/Desktop/Structures/OpenBLAS-0.2.20/include"],
+                           include_dirs=[nm.get_include(), "../include","/home/ophilcox/OpenBLAS-0.3.9/include"],
                            libraries=liblist,
                            library_dirs=["../", GCCPATH],
-                           extra_link_args=['/Users/michalychforever/Dropbox/Docs/science/OpenBLAS-0.2.20/libopenblas.a','-lgomp'],
+                           extra_link_args=['/home/ophilcox/OpenBLAS-0.3.9/libopenblas.a','-lgomp'],
                            )],
     #data_files=[('bbn', ['../bbn/sBBN.dat'])]
 )
