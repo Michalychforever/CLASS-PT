@@ -2143,9 +2143,9 @@ int input_read_parameters(
     if (flag2 == _TRUE_) {
       ppt->k_max_for_pk=param2;
     }
-      
+
 /* Here I brutally force P_k_max_h/Mpc = 100. since only for this value the non-linear module is tailored */
-      
+
       ppt->k_max_for_pk=100.*pba->h;
 
     class_call(parser_read_list_of_doubles(pfc,
@@ -2162,10 +2162,10 @@ int input_read_parameters(
                  errmsg,
                  "you want to write some output for %d different values of z, hence you should increase _Z_PK_NUM_MAX_ in include/output.h to at least this number",
                  int1);
-        
+
         pop->z_pk_num = int1;
         pnlpt->z_pk_num = int1;
-        
+
       for (i=0; i<int1; i++) {
         pop->z_pk[i] = pointer1[i];
         pnlpt->z_pk[i] = pop->z_pk[i];
@@ -2459,9 +2459,9 @@ int input_read_parameters(
   }
 
   /** (f) parameter related to the non-linear spectra computation */
-    
+
     /*  Here we read the stuff from the .ini file */
-    
+
   class_call(parser_read_string(pfc,
                                 "non linear",
                                 &(string1),
@@ -2473,7 +2473,7 @@ int input_read_parameters(
   if (flag1 == _TRUE_) {
 
     class_test(ppt->has_perturbations == _FALSE_, errmsg, "You requested non linear computation but no linear computation. You must set output to tCl or similar.");
-      
+
       if ((strstr(string1,"pt") != NULL) || (strstr(string1,"Pt") != NULL) || (strstr(string1,"PT") != NULL)) {
           pnlpt->method = nlpt_spt;
           pnl->method = nl_none;
@@ -2491,9 +2491,9 @@ int input_read_parameters(
           }
 
   }
-    
 
-    
+
+
     /** Fiducial Om for AP */
     class_call(parser_read_double(pfc,"Omfid",&param1,&flag1,errmsg),
                errmsg,
@@ -2502,7 +2502,7 @@ int input_read_parameters(
 
 
     class_call(parser_read_string(pfc, "FFTLog mode",&(string1),&(flag1),errmsg), errmsg,errmsg);
-        
+
         if ((strstr(string1,"Fast") != NULL) || (strstr(string1,"FAST") != NULL) || (strstr(string1,"F") != NULL)) {
             ppr->nmax_nlpt = 128;
         }
@@ -2513,14 +2513,24 @@ int input_read_parameters(
             ppr->nmax_nlpt = 256;
         }
 
+        class_call(parser_read_string(pfc, "Input Pk",&(string1),&(flag1),errmsg), errmsg,errmsg);
+        if (flag1 == _TRUE_) {
+            if (strlen(string1)>0) {
+                pnlpt->replace_pk = _TRUE_;
+                strcpy(pnlpt->input_pk,string1);
+            }
+            else{
+              pnlpt->replace_pk = _FALSE_;
+            }
+          }
 
     class_call(parser_read_string(pfc, "output format",&(string1),&(flag1),errmsg), errmsg,errmsg);
       if (flag1 == _TRUE_) {
         if ((strstr(string1,"Fast") != NULL) || (strstr(string1,"FAST") != NULL) || (strstr(string1,"F") != NULL)) {
           pnlpt->fast_output = _TRUE_;
-        } else { 
+        } else {
           pnlpt->fast_output = _FALSE_;
-        }      
+        }
       }
 
       class_call(parser_read_string(pfc,"cb",&(string1),&(flag1),errmsg),errmsg,errmsg);
@@ -2536,11 +2546,11 @@ int input_read_parameters(
       }
 
 
-      
+
     // Here we include IR resummation
-    
+
     if (pnlpt->method == nlpt_spt) {
-    
+
     class_call(parser_read_string(pfc,
                                   "IR resummation",
                                   &(string1),
@@ -2548,20 +2558,20 @@ int input_read_parameters(
                                   errmsg),
                errmsg,
                errmsg);
-        
+
         if ((strstr(string1,"NO") != NULL) || (strstr(string1,"No") != NULL) || (strstr(string1,"N") != NULL)) {
             pnlpt->irres = irres_no;
         }
-        
+
         else {
             pnlpt->irres = irres_yes;
         }
     }
-    
+
      // Here we include bias tracers
-    
+
     if (pnlpt->method == nlpt_spt) {
-        
+
         class_call(parser_read_string(pfc,
                                       "Bias tracers",
                                       &(string1),
@@ -2569,12 +2579,12 @@ int input_read_parameters(
                                       errmsg),
                    errmsg,
                    errmsg);
-        
+
         if ((strstr(string1,"NO") != NULL) || (strstr(string1,"No") != NULL) || (strstr(string1,"N") != NULL)) {
             pnlpt->bias = bias_no;
             // ppt->has_bias = _FALSE_;
         }
-        
+
         else {
             pnlpt->bias = bias_yes;
             // ppt->has_bias = _TRUE_;
@@ -2582,9 +2592,9 @@ int input_read_parameters(
     }
 
     // Here we include RSD
-    
+
     if (pnlpt->method == nlpt_spt) {
-        
+
         class_call(parser_read_string(pfc,
                                       "RSD",
                                       &(string1),
@@ -2592,32 +2602,32 @@ int input_read_parameters(
                                       errmsg),
                    errmsg,
                    errmsg);
-        
+
         if ((strstr(string1,"Y") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL)) {
             pnlpt->rsd = rsd_yes;
             // ppt->has_RSD = _TRUE_;
-            
+
             class_call(parser_read_string(pfc,"AP",&(string1),&(flag1),errmsg),errmsg,errmsg);
-            
+
             if ((strstr(string1,"Y") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL)) {
                 pnlpt->AP_effect = AP_effect_yes;
             }
-            
+
             else {
                 pnlpt->AP_effect = AP_effect_no;
             }
-            
-            
+
+
         }
-        
+
         else {
             pnlpt->rsd = rsd_no;
         }
-        
 
-        
+
+
     }
-    
+
 
   /** (g) amount of information sent to standard output (none if all set to zero) */
 
@@ -2641,7 +2651,7 @@ int input_read_parameters(
 
   class_read_int("nonlinear_verbose",
                  pnl->nonlinear_verbose);
-    
+
   class_read_int("nonlinear_pt_verbose",
                    pnlpt->nonlinear_pt_verbose);
 
@@ -3301,7 +3311,10 @@ int input_default_params(
   pnl->method = nl_none;
   pnlpt->method = nlpt_none;
 
-    
+  pnlpt->replace_pk = _FALSE_; // replace linear Pk with a custom input file
+
+
+
     pnlpt->z_pk_num = 1;
     pnlpt->z_pk[0] = 0.;
     pnlpt->OmfidAP = 0.31;
@@ -3568,11 +3581,10 @@ int input_default_precision ( struct precision * ppr ) {
     /**
      * - parameters related to nonlinear one-loop module
      */
-    
+
   ppr->nmax_nlpt = 128;
   //  ppr->nmax_nlpt = 256;
-    
-    
+
   /**
    * - parameter related to lensing
    */
@@ -3853,7 +3865,7 @@ int input_try_unknown_parameters(double * unknown_parameter,
     nl.nonlinear_verbose = 0;
     class_call(nonlinear_init(&pr,&ba,&th,&pt,&pm,&nl), nl.error_message, errmsg);
   }
-    
+
     if (pfzw->required_computation_stage >= cs_nonlinear_pt){
         if (input_verbose>2)
             printf("Stage 5.5: nonlinear perturbation theory\n");

@@ -48,7 +48,7 @@ enum non_linear_rsd_pt rsd;
 // enum non_linear_cb_pt cb;
 // enum non_linear_fftlogn norm;
 enum non_linear_AP_effect_pt AP_effect;
-    
+
   //@}
 
   /** @name - table non-linear corrections for matter density, sqrt(P_NL(k,z)/P_NL(k,z)) */
@@ -56,10 +56,10 @@ enum non_linear_AP_effect_pt AP_effect;
   //@{
 
     // M.I. Global collable variables have to be defined here (they are called with prefix pnlpt->)
-    
+
     int z_pk_num;
     double z_pk[_Z_PK_NUM_MAX_];
-    
+
   int k_size;      /**< k_size = total number of k values */
   int ln_k_size;   /**< k_size = total number of k values */
   double * k;      /**< k[index_k] = list of k values */
@@ -95,9 +95,9 @@ short cb;
   double k_max;     /**< maximum value (over all modes) */
 
   //@}
-    
+
 double OmfidAP;
-    
+
 double * M13_oneline;
 double * M22_oneline;
 double * M22basic_oneline;
@@ -110,35 +110,35 @@ double complex * IFG2_oneline_complex;
 
 double complex * M22_oneline_0_vv_complex;
 double complex * M13_0_vv_oneline_complex;
-    
+
 double complex * M22_oneline_0_vd_complex;
 double complex * M13_0_vd_oneline_complex;
-    
+
 double complex * M22_oneline_0_dd_complex;
 double complex * M13_0_dd_oneline_complex;
-    
+
     double complex * M22_oneline_2_vv_complex;
     double complex * M13_2_vv_oneline_complex;
-    
+
     double complex * M22_oneline_4_vv_complex;
     double complex * M13_4_vv_oneline_complex;
-    
+
     double complex * M22_oneline_2_vd_complex;
     double complex * M13_2_vd_oneline_complex;
-    
+
     double complex * M22_oneline_4_vd_complex;
     double complex * M13_4_vd_oneline_complex;
     double complex * M22_oneline_4_dd_complex;
-    
+
     double complex * M22_oneline_2_dd_complex;
     double complex * M13_2_dd_oneline_complex;
-    
+
 double complex * M22_0_b1b2_oneline_complex;
 double complex * M22_0_b2_oneline_complex;
 double complex * M22_0_b1bG2_oneline_complex;
     double complex * M22_0_bG2_oneline_complex;
-    
-    
+
+
     double complex * M22_2_b1b2_oneline_complex;
     double complex * M22_2_b2_oneline_complex;
     double complex * M22_2_b1bG2_oneline_complex;
@@ -146,35 +146,35 @@ double complex * M22_0_b1bG2_oneline_complex;
 
     double complex * M22_4_b2_oneline_complex;
     double complex * M22_4_bG2_oneline_complex;
-    
+
 double complex * M_Id2;
 double complex * M_IG2;
 double complex * M_Id2G2;
 double complex * M_IG2G2;
-    
+
 double complex * M22_oneline_mu2_vd_complex;
 double complex * M22_oneline_mu2_dd_complex;
     double complex * M22_oneline_mu4_vv_complex;
     double complex * M22_oneline_mu4_vd_complex;
-    
+
     double complex * M22_oneline_mu4_dd_complex;
     double complex * M22_oneline_mu6_vv_complex;
     double complex * M22_oneline_mu6_vd_complex;
     double complex * M22_oneline_mu8_complex;
-    
+
 double complex * M13_mu2_dd_oneline_complex;
     double complex * M13_mu2_vd_oneline_complex;
     double complex * M13_mu4_vv_oneline_complex;
     double complex * M13_mu4_vd_oneline_complex;
     double complex * M13_mu6_oneline_complex;
-    
-    
+
+
 double * ln_pk_nl;     /*For classy[i_z*pnlpt->k_size+index_k]*/
 double * ln_pk_Id2d2;
     double * ln_pk_Id2d2_2;
     double * ln_pk_Id2d2_4;
-double * ln_pk_Id2;  
-double * ln_pk_IG2;  
+double * ln_pk_Id2;
+double * ln_pk_IG2;
 double * ln_pk_Id2G2;
     double * ln_pk_Id2G2_2;
     double * ln_pk_Id2G2_4;
@@ -196,30 +196,30 @@ double * ln_pk_Tree;
     double * ln_pk_Tree_2_vv;
     double * ln_pk_Tree_2_vd;
     double * ln_pk_Tree_4_vv;
-    
+
 double * ln_pk_0_vv;
 double * ln_pk_0_vd;
 double * ln_pk_0_dd;
-    
+
     double * ln_pk_2_vv;
     double * ln_pk_2_vd;
     double * ln_pk_2_dd;
-    
+
     double * ln_pk_4_vv;
     double * ln_pk_4_vd;
-    
+
     double * ln_pk_4_dd;
-    
+
 double * ln_pk_0_b1b2;
 double * ln_pk_0_b1bG2;
 double * ln_pk_0_b2;
     double * ln_pk_0_bG2;
-    
+
     double * ln_pk_2_b1b2;
     double * ln_pk_2_b1bG2;
     double * ln_pk_2_b2;
     double * ln_pk_2_bG2;
-    
+
     double * ln_pk_4_b2;
     double * ln_pk_4_bG2;
     double * ln_pk_4_b1b2;
@@ -232,11 +232,11 @@ double * ln_pk_0_b2;
     double * gauss;
     double * gauss_x;
     double * gauss_w;
-    
+
     // double *koff;
     // double *Poff;
     // double *offtab;
-    
+
 /*< nl_corr_density[index_tau * ppt->k_size + index_k] */
     double * nl_corr_density;
     /*
@@ -251,6 +251,9 @@ double * ln_pk_0_b2;
     double * nl_corr_Tree;
     */
 
+
+    char input_pk[500];
+    int replace_pk;
 
 //  double * k_nl;  /**< wavenumber at which non-linear corrections become important, defined differently by different non_linear_method's */
   int index_tau_min_nl; /**< index of smallest value of tau at which nonlinear corrections have been computed (so, for tau<tau_min_nl, the array nl_corr_density only contains some factors 1 */
@@ -314,7 +317,7 @@ extern "C" {
                      double *lnk,
                      double *lnpk,
                      double *ddlnpk);
-    
+
     int nonlinear_pt_loop(
                           struct precision *ppr,
                           struct background *pba,
@@ -377,13 +380,13 @@ extern "C" {
                           double *lnk_l,
                           double *lnpk_l
                           );
-    
+
 
     /**
      * Function definitions of the FFT tool, used by transfer.c and spectra.c
      * For more information, see fft.c
      */
-    
+
 #ifndef FFT_DEFINED
 #define FFT_DEFINED
     /**
@@ -404,7 +407,7 @@ extern "C" {
     void FFT(double* input_real, double* input_imag, double* output_real, double* output_imag, int N, int stepsize);
     void DCT_real(double* input_real,double* input_imag,double* output_real,double* output_imag,int N);
 #endif
-    
+
 
 #ifdef __cplusplus
 }
@@ -414,4 +417,3 @@ extern "C" {
 
 #endif
 /* @endcond */
-
