@@ -760,12 +760,13 @@ struct precision
   /** @name - parameters related to non-linear computations */
 
   //@{
-    
-    
+
+
       /** parameters relevant for PT computation */
 
     int nmax_nlpt;
     
+
   /** parameters relevant for HALOFIT computation */
 
   double halofit_min_k_nonlinear; /**< value of k in 1/Mpc below which

@@ -33,7 +33,7 @@ AR        = ar rv
 PYTHON ?= python
 
 # your optimization flag
-OPTFLAG = -O4 -ffast-math #-march=native
+OPTFLAG = -O4 -ffast-math #-lgsl -lgslcblas #-march=native
 #OPTFLAG = -O4 -ffast-math -lgsl -lgslcblas -lfftw3 -lm #-march=native
 #OPTFLAG = -Ofast -ffast-math #-march=native
 #OPTFLAG = -fast
@@ -52,10 +52,10 @@ LDFLAG = -g -fPIC
 HYREC = hyrec
 
 #put your path to libopenblas.a here
-OPENBLAS = /home/ophilcox/OpenBLAS-0.3.10/lib/libopenblas.a
+#OPENBLAS = /opt/OpenBLAS/lib/libopenblas.a
 #OPENBLAS = /Users/michalychforever/Dropbox/Docs/science/OpenBLAS-0.2.20/libopenblas.a
 #OPENBLAS = /home/ivanov/Desktop/Structures/OpenBLAS-0.2.20/lib/libopenblas.a
-
+OPENBLAS = /home/ophilcox/OpenBLAS-0.3.9/libopenblas.a
 
 ########################################################
 ###### IN PRINCIPLE THE REST SHOULD BE LEFT UNCHANGED ##
@@ -172,7 +172,7 @@ test_transfer: $(TOOLS) $(SOURCE) $(EXTERNAL) $(TEST_TRANSFER)
 	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix build/,$(notdir $^)) -lm
 
 test_nonlinear: $(TOOLS) $(SOURCE) $(EXTERNAL) $(TEST_NONLINEAR)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix build/,$(notdir $^)) -lm
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix build/,$(notdir $^)) -lm #-lgsl -lgslcblas
 
 test_perturbations: $(TOOLS) $(SOURCE) $(EXTERNAL) $(TEST_PERTURBATIONS)
 	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix build/,$(notdir $^)) -lm
