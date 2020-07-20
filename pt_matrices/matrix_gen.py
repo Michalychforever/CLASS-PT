@@ -14,7 +14,7 @@ from scipy.optimize import fsolve
 from scipy.special import factorial
 
 
-Nmax = 512
+Nmax = 128
 b = -0.3
 kmax = 1.e2
 k0 = 0.00005
@@ -55,7 +55,7 @@ for i in range(Nmax+1):
 for i in range(Nmax+1,2*(Nmax+1)):
 	m13outfile[i] = m13.imag[i-Nmax-1];
 
-np.savetxt('M13oneline_N512.dat',m13outfile)
+np.savetxt('M13oneline_N128.dat',m13outfile)
 
 
 m22mat = np.zeros((Nmax+1,Nmax+1),dtype=complex)
@@ -84,7 +84,7 @@ for i in range((Nmax+1)*(Nmax+2)//2):
 for i in range((Nmax+1)*(Nmax+2)//2,(Nmax+1)*(Nmax+2)):
     moutoneline[i] = mout_red.imag[i-(Nmax+1)*(Nmax+2)//2]
 
-np.savetxt('M22oneline_N512.dat',moutoneline)
+np.savetxt('M22oneline_N128.dat',moutoneline)
 
 
 
@@ -108,7 +108,7 @@ for i in range(Nmax+1):
 for i in range(Nmax+1,2*(Nmax+1)):
 	m13outfile[i] = m13.imag[i-Nmax-1];
 
-np.savetxt('IFG2oneline_N512.dat',m13outfile)
+np.savetxt('IFG2oneline_N128.dat',m13outfile)
 
 mId2d2mat = np.zeros((Nmax+1,Nmax+1),dtype=complex)
 for j1 in range(Nmax+1):
@@ -129,5 +129,5 @@ for i in range((Nmax+1)*(Nmax+2)//2):
 for i in range((Nmax+1)*(Nmax+2)//2,(Nmax+1)*(Nmax+2)):
         mId2d2outoneline[i] = mId2d2out_red.imag[i-(Nmax+1)*(Nmax+2)//2]
 
-np.savetxt('M22basiconeline_N512.dat',mId2d2outoneline)
+np.savetxt('M22basiconeline_N128.dat',mId2d2outoneline)
 print("PT matrices succesfully recomputed!")
