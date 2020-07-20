@@ -1809,71 +1809,71 @@ int nonlinear_pt_pk_l(
   else{
 
 
-        index_md = ppt->index_md_scalars;
+      index_md = ppt->index_md_scalars;
 
-        class_alloc(primordial_pk,ppm->ic_ic_size[index_md]*sizeof(double),pnlpt->error_message);
+      class_alloc(primordial_pk,ppm->ic_ic_size[index_md]*sizeof(double),pnlpt->error_message);
 
-        for (index_k=0; index_k<pnlpt->k_size; index_k++) {
+      for (index_k=0; index_k<pnlpt->k_size; index_k++) {
 
-          class_call(primordial_spectrum_at_k(ppm,
-                                              index_md,
-                                              linear,
-                                              pnlpt->k[index_k],
-                                              primordial_pk),
-                     ppm->error_message,
-                     pnlpt->error_message);
+        class_call(primordial_spectrum_at_k(ppm,
+                                            index_md,
+                                            linear,
+                                            pnlpt->k[index_k],
+                                            primordial_pk),
+                   ppm->error_message,
+                   pnlpt->error_message);
 
-          pk_l[index_k] = 0;
+        pk_l[index_k] = 0;
 
-          /* part diagonal in initial conditions */
-          for (index_ic1 = 0; index_ic1 < ppm->ic_size[index_md]; index_ic1++) {
-            index_ic1_ic2 = index_symmetric_matrix(index_ic1,index_ic1,ppm->ic_size[index_md]);
+        /* part diagonal in initial conditions */
+        for (index_ic1 = 0; index_ic1 < ppm->ic_size[index_md]; index_ic1++) {
+          index_ic1_ic2 = index_symmetric_matrix(index_ic1,index_ic1,ppm->ic_size[index_md]);
 
-          if (ppt->has_cls == _TRUE_ && pnlpt->fast_output == _TRUE_) {
-            if (pnlpt->cb == _TRUE_) {
-              source_ic1 = (pba->Omega0_cdm*pnlpt->sources_tp_delta_cdm[index_tau*pnlpt->k_size+index_k]+pba->Omega0_b*pnlpt->sources_tp_delta_b[index_tau*pnlpt->k_size+index_k])/(pba->Omega0_cdm+pba->Omega0_b);
-            } else {
-              source_ic1 = pnlpt->sources_tp_delta_m[index_tau*pnlpt->k_size+index_k];
-            }
+        if (ppt->has_cls == _TRUE_ && pnlpt->fast_output == _TRUE_) {
+          if (pnlpt->cb == _TRUE_) {
+            source_ic1 = (pba->Omega0_cdm*pnlpt->sources_tp_delta_cdm[index_tau*pnlpt->k_size+index_k]+pba->Omega0_b*pnlpt->sources_tp_delta_b[index_tau*pnlpt->k_size+index_k])/(pba->Omega0_cdm+pba->Omega0_b);
           } else {
-            if (pnlpt->cb == _TRUE_) {
-              source_ic1 = (pba->Omega0_cdm*ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_cdm][index_tau * ppt->k_size[index_md] + index_k]+pba->Omega0_b*ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_b][index_tau * ppt->k_size[index_md] + index_k])/(pba->Omega0_cdm+pba->Omega0_b);
-            } else {
-              source_ic1 = ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_m][index_tau * ppt->k_size[index_md] + index_k];
+            source_ic1 = pnlpt->sources_tp_delta_m[index_tau*pnlpt->k_size+index_k];
+          }
+        } else {
+          if (pnlpt->cb == _TRUE_) {
+            source_ic1 = (pba->Omega0_cdm*ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_cdm][index_tau * ppt->k_size[index_md] + index_k]+pba->Omega0_b*ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_b][index_tau * ppt->k_size[index_md] + index_k])/(pba->Omega0_cdm+pba->Omega0_b);
+          } else {
+            source_ic1 = ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_m][index_tau * ppt->k_size[index_md] + index_k];
+          }
+        }
+    //printf("Omegacdm=%f   Omegab=%f",pba->Omega0_cdm,pba->Omega0_b);
+    //printf("k=%f source_m=%f   source_cdmb=%f\n",pnlpt->k[index_k],ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_m][index_tau * ppt->k_size[index_md] + index_k],source_ic1);
+
+           // source_ic1 are transfer functions
+
+          pk_l[index_k] += 2.*_PI_*_PI_/pow(pnlpt->k[index_k],3)
+            *source_ic1*source_ic1
+            *primordial_pk[index_ic1_ic2];
+        }
+
+        /* part non-diagonal in initial conditions */
+        for (index_ic1 = 0; index_ic1 < ppm->ic_size[index_md]; index_ic1++) {
+          for (index_ic2 = index_ic1+1; index_ic2 < ppm->ic_size[index_md]; index_ic2++) {
+            index_ic1_ic2 = index_symmetric_matrix(index_ic1,index_ic2,ppm->ic_size[index_md]);
+            if (ppm->is_non_zero[index_md][index_ic1_ic2] == _TRUE_) {
+              source_ic1 = ppt->sources[index_md]
+                [index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_m]
+                [index_tau * ppt->k_size[index_md] + index_k];
+              source_ic2 = ppt->sources[index_md]
+                [index_ic2 * ppt->tp_size[index_md] + ppt->index_tp_delta_m]
+                [index_tau * ppt->k_size[index_md] + index_k];
+              pk_l[index_k] += 2.*2.*_PI_*_PI_/pow(pnlpt->k[index_k],3)
+                *source_ic1*source_ic2
+                *primordial_pk[index_ic1_ic2]; // extra 2 factor (to include the symmetric term ic2,ic1)
             }
           }
-      //printf("Omegacdm=%f   Omegab=%f",pba->Omega0_cdm,pba->Omega0_b);
-      //printf("k=%f source_m=%f   source_cdmb=%f\n",pnlpt->k[index_k],ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_m][index_tau * ppt->k_size[index_md] + index_k],source_ic1);
+        }
 
-             // source_ic1 are transfer functions
-
-            pk_l[index_k] += 2.*_PI_*_PI_/pow(pnlpt->k[index_k],3)
-              *source_ic1*source_ic1
-              *primordial_pk[index_ic1_ic2];
-          }
-
-          /* part non-diagonal in initial conditions */
-          for (index_ic1 = 0; index_ic1 < ppm->ic_size[index_md]; index_ic1++) {
-            for (index_ic2 = index_ic1+1; index_ic2 < ppm->ic_size[index_md]; index_ic2++) {
-              index_ic1_ic2 = index_symmetric_matrix(index_ic1,index_ic2,ppm->ic_size[index_md]);
-              if (ppm->is_non_zero[index_md][index_ic1_ic2] == _TRUE_) {
-                source_ic1 = ppt->sources[index_md]
-                  [index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_m]
-                  [index_tau * ppt->k_size[index_md] + index_k];
-                source_ic2 = ppt->sources[index_md]
-                  [index_ic2 * ppt->tp_size[index_md] + ppt->index_tp_delta_m]
-                  [index_tau * ppt->k_size[index_md] + index_k];
-                pk_l[index_k] += 2.*2.*_PI_*_PI_/pow(pnlpt->k[index_k],3)
-                  *source_ic1*source_ic2
-                  *primordial_pk[index_ic1_ic2]; // extra 2 factor (to include the symmetric term ic2,ic1)
-              }
-            }
-          }
-
-          lnk[index_k] = log(pnlpt->k[index_k]);
-          lnpk[index_k] = log(pk_l[index_k]);
-       //   printf("%e  %e\n",pnlpt->k[index_k],pk_l[index_k]);
-     }
+        lnk[index_k] = log(pnlpt->k[index_k]);
+        lnpk[index_k] = log(pk_l[index_k]);
+      }
+      free(primordial_pk);
   }
 
     class_call(array_spline_table_columns(lnk,
@@ -1885,8 +1885,6 @@ int nonlinear_pt_pk_l(
                                           pnlpt->error_message),
                pnlpt->error_message,
                pnlpt->error_message);
-
-  free(primordial_pk);
 
   return _SUCCESS_;
 
