@@ -6,6 +6,8 @@ with major inputs from other people, especially Marko Simonovic and Oliver Philc
 
 This is a modification of the CLASS code that computes the non-linear power spectra of dark matter and biased tracers in one-loop cosmological perurbation theory.
  
+CLASS-PT can be interfaced with the MCMC [MontePython](https://github.com/brinckmann/montepython_public) using the custom-built likelihoods found [here](https://github.com/Michalychforever/lss_montepython).
+ 
 # Getting started
 
 Read [these instructions](https://github.com/Michalychforever/CLASS-PT/blob/master/instructions.pdf) for the installation details.  
