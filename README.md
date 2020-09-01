@@ -4,7 +4,7 @@ Authors: Mikhail (Misha) Ivanov and Anton Chudaykin
 
 with major inputs from other people, especially Marko Simonovic and Oliver Philcox
 
-This is a modification of the CLASS code that computes the non-linear power spectra of dark matter and biased tracers in one-loop cosmological perurbation theory.
+This is a modification of the CLASS code that computes the non-linear power spectra of dark matter and biased tracers in one-loop cosmological perturbation theory.
  
 CLASS-PT can be interfaced with the MCMC sampler [MontePython](https://github.com/brinckmann/montepython_public) using the custom-built likelihoods found [here](https://github.com/Michalychforever/lss_montepython).
  
