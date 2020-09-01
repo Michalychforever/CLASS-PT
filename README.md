@@ -10,7 +10,7 @@ CLASS-PT can be interfaced with the MCMC sampler [MontePython](https://github.co
  
 # Getting started
 
-Read [these instructions](https://github.com/Michalychforever/CLASS-PT/blob/master/instructions.pdf) for the installation details.  
+Read [these instructions](https://github.com/Michalychforever/CLASS-PT/blob/master/instructions.pdf) for the installation details. See also this [troubleshooting](https://github.com/Michalychforever/CLASS-PT/blob/master/troubleshooting.rst) guide.
 
 The installation instuctions for CLASS can be found on the official code webpage https://github.com/lesgourg/class_public
 
