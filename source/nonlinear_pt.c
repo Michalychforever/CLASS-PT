@@ -813,36 +813,19 @@ int index_ic=0;
 /*Begin of new part for nonlinear_pt_pk_l*/
 if (ppt->has_cls == _TRUE_ && pnlpt->fast_output == _TRUE_) {
   if (pnlpt->cb == _TRUE_) {
-    class_alloc(pnlpt->dd_sources_tp_delta_cdm,
+    class_alloc(pnlpt->dd_sources_tp_delta_cb,
                     ppt->k_size[index_md]*ppt->tau_size*sizeof(double),
                     pnlpt->error_message);
-    class_alloc(pnlpt->dd_sources_tp_delta_b,
-                    ppt->k_size[index_md]*ppt->tau_size*sizeof(double),
-                    pnlpt->error_message);
-    class_alloc(pnlpt->sources_tp_delta_cdm,
-                    ppt->k_size[index_md]*ppt->tau_size*sizeof(double),
-                    pnlpt->error_message);
-    class_alloc(pnlpt->sources_tp_delta_b,
+    class_alloc(pnlpt->sources_tp_delta_cb,
                     ppt->k_size[index_md]*ppt->tau_size*sizeof(double),
                     pnlpt->error_message);
 
     class_call(array_spline_table_columns(ppt->k[index_md],
                                                ppt->k_size[index_md],
                                                ppt->sources[index_md]
-                                               [index_ic * ppt->tp_size[index_md] + ppt->index_tp_delta_cdm],
+                                               [index_ic * ppt->tp_size[index_md] + ppt->index_tp_delta_cb],
                                                ppt->tau_size,
-                                               pnlpt->dd_sources_tp_delta_cdm,
-                                               _SPLINE_EST_DERIV_,
-                                               pnlpt->error_message),
-                   pnlpt->error_message,
-                   pnlpt->error_message);
-
-    class_call(array_spline_table_columns(ppt->k[index_md],
-                                               ppt->k_size[index_md],
-                                               ppt->sources[index_md]
-                                               [index_ic * ppt->tp_size[index_md] + ppt->index_tp_delta_b],
-                                               ppt->tau_size,
-                                               pnlpt->dd_sources_tp_delta_b,
+                                               pnlpt->dd_sources_tp_delta_cb,
                                                _SPLINE_EST_DERIV_,
                                                pnlpt->error_message),
                    pnlpt->error_message,
@@ -856,33 +839,21 @@ if (ppt->has_cls == _TRUE_ && pnlpt->fast_output == _TRUE_) {
         class_call(array_interpolate_spline_one_column(ppt->k[index_md],
                                                 ppt->k_size[index_md],
                                                 ppt->sources[index_md]
-                                                [index_ic * ppt->tp_size[index_md] + ppt->index_tp_delta_cdm],
+                                                [index_ic * ppt->tp_size[index_md] + ppt->index_tp_delta_cb],
                                                 pnlpt->tau_size,
                                                 index_tau,
-                                                pnlpt->dd_sources_tp_delta_cdm,
+                                                pnlpt->dd_sources_tp_delta_cb,
                                                 pnlpt->k[index_k],
-                                                &pnlpt->sources_tp_delta_cdm[index_tau*pnlpt->k_size+index_k],
+                                                &pnlpt->sources_tp_delta_cb[index_tau*pnlpt->k_size+index_k],
                                                 pnlpt->error_message),
                        pnlpt->error_message,
                        pnlpt->error_message);
-  class_call(array_interpolate_spline_one_column(ppt->k[index_md],
-                                                ppt->k_size[index_md],
-                                                ppt->sources[index_md]
-                                                [index_ic * ppt->tp_size[index_md] + ppt->index_tp_delta_b],
-                                                pnlpt->tau_size,
-                                                index_tau,
-                                                pnlpt->dd_sources_tp_delta_b,
-                                                pnlpt->k[index_k],
-                                                &pnlpt->sources_tp_delta_b[index_tau*pnlpt->k_size+index_k],
-                                                pnlpt->error_message),
-                       pnlpt->error_message,
-                       pnlpt->error_message);
+
 }// condition for the new "if"
 /* Very crude padding, but the physics should not depend on these scales anlyway */
 /* This is done only for the non-zero spatial curvature, for which the kmax from perturbations does not coincude with the kmax from the spectra */
 else{
-  pnlpt->sources_tp_delta_b[index_tau*pnlpt->k_size+index_k] = pnlpt->sources_tp_delta_b[index_tau*pnlpt->k_size+index_k-1];
-  pnlpt->sources_tp_delta_cdm[index_tau*pnlpt->k_size+index_k] = pnlpt->sources_tp_delta_cdm[index_tau*pnlpt->k_size+index_k-1];
+  pnlpt->sources_tp_delta_cb[index_tau*pnlpt->k_size+index_k] = pnlpt->sources_tp_delta_cb[index_tau*pnlpt->k_size+index_k-1];
  }
   // printf(" pnlpt->sources_tp_delta_b[index_tau*pnlpt->k_size+index_k] = %le\n", pnlpt->sources_tp_delta_b[index_tau*pnlpt->k_size+index_k]);
       }
@@ -1519,10 +1490,8 @@ free(pk_l_at_z_req_int);
 
 if (ppt->has_cls == _TRUE_ && pnlpt->fast_output == _TRUE_) {
   if (pnlpt->cb == _TRUE_) {
-    free(pnlpt->dd_sources_tp_delta_cdm);
-    free(pnlpt->sources_tp_delta_cdm);
-    free(pnlpt->dd_sources_tp_delta_b);
-    free(pnlpt->sources_tp_delta_b);
+    free(pnlpt->dd_sources_tp_delta_cb);
+    free(pnlpt->sources_tp_delta_cb);
   } else {
     free(pnlpt->dd_sources_tp_delta_m);
     free(pnlpt->sources_tp_delta_m);
@@ -1831,13 +1800,13 @@ int nonlinear_pt_pk_l(
 
         if (ppt->has_cls == _TRUE_ && pnlpt->fast_output == _TRUE_) {
           if (pnlpt->cb == _TRUE_) {
-            source_ic1 = (pba->Omega0_cdm*pnlpt->sources_tp_delta_cdm[index_tau*pnlpt->k_size+index_k]+pba->Omega0_b*pnlpt->sources_tp_delta_b[index_tau*pnlpt->k_size+index_k])/(pba->Omega0_cdm+pba->Omega0_b);
+            source_ic1 = pnlpt->sources_tp_delta_cb[index_tau*pnlpt->k_size+index_k];
           } else {
             source_ic1 = pnlpt->sources_tp_delta_m[index_tau*pnlpt->k_size+index_k];
           }
         } else {
           if (pnlpt->cb == _TRUE_) {
-            source_ic1 = (pba->Omega0_cdm*ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_cdm][index_tau * ppt->k_size[index_md] + index_k]+pba->Omega0_b*ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_b][index_tau * ppt->k_size[index_md] + index_k])/(pba->Omega0_cdm+pba->Omega0_b);
+            source_ic1 = ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_cb][index_tau * ppt->k_size[index_md] + index_k];
           } else {
             source_ic1 = ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_m][index_tau * ppt->k_size[index_md] + index_k];
           }
