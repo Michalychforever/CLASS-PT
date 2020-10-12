@@ -2538,10 +2538,12 @@ int input_read_parameters(
         if ((strstr(string1,"No") != NULL) || (strstr(string1,"NO") != NULL) || (strstr(string1,"N") != NULL)) {
             pnlpt->cb = _FALSE_;
             ppt->has_cb = _FALSE_;
+            pba->has_cb = _FALSE_;
         }
         else {
             pnlpt->cb = _TRUE_;
             ppt->has_cb = _TRUE_;
+            pba->has_cb = _TRUE_;
         }
       }
 
@@ -3085,6 +3087,8 @@ int input_default_params(
   pba->c_gamma_over_c_fld = 0.4;
 
   pba->shooting_failed = _FALSE_;
+
+  pba->has_cb = _TRUE_;
 
   /** - thermodynamics structure */
 
