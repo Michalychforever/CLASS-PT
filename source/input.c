@@ -2503,26 +2503,50 @@ int input_read_parameters(
 
     class_call(parser_read_string(pfc, "FFTLog mode",&(string1),&(flag1),errmsg), errmsg,errmsg);
 
-        if ((strstr(string1,"Fast") != NULL) || (strstr(string1,"FAST") != NULL) || (strstr(string1,"F") != NULL)) {
-            ppr->nmax_nlpt = 128;
-        }
-	else if ((strstr(string1,"Precise") != NULL) || (strstr(string1,"PRECISE") != NULL) || (strstr(string1,"P") != NULL)) {
-	    ppr->nmax_nlpt = 512;
-	}
-        else {
-            ppr->nmax_nlpt = 256;
-        }
+    if ((strstr(string1,"Fast") != NULL) || (strstr(string1,"FAST") != NULL) || (strstr(string1,"F") != NULL)) {
+        ppr->nmax_nlpt = 128;
+    }
+  	else if ((strstr(string1,"Precise") != NULL) || (strstr(string1,"PRECISE") != NULL) || (strstr(string1,"P") != NULL)) {
+  	    ppr->nmax_nlpt = 512;
+  	}
+    else {
+        ppr->nmax_nlpt = 256;
+    }
 
-        class_call(parser_read_string(pfc, "Input Pk",&(string1),&(flag1),errmsg), errmsg,errmsg);
-        if (flag1 == _TRUE_) {
-            if (strlen(string1)>0) {
-                pnlpt->replace_pk = _TRUE_;
-                strcpy(pnlpt->input_pk,string1);
-            }
-            else{
-              pnlpt->replace_pk = _FALSE_;
-            }
-          }
+    class_call(parser_read_string(pfc, "Input Pk",&(string1),&(flag1),errmsg), errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      printf("Replacing power spectrum!");
+      if (strlen(string1)>0) {
+          pnlpt->replace_pk = _TRUE_;
+          strcpy(pnlpt->input_pk,string1);
+      }
+      else{
+        pnlpt->replace_pk = _FALSE_;
+      }
+    }
+
+    class_call(parser_read_string(pfc, "replace background",&(string1),&(flag1),errmsg), errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      if ((strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL) || (strstr(string1,"Y") != NULL)){
+        pnlpt->replace_background = _TRUE_;
+        class_call(parser_read_double(pfc,"Hz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        fprintf(stderr, "Hz_replace found: H(z)=%f\n", param1);
+        pnlpt->replace_Hz_value = param1;
+        class_call(parser_read_double(pfc,"DAz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        fprintf(stderr, "DAz_replace found: DA(z)=%f\n", param1);
+        pnlpt->replace_DAz_value = param1;
+        class_call(parser_read_double(pfc,"Dz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        pnlpt->replace_Dz_value = param1;
+        class_call(parser_read_double(pfc,"fz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        pnlpt->replace_fz_value = param1;
+      }else{
+        pnlpt->replace_background = _FALSE_;
+        class_call(parser_read_double(pfc,"Hz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        class_call(parser_read_double(pfc,"DAz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        class_call(parser_read_double(pfc,"Dz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        class_call(parser_read_double(pfc,"fz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+      }
+    }
 
     class_call(parser_read_string(pfc, "output format",&(string1),&(flag1),errmsg), errmsg,errmsg);
       if (flag1 == _TRUE_) {
