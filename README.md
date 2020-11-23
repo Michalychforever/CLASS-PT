@@ -16,6 +16,8 @@ The installation instuctions for CLASS can be found on the official code webpage
 
 Once you are all set, check out this [jupyter notebook](https://github.com/Michalychforever/CLASS-PT/blob/master/notebooks/nonlinear_pt.ipynb) for the examples of working sessions.
 
+Also you can check this exhaustive [google collab tutorial](https://colab.research.google.com/drive/12Cz6aSdf685hQALTBpcdTl9hs_CIvvML?usp=sharing) on the code and BOSS likelihoods.
+
 You can also use the Mathematica notebook *'read_tables.nb'* to read the code output.
 
 # Using the code
