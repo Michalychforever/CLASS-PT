@@ -17,7 +17,7 @@ vpath .base build
 ########################################################
 
 # your C compiler:
-CC       = gcc
+CC       = clang
 #CC       = icc
 #CC       = pgcc
 
@@ -39,7 +39,7 @@ OPTFLAG = -O4 -ffast-math #-lgsl -lgslcblas #-march=native
 #OPTFLAG = -fast
 
 # your openmp flag (comment for compiling without openmp)
-OMPFLAG   = -fopenmp
+#OMPFLAG   = -fopenmp
 #OMPFLAG   = -mp -mp=nonuma -mp=allcores -g
 #OMPFLAG   = -openmp
 
@@ -52,10 +52,10 @@ LDFLAG = -g -fPIC
 HYREC = hyrec
 
 #put your path to libopenblas.a here
-#OPENBLAS = /opt/OpenBLAS/lib/libopenblas.a
+OPENBLAS = /opt/OpenBLAS/lib/libopenblas.a
 #OPENBLAS = /Users/michalychforever/Dropbox/Docs/science/OpenBLAS-0.2.20/libopenblas.a
 #OPENBLAS = /home/ivanov/Desktop/Structures/OpenBLAS-0.2.20/lib/libopenblas.a
-OPENBLAS = /home/ophilcox/OpenBLAS-0.3.9/libopenblas.a
+#OPENBLAS = /home/ophilcox/OpenBLAS-0.3.9/libopenblas.a
 
 ########################################################
 ###### IN PRINCIPLE THE REST SHOULD BE LEFT UNCHANGED ##
