@@ -1025,47 +1025,59 @@ class_call(background_at_tau(pba,tau_req[i_z],pba->long_info,pba->inter_normal,&
     pnlpt->error_message,
     pnlpt->error_message);
 
- pnlpt->growthf[i_z] =  pvecbackf[pba->index_bg_f];
- Dref = pvecbackf[pba->index_bg_D];
+if(pnlpt->replace_background){
+  pnlpt->growthf[i_z] =  pnlpt->replace_fz_value;
+  Dref = pnlpt->replace_Dz_value;
+}else{
+  pnlpt->growthf[i_z] =  pvecbackf[pba->index_bg_f];
+  Dref = pvecbackf[pba->index_bg_D];
+}
 
  //printf("Dref=%lf\n",Dref);
 
 if (pnlpt->AP_effect == AP_effect_yes){
 
-   // printf("z_pk[i_z]=%lf\n",pnlpt->z_pk[i_z]);
+  //printf("z_pk[i_z]=%lf\n",pnlpt->z_pk[i_z]);
 
-if (pnlpt->z_pk[i_z]== 0.)
-    {
-        pnlpt->hratio_array[i_z] = 1.;
-        pnlpt->Dratio_array[i_z] = 1.;
-        hnew = 1.;
+  if (pnlpt->z_pk[i_z]== 0.){
+    pnlpt->hratio_array[i_z] = 1.;
+    pnlpt->Dratio_array[i_z] = 1.;
+    hnew = 1.;
+  }else {
+    //hnew = pow((Omtrue*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - Omtrue)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5);
+    hfid = pow((Omfid*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5);
+    //printf("Hclass=%le\n",pvecbackf[pba->index_bg_H]/kmsMpc/100/pba->h);
+    //printf("Hmy = %le\n",hnew);
+    if(pnlpt->replace_background){
+      hnew =  pnlpt->replace_Hz_value/kmsMpc/100/pba->h;
+    }else{
+      hnew = pvecbackf[pba->index_bg_H]/kmsMpc/100/pba->h;
     }
-    else {
-   //     hnew = pow((Omtrue*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - Omtrue)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5);
-        hfid = pow((Omfid*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5);
-   //     printf("Hclass=%le\n",pvecbackf[pba->index_bg_H]/kmsMpc/100/pba->h);
-  //      printf("Hmy = %le\n",hnew);
-        hnew = pvecbackf[pba->index_bg_H]/kmsMpc/100/pba->h;
-        pnlpt->hratio_array[i_z] = hnew/hfid;
+    fprintf(stderr, "H_ration=%f\n", hnew/hfid);
+    pnlpt->hratio_array[i_z] = hnew/hfid;
 
-       // pnlpt->hratio_array[i_z] = pow(((pba->Omega0_cdm+pba->Omega0_b)*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - pba->Omega0_cdm - pba->Omega0_b)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5)/pow((Omfid*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5);
+    // pnlpt->hratio_array[i_z] = pow(((pba->Omega0_cdm+pba->Omega0_b)*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - pba->Omega0_cdm - pba->Omega0_b)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5)/pow((Omfid*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5);
     dz = pnlpt->z_pk[i_z]/(1.*Nz-1.);
 
-for (j=1; j<Nz; j ++) {
- //   Da = Da + dz*(1./pow((Omtrue*pow((1.+ dz*j),3.) + (1. -Omtrue)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5)+1./pow((Omtrue*pow((1.+ dz*(j-1)),3.) + (1. - Omtrue)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5))/2.;
-    Dfid = Dfid + dz*(1./pow((Omfid*pow((1.+ dz*j),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5)+1./pow((Omfid*pow((1.+dz*(j-1)),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5))/2.;
-                    }
- //   printf("Dclass=%le\n",pvecbackf[pba->index_bg_ang_distance]*kmsMpc*100*pba->h*(1.+pnlpt->z_pk[i_z]));
-//    printf("Dmy = %le\n",Da);
-    Da = pvecbackf[pba->index_bg_ang_distance]*kmsMpc*100*pba->h*(1.+pnlpt->z_pk[i_z]);
+    for (j=1; j<Nz; j ++) {
+      //Da = Da + dz*(1./pow((Omtrue*pow((1.+ dz*j),3.) + (1. -Omtrue)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5)+1./pow((Omtrue*pow((1.+ dz*(j-1)),3.) + (1. - Omtrue)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5))/2.;
+      Dfid = Dfid + dz*(1./pow((Omfid*pow((1.+ dz*j),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5)+1./pow((Omfid*pow((1.+dz*(j-1)),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5))/2.;
+    }
+    //printf("Dclass=%le\n",pvecbackf[pba->index_bg_ang_distance]*kmsMpc*100*pba->h*(1.+pnlpt->z_pk[i_z]));
+    //printf("Dmy = %le\n",Da);
+    if(pnlpt->replace_background){
+      Da =  pnlpt->replace_DAz_value*kmsMpc*100*pba->h*(1.+pnlpt->z_pk[i_z]);
+    }else{
+      Da = pvecbackf[pba->index_bg_ang_distance]*kmsMpc*100*pba->h*(1.+pnlpt->z_pk[i_z]);
+    }
+    
     pnlpt->Dratio_array[i_z] = Da/Dfid;
     //    printf(" h/hfid=%le\n", hnew/hfid);
     //    printf(" Da/Dfid=%le\n", Da/Dfid);
-    }
-}
-else {
-    pnlpt->hratio_array[i_z] = 1.;
-    pnlpt->Dratio_array[i_z] = 1.;
+  }
+}else {
+  pnlpt->hratio_array[i_z] = 1.;
+  pnlpt->Dratio_array[i_z] = 1.;
 }
  //   printf("pba->Omega0_ncdm_tot = %lf\n",pba->Omega0_ncdm_tot);
  //   printf("pba->M_ncdm[0] = %lf\n",pba->M_ncdm[0]);
