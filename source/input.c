@@ -2548,6 +2548,15 @@ int input_read_parameters(
       }
     }
 
+    class_call(parser_read_string(pfc, "no-wiggle",&(string1),&(flag1),errmsg), errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      if ((strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL) || (strstr(string1,"Y") != NULL)){
+        pnlpt->no_wiggle = _TRUE_;
+      }else{
+        pnlpt->no_wiggle = _FALSE_;
+      }
+    }
+
     class_call(parser_read_string(pfc, "output format",&(string1),&(flag1),errmsg), errmsg,errmsg);
       if (flag1 == _TRUE_) {
         if ((strstr(string1,"Fast") != NULL) || (strstr(string1,"FAST") != NULL) || (strstr(string1,"F") != NULL)) {

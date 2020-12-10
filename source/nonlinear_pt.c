@@ -1053,7 +1053,7 @@ if (pnlpt->AP_effect == AP_effect_yes){
     }else{
       hnew = pvecbackf[pba->index_bg_H]/kmsMpc/100/pba->h;
     }
-    fprintf(stderr, "H_ration=%f\n", hnew/hfid);
+    fprintf(stderr, "H_ratio=%f\n", hnew/hfid);
     pnlpt->hratio_array[i_z] = hnew/hfid;
 
     // pnlpt->hratio_array[i_z] = pow(((pba->Omega0_cdm+pba->Omega0_b)*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - pba->Omega0_cdm - pba->Omega0_b)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5)/pow((Omfid*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5);
@@ -2518,8 +2518,10 @@ for (i_kdisc=0; i_kdisc< Nmax; i_kdisc++){
        // deltaSigmaBAO = deltaSigmaBAO/4.;
 
        // OLIVER: for creating no-wiggle spectra
-       //SigmaBAO *= 1000;
-       //deltaSigmaBAO *= 1000;
+      if (pnlpt->no_wiggle){
+         SigmaBAO *= 1000;
+         deltaSigmaBAO *= 1000;
+      }
 
 
      //   IR-5) Computing the LO IR resummed power spectrum
