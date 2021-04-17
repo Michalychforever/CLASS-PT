@@ -8,6 +8,8 @@ This is a modification of the CLASS code that computes the non-linear power spec
  
 CLASS-PT can be interfaced with the MCMC sampler [MontePython](https://github.com/brinckmann/montepython_public) using the custom-built likelihoods found [here](https://github.com/Michalychforever/lss_montepython).
  
+The code is compatible with both python v2 and v3
+
 # Getting started
 
 Read [these instructions](https://github.com/Michalychforever/CLASS-PT/blob/master/instructions.pdf) for the installation details. See also this [troubleshooting](https://github.com/Michalychforever/CLASS-PT/blob/master/troubleshooting.rst) guide.
