@@ -250,6 +250,9 @@ cdef extern from "class.h":
 
     cdef struct nonlinear_pt:
         int method
+        int no_wiggle
+        int wiggle_only
+        double alpha_rs
         ErrorMsg error_message
         
     cdef struct file_content:
