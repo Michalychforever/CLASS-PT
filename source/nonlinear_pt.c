@@ -1380,16 +1380,16 @@ class_call(background_at_tau(pba,pnlpt->tau[index_tau],pba->long_info,pba->inter
     if (ppt->has_cls == _TRUE_ && pnlpt->fast_output == _TRUE_) {
     for (index_k=0; index_k<ppt->k_size[pnlpt->index_md_scalars]; index_k++)
         //pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = 1.;
-        pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = sqrt((pk_Tree_int[index_k]+Dplus*Dplus*(pk_nl_int[index_k]-5000.
+        pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = sqrt(abs((pk_Tree_int[index_k]+Dplus*Dplus*(pk_nl_int[index_k]-5000.
           // -pk_ctr_int[index_k]
           // -2.*pow(ppt->k[pnlpt->index_md_scalars][index_k],2.)*pk_Tree_int[index_k]/(1.+pow(ppt->k[pnlpt->index_md_scalars][index_k],2.))
-          )/Dref/Dref)/pk_l_at_z_req_int[index_k]);
+          )/Dref/Dref))/pk_l_at_z_req_int[index_k]);
     } else {
     for (index_k=0; index_k<ppt->k_size[pnlpt->index_md_scalars]; index_k++)
-        pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = sqrt((pk_Tree[index_k]+Dplus*Dplus*(pk_nl[index_k]-5000.
+        pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = sqrt(abs((pk_Tree[index_k]+Dplus*Dplus*(pk_nl[index_k]-5000.
           // -pk_ctr_int[index_k]
        // -2.*pow(ppt->k[pnlpt->index_md_scalars][index_k],2.)*pk_Tree_int[index_k]/(1.+pow(ppt->k[pnlpt->index_md_scalars][index_k],2.))
-          )/Dref/Dref)/pk_l_at_z_req[index_k]);
+          )/Dref/Dref))/pk_l_at_z_req[index_k]);
     }
     //printf("index_tau=%i \n",index_tau);
     //printf("index_k=%i \n",index_k);
