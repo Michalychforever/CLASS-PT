@@ -41,9 +41,6 @@ NAMING_CONVENTION = {
                 'function': 'lensing'},
     'nonlinear': {'python': 'nonlinear',
                   'function': 'nonlinear'},
-    'nonlinear_pt': {'python': 'nonlinear_pt',
-                  'function': 'nonlinear_pt'},
-    
     'output': {'python': 'output',
                'function': 'output'},
     }

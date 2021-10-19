@@ -7,6 +7,14 @@
 #include "math.h"
 #include "string.h"
 #include "float.h"
+#include <complex.h>
+
+#undef I
+
+#include <unistd.h>
+#include <stdio.h>
+#include <limits.h>
+
 #ifdef _OPENMP
 #include "omp.h"
 #endif
@@ -25,10 +33,11 @@
 #include "thermodynamics.h"
 #include "perturbations.h"
 #include "primordial.h"
-#include "nonlinear.h"
+#include "fourier.h"
 #include "nonlinear_pt.h"
 #include "transfer.h"
-#include "spectra.h"
+#include "harmonic.h"
+#include "distortions.h"
 #include "lensing.h"
 #include "output.h"
 

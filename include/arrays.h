@@ -9,6 +9,7 @@
 
 #define _SPLINE_NATURAL_ 0 /**< natural spline: ddy0=ddyn=0 */
 #define _SPLINE_EST_DERIV_ 1 /**< spline with estimation of first derivative on both edges */
+#define array_spline_eval(y,ddy,inf,sup,h,a,b) ((a)*(y)[inf]+(b)*(y)[sup] + (((a)*(a)*(a)-(a))* (ddy)[inf] + ((b)*(b)*(b)-(b))* (ddy)[sup])*(h)*(h)/6.)
 
 /**
  * Boilerplate for C++
@@ -171,6 +172,16 @@ extern "C" {
 				 ErrorMsg errmsg
 				 );
 
+int array_integrate_all_spline_table_line_to_line(
+                  double * x_array,
+                  int n_lines,
+                  double * array,
+                  int n_columns,
+                  int index_y,
+                  int index_ddy,
+                  double * result,
+                  ErrorMsg errmsg);
+
 int array_integrate_all_trapzd_or_spline(
 		   double * array,
 		   int n_columns,
@@ -242,6 +253,13 @@ int array_integrate_all_trapzd_or_spline(
 			       int result_size, /** from 1 to n_columns */
 			       ErrorMsg errmsg);
 
+  int array_search_bisect(
+                       int n_lines,
+                       double * __restrict__ array,
+                       double c,
+                       int * __restrict__ last_index,
+                       ErrorMsg errmsg);
+
   int array_interpolate_linear(
 			       double * x_array,
 			       int n_lines,
@@ -252,6 +270,17 @@ int array_integrate_all_trapzd_or_spline(
 			       double * result,
 			       int result_size, /** from 1 to n_columns */
 			       ErrorMsg errmsg);
+
+  int array_interpolate_spline_transposed(double * array,
+                                          int x_size,
+                                          int y_size,
+                                          int index_x,
+                                          int index_y,
+                                          int index_ddy,
+                                          double x,
+                                          int * last_index,
+                                          double * result,
+                                          ErrorMsg errmsg);
 
   int array_interpolate_growing_closeby(
 					double * array,
@@ -298,6 +327,15 @@ int array_integrate_all_trapzd_or_spline(
 					       double * result,
 					       int result_size, /** from 1 to n_columns */
 					       ErrorMsg errmsg);
+  // [NS]
+  int array_spline_hunt(double* x_array,
+                        int x_size,
+                        double x,
+                        int* last,
+                        double* h,
+                        double* a,
+                        double* b,
+                        ErrorMsg errmsg);
 
   int array_interpolate_two(
 			    double * array_x,
@@ -433,7 +471,36 @@ int array_integrate_all_trapzd_or_spline(
                                     double * __restrict__ w_trapz,
                                     double * __restrict__ I,
                                     ErrorMsg errmsg);
-    
+
+  int array_extrapolate_quadratic(double* x,
+                                  double* y,
+                                  double xnew,
+                                  int x_size,
+                                  double* ynew,
+                                  double* dynew,
+                                  ErrorMsg errmsg);
+
+  int simpson_integration(
+                          int nptz,
+                          double* int_f,
+                          double h,
+                          double * F,
+                          ErrorMsg errmsg);
+
+  int array_hunt_descending(
+                            double * array,
+                            int size,
+                            double value,
+                            int * index,
+                            ErrorMsg errmsg);
+
+  int array_hunt_ascending(
+                           double * array,
+                           int size,
+                           double value,
+                           int * index,
+                           ErrorMsg errmsg);
+
 #ifndef FFT_DEFINED
 #define FFT_DEFINED
     /**
@@ -454,8 +521,6 @@ int array_integrate_all_trapzd_or_spline(
     void FFT(double* input_real, double* input_imag, double* output_real, double* output_imag, int N, int stepsize);
     void DCT_real(double* input_real,double* input_imag,double* output_real,double* output_imag,int N);
 #endif
-    
-    
 
 #ifdef __cplusplus
 }
