@@ -210,7 +210,7 @@ int input_init(
                ) {
 
   int flag1;
-  double param1, param2;
+  double param1;
   int counter, index_target, i;
   double * unknown_parameter;
   int unknown_parameters_size;
@@ -219,7 +219,7 @@ int input_init(
   int target_indices[_NUM_TARGETS_];
   double *dxdF, *x_inout;
 
-  char string1[_ARGUMENT_LENGTH_MAX_], string2[_ARGUMENT_LENGTH_MAX_];
+  char string1[_ARGUMENT_LENGTH_MAX_];
   FILE * param_output;
   FILE * param_unused;
   char param_output_name[_LINE_LENGTH_MAX_];
@@ -2492,24 +2492,35 @@ int input_read_parameters(
 
   }
 
+
+
     /** Fiducial Om for AP */
-    class_call(parser_read_double(pfc,"Omfid",&param2,&flag1,errmsg),
+    class_call(parser_read_double(pfc,"Omfid",&param1,&flag1,errmsg),
                errmsg,
                errmsg);
-    if (flag1 == _TRUE_ ) {
-      pnlpt->OmfidAP = param2;
+    if (flag1 == _TRUE_){
+      pnlpt->OmfidAP = param1;
     }
-    
-    class_call(parser_read_string(pfc, "FFTLog mode",&(string2),&(flag1),errmsg), errmsg,errmsg);
+    else{
+      pnlpt->OmfidAP = 0.31;
+    }
 
-    if ((strstr(string2,"Fast") != NULL) || (strstr(string2,"FAST") != NULL) || (strstr(string2,"F") != NULL)) {
-        ppr->nmax_nlpt = 128;
+
+    class_call(parser_read_string(pfc, "FFTLog mode",&(string1),&(flag1),errmsg), errmsg,errmsg);
+
+    if (flag1 == _TRUE_){
+      if ((strstr(string1,"Fast") != NULL) || (strstr(string1,"FAST") != NULL) || (strstr(string1,"F") != NULL)) {
+          ppr->nmax_nlpt = 128;
+      }
+  	  else if ((strstr(string1,"Precise") != NULL) || (strstr(string1,"PRECISE") != NULL) || (strstr(string1,"P") != NULL)) {
+  	      ppr->nmax_nlpt = 512;
+  	  }
+      else {
+          ppr->nmax_nlpt = 256;
+      }
     }
-  	else if ((strstr(string2,"Precise") != NULL) || (strstr(string2,"PRECISE") != NULL) || (strstr(string2,"P") != NULL)) {
-  	    ppr->nmax_nlpt = 512;
-  	}
     else {
-        ppr->nmax_nlpt = 256;
+      ppr->nmax_nlpt = 256;
     }
 
     class_call(parser_read_string(pfc, "Input Pk",&(string1),&(flag1),errmsg), errmsg,errmsg);
@@ -3361,8 +3372,7 @@ int input_default_params(
 
     pnlpt->z_pk_num = 1;
     pnlpt->z_pk[0] = 0.;
-    pnlpt->OmfidAP = 0.31;
-
+    
   pnlpt->fast_output = _FALSE_;
   pnlpt->cb = _TRUE_;
 
