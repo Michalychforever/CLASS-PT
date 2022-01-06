@@ -2492,15 +2492,14 @@ int input_read_parameters(
 
   }
 
-
-
     /** Fiducial Om for AP */
     class_call(parser_read_double(pfc,"Omfid",&param2,&flag1,errmsg),
                errmsg,
                errmsg);
-    pnlpt->OmfidAP = param2;
-
-
+    if (flag1 == _TRUE_ ) {
+      pnlpt->OmfidAP = param2;
+    }
+    
     class_call(parser_read_string(pfc, "FFTLog mode",&(string2),&(flag1),errmsg), errmsg,errmsg);
 
     if ((strstr(string2,"Fast") != NULL) || (strstr(string2,"FAST") != NULL) || (strstr(string2,"F") != NULL)) {
