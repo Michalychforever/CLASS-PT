@@ -17,10 +17,9 @@ vpath .base build
 ########################################################
 
 # your C compiler:
-CC       = clang
+CC       = gcc
 #CC       = icc
 #CC       = pgcc
-#CC = gcc-9.1
 
 # your tool for creating static libraries:
 AR        = ar rv
@@ -31,20 +30,18 @@ AR        = ar rv
 # add a compilation option on the terminal command line:
 # "PYTHON=python3 make all" (THanks to Marius Millea for pyhton3
 # compatibility)
-PYTHON ?= python3
+PYTHON ?= python
 
 # your optimization flag
-OPTFLAG = -O3 -ffast-math
- #-lgsl -lgslcblas #-march=native
+OPTFLAG = -O4 -ffast-math #-lgsl -lgslcblas #-march=native
 #OPTFLAG = -O4 -ffast-math -lgsl -lgslcblas -lfftw3 -lm #-march=native
 #OPTFLAG = -Ofast -ffast-math #-march=native
 #OPTFLAG = -fast
 
 # your openmp flag (comment for compiling without openmp)
-#OMPFLAG   = -fopenmp
+OMPFLAG   = -fopenmp
 #OMPFLAG   = -mp -mp=nonuma -mp=allcores -g
 #OMPFLAG   = -openmp
-OMPFLAG = 
 
 # all other compilation flags
 CCFLAG = -g -fPIC -ggdb3
@@ -58,10 +55,7 @@ HYREC = hyrec
 #OPENBLAS = /opt/OpenBLAS/lib/libopenblas.a
 #OPENBLAS = /Users/michalychforever/Dropbox/Docs/science/OpenBLAS-0.2.20/libopenblas.a
 #OPENBLAS = /home/ivanov/Desktop/Structures/OpenBLAS-0.2.20/lib/libopenblas.a
-#OPENBLAS = /home/ophilcox/OpenBLAS-0.3.9/libopenblas.a
-#OPENBLAS = /Users/ophilcox/Library/OpenBLAS/libopenblas.a
-#OPENBLAS = /home/ophilcox/euclid_h0_forecast/OpenBLAS-0.3.15/libopenblas.a
-OPENBLAS = /usr/local/Cellar/openblas/0.3.19/lib/libopenblas.dylib
+OPENBLAS = /home/ophilcox/OpenBLAS-0.3.10/libopenblas.a
 
 ########################################################
 ###### IN PRINCIPLE THE REST SHOULD BE LEFT UNCHANGED ##
@@ -151,13 +145,13 @@ INI_ALL = explanatory.ini lcdm.ini
 MISC_FILES = Makefile CPU psd_FD_single.dat myselection.dat myevolution.dat README bbn/sBBN.dat external_Pk/* cpp
 PYTHON_FILES = python/classy.pyx python/setup.py python/cclassy.pxd python/test_class.py
 
-all: class_pt libclass_pt.a classy_pt
+all: class libclass.a classy
 
-libclass_pt.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
+libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
 	$(AR)  $@ $(addprefix build/, $(TOOLS) $(SOURCE) $(EXTERNAL))
 
-class_pt: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o class_pt $(addprefix build/,$(notdir $^)) $(OPENBLAS) -lpthread -lm
+class: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS)
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o class $(addprefix build/,$(notdir $^)) $(OPENBLAS) -lpthread -lm
 
 test_sigma: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(TEST_SIGMA)
 	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o test_sigma $(addprefix build/,$(notdir $^)) -lm
@@ -196,7 +190,7 @@ test_hyperspherical: $(TOOLS) $(TEST_HYPERSPHERICAL)
 tar: $(C_ALL) $(C_TEST) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(PYTHON_FILES)
 	tar czvf class.tar.gz $(C_ALL) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(PYTHON_FILES)
 
-classy_pt: libclass_pt.a python/classy.pyx python/cclassy.pxd
+classy: libclass.a python/classy.pyx python/cclassy.pxd
 ifdef OMPFLAG
 	cp python/setup.py python/autosetup.py
 else
@@ -207,6 +201,7 @@ endif
 
 clean: .base
 	rm -rf $(WRKDIR);
-	rm -f libclass_pt.a
+	rm -f libclass.a
 	rm -f $(MDIR)/python/classy.c
 	rm -rf $(MDIR)/python/build
+

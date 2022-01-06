@@ -12,11 +12,10 @@ GCCPATH_STRING = sbp.Popen(
     ['gcc', '-print-libgcc-file-name'],
     stdout=sbp.PIPE).communicate()[0]
 GCCPATH = osp.normpath(osp.dirname(GCCPATH_STRING)).decode()
-GCCPATH = '/Library/Developer/CommandLineTools/usr/lib/clang/12.0.5/lib/darwin'
 
-liblist = ["class_pt"]
+#liblist = ["openblas","class"]
 #liblist = ["class","gsl","gslcblas"]
-#liblist = ["class"]
+liblist = ["class"]
 MVEC_STRING = sbp.Popen(
     ['gcc', '-lmvec'],
     stderr=sbp.PIPE).communicate()[1]
@@ -34,14 +33,15 @@ with open(os.path.join('..', 'include', 'common.h'), 'r') as v_file:
 setup(
     name='classy',
     version=VERSION,
-    description='Python interface to the Cosmological Boltzmann code CLASS with EFTofLSS extension',
+    description='Python interface to the Cosmological Boltzmann code CLASS',
     url='http://www.class-code.net',
     cmdclass={'build_ext': build_ext},
     ext_modules=[Extension("classy", ["classy.pyx"],
-                           include_dirs=[nm.get_include(), "../include","/usr/local/Cellar/openblas/0.3.19/"],
+                           include_dirs=[nm.get_include(), "../include","/home/ophilcox/OpenBLAS-0.3.10/include"],
                            libraries=liblist,
-                           library_dirs=["../", GCCPATH, "/usr/local/Cellar/openblas/0.3.19/"],
-                           extra_link_args=['/usr/local/Cellar/openblas/0.3.19/lib/libopenblas.dylib'],#,'-lgomp'],
+                           library_dirs=["../", GCCPATH],
+                           extra_link_args=['/home/ophilcox/OpenBLAS-0.3.10/libopenblas.a','-lgomp'],
                            )],
     #data_files=[('bbn', ['../bbn/sBBN.dat'])]
 )
+
