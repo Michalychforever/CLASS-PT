@@ -1129,7 +1129,7 @@ for (i_z=0; i_z<pnlpt->z_pk_num; i_z++) {
        /* get P_NL(k) at tau_req */
 
         if (print_warning == _FALSE_) {
-int start=clock();
+//int start=clock();
           class_call(nonlinear_pt_loop(ppr,
                                      pba,
                                      ppm,
@@ -1193,11 +1193,11 @@ int start=clock();
                                   ),
                    pnlpt->error_message,
                    pnlpt->error_message);
-int end=clock();
+//int end=clock();
 
 
-if (pnlpt->nonlinear_pt_verbose > 0)
-printf("Module nonlinear_pt_loop takes %d musec.\n",end-start);
+//if (pnlpt->nonlinear_pt_verbose > 0)
+//printf("Module nonlinear_pt_loop takes %d musec.\n",end-start);
 
            for (index_k=0; index_k<pnlpt->k_size; index_k++) {
                 pnlpt->ln_pk_nl[i_z*pnlpt->k_size+index_k] = log(pk_nl[index_k]);
@@ -1391,13 +1391,13 @@ class_call(background_at_tau(pba,pnlpt->tau[index_tau],pba->long_info,pba->inter
     if (ppt->has_cls == _TRUE_ && pnlpt->fast_output == _TRUE_) {
     for (index_k=0; index_k<ppt->k_size[pnlpt->index_md_scalars]; index_k++)
         //pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = 1.;
-        pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = sqrt(abs((pk_Tree_int[index_k]+Dplus*Dplus*(pk_nl_int[index_k]-5000.
+        pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = sqrt(fabs((pk_Tree_int[index_k]+Dplus*Dplus*(pk_nl_int[index_k]-5000.
           // -pk_ctr_int[index_k]
           // -2.*pow(ppt->k[pnlpt->index_md_scalars][index_k],2.)*pk_Tree_int[index_k]/(1.+pow(ppt->k[pnlpt->index_md_scalars][index_k],2.))
           )/Dref/Dref))/pk_l_at_z_req_int[index_k]);
     } else {
     for (index_k=0; index_k<ppt->k_size[pnlpt->index_md_scalars]; index_k++)
-        pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = sqrt(abs((pk_Tree[index_k]+Dplus*Dplus*(pk_nl[index_k]-5000.
+        pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = sqrt(fabs((pk_Tree[index_k]+Dplus*Dplus*(pk_nl[index_k]-5000.
           // -pk_ctr_int[index_k]
        // -2.*pow(ppt->k[pnlpt->index_md_scalars][index_k],2.)*pk_Tree_int[index_k]/(1.+pow(ppt->k[pnlpt->index_md_scalars][index_k],2.))
           )/Dref/Dref))/pk_l_at_z_req[index_k]);
@@ -2731,7 +2731,7 @@ for (i_kdisc=0; i_kdisc< Nmax; i_kdisc++){
      class_alloc(P_CTR,Nmax*sizeof(double),pnlpt->error_message);
 
      int count=0;
-     int start1=clock();
+     //int start1=clock();
      char uplo = 'L';
      int inc = 1;
      double complex alpha = 1.;
@@ -6995,10 +6995,10 @@ free(x2);
          }
 
      }
-int end1=clock();
+//int end1=clock();
 
-if (pnlpt->nonlinear_pt_verbose > 0)
-printf("All matrices are calculated in %d mus\n",end1-start1);
+//if (pnlpt->nonlinear_pt_verbose > 0)
+//printf("All matrices are calculated in %d mus\n",end1-start1);
 
 free(js);
 free(kdisc);
