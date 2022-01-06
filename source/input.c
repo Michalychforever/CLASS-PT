@@ -210,7 +210,7 @@ int input_init(
                ) {
 
   int flag1;
-  double param1;
+  double param1, param2;
   int counter, index_target, i;
   double * unknown_parameter;
   int unknown_parameters_size;
@@ -219,7 +219,7 @@ int input_init(
   int target_indices[_NUM_TARGETS_];
   double *dxdF, *x_inout;
 
-  char string1[_ARGUMENT_LENGTH_MAX_];
+  char string1[_ARGUMENT_LENGTH_MAX_], string2[_ARGUMENT_LENGTH_MAX_];
   FILE * param_output;
   FILE * param_unused;
   char param_output_name[_LINE_LENGTH_MAX_];
@@ -2495,18 +2495,18 @@ int input_read_parameters(
 
 
     /** Fiducial Om for AP */
-    class_call(parser_read_double(pfc,"Omfid",&param1,&flag1,errmsg),
+    class_call(parser_read_double(pfc,"Omfid",&param2,&flag1,errmsg),
                errmsg,
                errmsg);
-    pnlpt->OmfidAP = param1;
+    pnlpt->OmfidAP = param2;
 
 
-    class_call(parser_read_string(pfc, "FFTLog mode",&(string1),&(flag1),errmsg), errmsg,errmsg);
+    class_call(parser_read_string(pfc, "FFTLog mode",&(string2),&(flag1),errmsg), errmsg,errmsg);
 
-    if ((strstr(string1,"Fast") != NULL) || (strstr(string1,"FAST") != NULL) || (strstr(string1,"F") != NULL)) {
+    if ((strstr(string2,"Fast") != NULL) || (strstr(string2,"FAST") != NULL) || (strstr(string2,"F") != NULL)) {
         ppr->nmax_nlpt = 128;
     }
-  	else if ((strstr(string1,"Precise") != NULL) || (strstr(string1,"PRECISE") != NULL) || (strstr(string1,"P") != NULL)) {
+  	else if ((strstr(string2,"Precise") != NULL) || (strstr(string2,"PRECISE") != NULL) || (strstr(string2,"P") != NULL)) {
   	    ppr->nmax_nlpt = 512;
   	}
     else {
