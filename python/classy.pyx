@@ -90,6 +90,11 @@ cdef class Class:
     cpdef object _pars # Dictionary of the parameters
     cpdef object ncp   # Keeps track of the structures initialized, in view of cleaning.
 
+    cdef np.ndarray pk_mult
+    cdef np.ndarray kh
+    cdef double fz
+    cdef int output_init
+
     # Defining two new properties to recover, respectively, the parameters used
     # or the age (set after computation). Follow this syntax if you want to
     # access other quantities. Alternatively, you can also define a method, and
@@ -118,6 +123,7 @@ cdef class Class:
     def __cinit__(self, default=False):
         cpdef char* dumc
         self.ready = False
+        self.output_init = False
         self._pars = {}
         self.fc.size=0
         self.fc.filename = <char*>malloc(sizeof(char)*30)
@@ -944,6 +950,78 @@ cdef class Class:
                 for index_mu in xrange(mu_size):
                     pk[index_k,index_z,index_mu] = self.pk_lin(k[index_k,index_z,index_mu],z[index_z])
         return pk
+
+    # New user interface functions
+    def initialize_output(self, np.ndarray[DTYPE_t,ndim=1] k, double z, int k_size):
+        """Compute and store the various non-linear power spectrum terms that will be called in the user interface routines below."""
+        self.kh = k
+        self.fz = self.scale_independent_growth_factor_f(z)
+        self.pk_mult = self.get_pk_mult(k, z, k_size)
+        self.output_init = True
+
+    def pk_mm_real(self, cs):
+        """Return real-space matter-matter power spectrum with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        h = self.ba.h
+        if not self.output_init:
+            raise Exception("Must run initialize_output() before calling this function")
+        return (self.pk_mult[0]+self.pk_mult[14]+2*cs*self.pk_mult[10]/h**2.)*h**3.
+
+    def pk_gg_real(self, b1, b2, bG2, bGamma3, cs, cs0, Pshot):
+        """Return real-space galaxy-galaxy power spectrum with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        h = self.ba.h
+        if not self.output_init:
+            raise Exception("Must run initialize_output() before calling this function")
+        return (b1**2.*self.pk_mult[14] + b1**2.*self.pk_mult[0] + 2.*(cs*b1**2.+cs0*b1)*self.pk_mult[10]/h**2. + b1*b2*self.pk_mult[2]+ 0.25*b2**2.*self.pk_mult[1] + 2.*b1*bG2*self.pk_mult[3] + b1*(2.*bG2 + 0.8*bGamma3)*self.pk_mult[6] + bG2**2.*self.pk_mult[5] + b2*bG2*self.pk_mult[4])*h**3. + Pshot
+
+    def pk_gm_real(self, b1, b2, bG2, bGamma3, cs, cs0):
+        """Return real-space galaxy-matter power spectrum with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        h = self.ba.h
+        if not self.output_init:
+            raise Exception("Must run initialize_output() before calling this function")
+        return (b1*self.pk_mult[14] + b1*self.pk_mult[0] + (2.*cs*b1+cs0)*self.pk_mult[10]/h**2. +(b2/2)*self.pk_mult[2] + bG2*self.pk_mult[3] + (bG2 + 0.4*bGamma3)*self.pk_mult[6])*h**3.
+
+    def pk_mm_l0(self, cs0):
+        """Return redshift-space matter-matter power spectrum monopole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        h = self.ba.h
+        if not self.output_init:
+            raise Exception("Must run initialize_output() before calling this function")
+        return (self.pk_mult[15] + self.pk_mult[21] + self.pk_mult[16] + self.pk_mult[22] + self.pk_mult[17] + self.pk_mult[23] + 2.*cs0*self.pk_mult[11]/h**2.)*h**3.
+
+    def pk_mm_l2(self, cs2):
+        """Return redshift-space matter-matter power spectrum quadrupole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        h = self.ba.h
+        if not self.output_init:
+            raise Exception("Must run initialize_output() before calling this function")
+        return (self.pk_mult[18] +self.pk_mult[24]+self.pk_mult[19] +self.pk_mult[25] +self.pk_mult[26]  +2.*cs2*self.pk_mult[12]/h**2.)*h**3.
+
+    def pk_mm_l4(self, cs4):
+        """Return redshift-space matter-matter power spectrum hexadecapole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        h = self.ba.h
+        if not self.output_init:
+            raise Exception("Must run initialize_output() before calling this function")
+        return (self.pk_mult[20] +self.pk_mult[27]+self.pk_mult[28] +self.pk_mult[29] +2.*cs4*self.pk_mult[13]/h**2.)*h**3.
+
+    def pk_gg_l0(self, b1, b2, bG2, bGamma3, cs0, Pshot, b4):
+        """Return redshift-space galaxy-galaxy power spectrum monopole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        h = self.ba.h
+        if not self.output_init:
+            raise Exception("Must run initialize_output() before calling this function")
+        return (self.pk_mult[15] +self.pk_mult[21]+ b1*self.pk_mult[16] + b1*self.pk_mult[22] + b1**2.*self.pk_mult[17] + b1**2.*self.pk_mult[23] + 0.25*b2**2.*self.pk_mult[1] + b1*b2*self.pk_mult[30]+ b2*self.pk_mult[31] + b1*bG2*self.pk_mult[32] + bG2*self.pk_mult[33]+ b2*bG2*self.pk_mult[4]+ bG2**2.*self.pk_mult[5] + 2.*cs0*self.pk_mult[11]/h**2.
+                  + (2.*bG2+0.8*bGamma3)*(b1*self.pk_mult[7]+self.pk_mult[8]))*h**3.+ Pshot + self.fz**2.*b4*(self.kh/h)**2.*(self.fz**2./9. + 2.*self.fz*b1/7. + b1**2./5)*(35./8.)*self.pk_mult[13]*h
+
+    def pk_gg_l2(self, b1, b2, bG2, bGamma3, cs2, b4):
+        """Return redshift-space galaxy-galaxy power spectrum quadrupole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        h = self.ba.h
+        if not self.output_init:
+            raise Exception("Must run initialize_output() before calling this function")
+        return (self.pk_mult[18] +self.pk_mult[24]+b1*self.pk_mult[19] +b1*self.pk_mult[25] +b1**2.*self.pk_mult[26] +b1*b2*self.pk_mult[34]+b2*self.pk_mult[35] +b1*bG2*self.pk_mult[36]+bG2*self.pk_mult[37]+2.*cs2*self.pk_mult[12]/h**2. +(2.*bG2+0.8*bGamma3)*self.pk_mult[9])*h**3. +self.fz**2.*b4*(self.kh/h)**2.*((self.fz**2.*70. + 165.*self.fz*b1+99.*b1**2.)*4./693.)*(35./8.)*self.pk_mult[13]*h
+
+    def pk_gg_l4(self, b1, b2, bG2, bGamma3, cs4, b4):
+        """Return redshift-space galaxy-galaxy power spectrum quadrupole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        h = self.ba.h
+        if not self.output_init:
+            raise Exception("Must run initialize_output() before calling this function")
+        return (self.pk_mult[20] +self.pk_mult[27]+b1*self.pk_mult[28] +b1**2.*self.pk_mult[29] +b2*self.pk_mult[38] +bG2*self.pk_mult[39] +2.*cs4*self.pk_mult[13]/h**2.)*h**3.+self.fz**2.*b4*(self.kh/h)**2.*((self.fz**2.*210. + 390.*self.fz*b1+143.*b1**2.)*8./5005.)*(35./8.)*self.pk_mult[13]*h
 
     # Gives sigma(R,z) for a given (R,z)
     def sigma(self,double R,double z):
