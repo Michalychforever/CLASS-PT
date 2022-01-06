@@ -996,47 +996,58 @@ class_call(background_at_tau(pba,tau_req[i_z],pba->long_info,pba->inter_normal,&
     pnlpt->error_message,
     pnlpt->error_message);
 
- pnlpt->growthf[i_z] =  pvecbackf[pba->index_bg_f];
- Dref = pvecbackf[pba->index_bg_D];
+if(pnlpt->replace_background){
+  pnlpt->growthf[i_z] =  pnlpt->replace_fz_value;
+  Dref = pnlpt->replace_Dz_value;
+}else{
+  pnlpt->growthf[i_z] =  pvecbackf[pba->index_bg_f];
+  Dref = pvecbackf[pba->index_bg_D];
+}
 
  //printf("Dref=%lf\n",Dref);
 
 if (pnlpt->AP_effect == AP_effect_yes){
 
-   // printf("z_pk[i_z]=%lf\n",pnlpt->z_pk[i_z]);
+  //printf("z_pk[i_z]=%lf\n",pnlpt->z_pk[i_z]);
 
-if (pnlpt->z_pk[i_z]== 0.)
-    {
-        pnlpt->hratio_array[i_z] = 1.;
-        pnlpt->Dratio_array[i_z] = 1.;
-        hnew = 1.;
+  if (pnlpt->z_pk[i_z]== 0.){
+    pnlpt->hratio_array[i_z] = 1.;
+    pnlpt->Dratio_array[i_z] = 1.;
+    hnew = 1.;
+  }else {
+    //hnew = pow((Omtrue*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - Omtrue)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5);
+    hfid = pow((Omfid*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5);
+    //printf("Hclass=%le\n",pvecbackf[pba->index_bg_H]/kmsMpc/100/pba->h);
+    //printf("Hmy = %le\n",hnew);
+    if(pnlpt->replace_background){
+      hnew =  pnlpt->replace_Hz_value/kmsMpc/100.0/pba->h;
+    }else{
+      hnew = pvecbackf[pba->index_bg_H]/kmsMpc/100.0/pba->h;
     }
-    else {
-   //     hnew = pow((Omtrue*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - Omtrue)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5);
-        hfid = pow((Omfid*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5);
-   //     printf("Hclass=%le\n",pvecbackf[pba->index_bg_H]/kmsMpc/100/pba->h);
-  //      printf("Hmy = %le\n",hnew);
-        hnew = pvecbackf[pba->index_bg_H]/kmsMpc/100/pba->h;
-        pnlpt->hratio_array[i_z] = hnew/hfid;
+    pnlpt->hratio_array[i_z] = hnew/hfid;
 
-       // pnlpt->hratio_array[i_z] = pow(((pba->Omega0_cdm+pba->Omega0_b)*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - pba->Omega0_cdm - pba->Omega0_b)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5)/pow((Omfid*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5);
+    // pnlpt->hratio_array[i_z] = pow(((pba->Omega0_cdm+pba->Omega0_b)*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - pba->Omega0_cdm - pba->Omega0_b)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5)/pow((Omfid*pow((1.+pnlpt->z_pk[i_z]),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5);
     dz = pnlpt->z_pk[i_z]/(1.*Nz-1.);
 
-for (j=1; j<Nz; j ++) {
- //   Da = Da + dz*(1./pow((Omtrue*pow((1.+ dz*j),3.) + (1. -Omtrue)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5)+1./pow((Omtrue*pow((1.+ dz*(j-1)),3.) + (1. - Omtrue)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5))/2.;
-    Dfid = Dfid + dz*(1./pow((Omfid*pow((1.+ dz*j),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5)+1./pow((Omfid*pow((1.+dz*(j-1)),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5))/2.;
-                    }
- //   printf("Dclass=%le\n",pvecbackf[pba->index_bg_ang_distance]*kmsMpc*100*pba->h*(1.+pnlpt->z_pk[i_z]));
-//    printf("Dmy = %le\n",Da);
-    Da = pvecbackf[pba->index_bg_ang_distance]*kmsMpc*100*pba->h*(1.+pnlpt->z_pk[i_z]);
+    for (j=1; j<Nz; j ++) {
+      //Da = Da + dz*(1./pow((Omtrue*pow((1.+ dz*j),3.) + (1. -Omtrue)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5)+1./pow((Omtrue*pow((1.+ dz*(j-1)),3.) + (1. - Omtrue)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5))/2.;
+      Dfid = Dfid + dz*(1./pow((Omfid*pow((1.+ dz*j),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5)+1./pow((Omfid*pow((1.+dz*(j-1)),3.) + (1. - Omfid)+(pba->Omega0_g)*pow((1.+pnlpt->z_pk[i_z]),4.)),0.5))/2.;
+    }
+    //printf("Dclass=%le\n",pvecbackf[pba->index_bg_ang_distance]*kmsMpc*100*pba->h*(1.+pnlpt->z_pk[i_z]));
+    //printf("Dmy = %le\n",Da);
+    if(pnlpt->replace_background){
+      Da =  pnlpt->replace_DAz_value*kmsMpc*100*pba->h*(1.+pnlpt->z_pk[i_z]);
+    }else{
+      Da = pvecbackf[pba->index_bg_ang_distance]*kmsMpc*100*pba->h*(1.+pnlpt->z_pk[i_z]);
+    }
+    
     pnlpt->Dratio_array[i_z] = Da/Dfid;
     //    printf(" h/hfid=%le\n", hnew/hfid);
     //    printf(" Da/Dfid=%le\n", Da/Dfid);
-    }
-}
-else {
-    pnlpt->hratio_array[i_z] = 1.;
-    pnlpt->Dratio_array[i_z] = 1.;
+  }
+}else {
+  pnlpt->hratio_array[i_z] = 1.;
+  pnlpt->Dratio_array[i_z] = 1.;
 }
  //   printf("pba->Omega0_ncdm_tot = %lf\n",pba->Omega0_ncdm_tot);
  //   printf("pba->M_ncdm[0] = %lf\n",pba->M_ncdm[0]);
@@ -1696,11 +1707,20 @@ int nonlinear_pt_pk_l(
         // open input interpolation file
         char line[100000];
         FILE *fp;
+        errno=0;
         fp = fopen(pnlpt->input_pk,"r");
 
         if (fp==NULL){
             fprintf(stderr,"Interpolation file %s not found\n",pnlpt->input_pk);
-            abort();
+            fprintf(stderr,"Trying again in 3sec\n");
+            sleep(3);
+            fp = fopen(pnlpt->input_pk,"r");
+            if (fp==NULL){
+              fprintf(stderr,"Interpolation file %s still not found\n Aborting!\n",pnlpt->input_pk);
+              fprintf(stderr, "The error code is %d.\n", errno);
+              fprintf(stderr, "Error opening file: %s\n", strerror( errno ));
+              exit(0);
+            }
         }
         // Count lines to construct the correct size
         int nline = 0;
@@ -1773,6 +1793,7 @@ int nonlinear_pt_pk_l(
           pk_l[index_k] = this_pk[0];
           lnpk[index_k] = log(this_pk[0]);
         }
+        fclose(fp);
   }
   // Compute linear power from CLASS as usual
   else{
@@ -2474,19 +2495,18 @@ for (i_kdisc=0; i_kdisc< Nmax; i_kdisc++){
        // SigmaBAO = SigmaBAO/4.;
        // deltaSigmaBAO = deltaSigmaBAO/4.;
 
-       // OLIVER: for creating no-wiggle spectra
-       //SigmaBAO *= 1000;
-       //deltaSigmaBAO *= 1000;
-
 
      //   IR-5) Computing the LO IR resummed power spectrum
 
          double Pnwval2;
+         double Pnwval_rescaled;
+         double Pwval_rescaled;
          last_index=0;
          int index_kdisc = 0;
+
          for (index_kdisc=0; index_kdisc<Nmax; index_kdisc++){
 
-             if (kdisc[index_kdisc]<= kmax2 && kdisc[index_kdisc] >= kmin2) {
+             if (kdisc[index_kdisc]<= kmax2 && kdisc[index_kdisc] >= kmin2 && pnlpt->alpha_rs * kdisc[index_kdisc]<= kmax2 && pnlpt->alpha_rs * kdisc[index_kdisc] >= kmin2) {
 
                  class_call(array_interpolate_spline(knw_ir,
                                                      Nir,
@@ -2501,10 +2521,48 @@ for (i_kdisc=0; i_kdisc< Nmax; i_kdisc++){
                             pnlpt->error_message,
                             pnlpt->error_message);
 
+                 class_call(array_interpolate_spline(knw_ir,
+                                                     Nir,
+                                                     Pnw_ir,
+                                                     ddPnw,
+                                                     1,
+                                                     pnlpt->alpha_rs * kdisc[index_kdisc],
+                                                     &last_index,
+                                                     &Pnwval_rescaled,
+                                                     1,
+                                                     pnlpt->error_message),
+                            pnlpt->error_message,
+                            pnlpt->error_message);
+
+
+                 if (kdisc[index_kdisc] >= exp(lnk_l[0]) ){
+
+                   class_call(array_interpolate_spline(lnk_l,
+                                                       pnlpt->k_size,
+                                                       lnpk_l,
+                                                       myddlnpk,
+                                                       1,
+                                                       log(pnlpt->alpha_rs * kdisc[index_kdisc]),
+                                                       &last_index,
+                                                       &lnpk_out,
+                                                       1,
+                                                       pnlpt->error_message),
+                              pnlpt->error_message,
+                              pnlpt->error_message);
+
+
+                   Pwval_rescaled = exp(lnpk_out);
+                 } // end of the condition that our k's are within the range computed by class
+           //        printf("%le %le\n",kdisc[i],Pdisc[i]);
+                 else{
+                  Pwval_rescaled = exp(lnpk_l[0])*pow(pnlpt->alpha_rs * kdisc[index_kdisc]/exp(lnk_l[0]), ppm->n_s);
+                 }
+
                  Pnw[index_kdisc] = Pnwval2;
-                 Pw[index_kdisc] = Pdisc[index_kdisc] - Pnw[index_kdisc];
+                 Pw[index_kdisc] = Pwval_rescaled - Pnwval_rescaled;
                  // (uncomment here if you want to test the fake NW part only)
-            //     Pw[index_kdisc] = 0.;
+                 if (pnlpt->no_wiggle){ Pw[index_kdisc] = 0.;}
+                 if (pnlpt->wiggle_only){Pnw[index_kdisc] = 0.;}
                  Pbin[index_kdisc] = Pnw[index_kdisc] + Pw[index_kdisc] * exp(-SigmaBAO * pow(kdisc[index_kdisc],2.));
              }
 
