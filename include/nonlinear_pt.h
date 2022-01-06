@@ -1,5 +1,6 @@
 /** @file nonlinear.h Documented includes for trg module */
-
+#include <unistd.h>
+#include <errno.h>
 #include "primordial.h"
 
 #ifndef __NONLINEAR_PT__
@@ -70,11 +71,9 @@ enum non_linear_AP_effect_pt AP_effect;
 
   int index_md_scalars,ic_size,tp_size;
   double * dd_sources_tp_delta_m;
-  double * dd_sources_tp_delta_cdm;
-  double * dd_sources_tp_delta_b;
+  double * dd_sources_tp_delta_cb;
   double * sources_tp_delta_m;
-  double * sources_tp_delta_cdm;
-  double * sources_tp_delta_b;
+  double * sources_tp_delta_cb;
 
 short fast_output;
 short cb;
