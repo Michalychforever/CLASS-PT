@@ -1738,11 +1738,20 @@ int nonlinear_pt_pk_l(
         // open input interpolation file
         char line[100000];
         FILE *fp;
+        errno=0;
         fp = fopen(pnlpt->input_pk,"r");
 
         if (fp==NULL){
             fprintf(stderr,"Interpolation file %s not found\n",pnlpt->input_pk);
-            exit(0);
+            fprintf(stderr,"Trying again in 3sec\n");
+            sleep(3);
+            fp = fopen(pnlpt->input_pk,"r");
+            if (fp==NULL){
+              fprintf(stderr,"Interpolation file %s still not found\n Aborting!\n",pnlpt->input_pk);
+              fprintf(stderr, "The error code is %d.\n", errno);
+              fprintf(stderr, "Error opening file: %s\n", strerror( errno ));
+              exit(0);
+            }
         }
         // Count lines to construct the correct size
         int nline = 0;
@@ -1815,6 +1824,7 @@ int nonlinear_pt_pk_l(
           pk_l[index_k] = this_pk[0];
           lnpk[index_k] = log(this_pk[0]);
         }
+        fclose(fp);
   }
   // Compute linear power from CLASS as usual
   else{

@@ -1,5 +1,6 @@
 /** @file nonlinear.h Documented includes for trg module */
-
+#include <unistd.h>
+#include <errno.h>
 #include "primordial.h"
 
 #ifndef __NONLINEAR_PT__
