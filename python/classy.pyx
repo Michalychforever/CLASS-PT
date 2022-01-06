@@ -406,6 +406,27 @@ cdef class Class:
         # following functions are only to output the desired numbers
         return
 
+    def recompute_nonlinear_pt(self, no_wiggle=False, alpha_rs=1.0, force=False):
+        recompute=False
+        if no_wiggle:
+            if self.nlpt.no_wiggle == _FALSE_:
+                recompute=True
+            self.nlpt.no_wiggle=_TRUE_
+        else:
+            if self.nlpt.no_wiggle == _TRUE_:
+                recompute=True
+            self.nlpt.no_wiggle=_FALSE_
+
+        if self.nlpt.alpha_rs != alpha_rs:
+            self.nlpt.alpha_rs =  alpha_rs
+            recompute = True
+
+        if (recompute or force) and self.ready:
+            if nonlinear_pt_init(&self.pr, &self.ba, &self.th,&self.pt, &self.pm, &self.nlpt) == _FAILURE_:
+                self.struct_cleanup()
+                raise CosmoComputationError(self.nlpt.error_message)
+            self.ncp.add("nonlinear_pt")
+
     def raw_cl(self, lmax=-1, nofail=False):
         """
         raw_cl(lmax=-1, nofail=False)
@@ -719,7 +740,7 @@ cdef class Class:
         return lum_distance
 
     # Gives the pk for a given (k,z)
-    def pk(self,double k,double z):
+    def pk(self,double k,double z, int no_wiggle=False, double alpha_rs=1.0):
 
         """
         Gives the pk for a given k and z (will be non linear if requested to Class, linear otherwise)
@@ -788,6 +809,10 @@ cdef class Class:
             raise CosmoSevereError(
                 "No power spectrum computed. You must add mPk to the list of outputs."
                 )
+
+        self.recompute_nonlinear_pt(no_wiggle=no_wiggle, alpha_rs=alpha_rs)
+        
+
 
         if (self.nlpt.method == 0):
              if spectra_pk_at_k_and_z(&self.ba,&self.pm,&self.sp,k,z,&pk,pk_ic)==_FAILURE_:
@@ -887,14 +912,14 @@ cdef class Class:
                     pk[index_k,index_z,index_mu] = self.pk(k[index_k,index_z,index_mu],z[index_z])
         return pk
 
-    def get_pk_mult(self, np.ndarray[DTYPE_t,ndim=1] k, double z, int k_size):
+    def get_pk_mult(self, np.ndarray[DTYPE_t,ndim=1] k, double z, int k_size, no_wiggle=False, alpha_rs=1.0):
         """Fast function to get the non-linear power spectrum multipole components on a k array"""
         cdef np.ndarray[DTYPE_t, ndim = 2] pk_mult = np.zeros((48,k_size),'float64')
         cdef np.ndarray[DTYPE_t, ndim = 1] this_pk
         cdef int index_k, index_comb
 
         for index_k in xrange(k_size):
-            this_pk = np.asarray(self.pk(k[index_k],z))
+            this_pk = np.asarray(self.pk(k[index_k],z, no_wiggle=no_wiggle, alpha_rs=alpha_rs))
             for index_comb in xrange(48):
                 pk_mult[index_comb, index_k] = this_pk[index_comb]
 

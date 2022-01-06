@@ -1,5 +1,6 @@
 /** @file nonlinear.h Documented includes for trg module */
-
+#include <unistd.h>
+#include <errno.h>
 #include "primordial.h"
 
 #ifndef __NONLINEAR_PT__
@@ -252,6 +253,14 @@ double * ln_pk_0_b2;
 
     char input_pk[500];
     int replace_pk;
+    int replace_background;
+    int no_wiggle;
+    int wiggle_only;
+    double alpha_rs;
+    double replace_Hz_value;
+    double replace_DAz_value;
+    double replace_Dz_value;
+    double replace_fz_value;
 
 //  double * k_nl;  /**< wavenumber at which non-linear corrections become important, defined differently by different non_linear_method's */
   int index_tau_min_nl; /**< index of smallest value of tau at which nonlinear corrections have been computed (so, for tau<tau_min_nl, the array nl_corr_density only contains some factors 1 */
