@@ -417,7 +417,7 @@ extern "C" {
                      struct nonlinear_pt *pnlpt
                      );
 
-  int perturb_get_k_list_nl(
+  int perturbations_get_k_list_nl(
                          struct precision * ppr,
                          struct background * pba,
                          struct thermodynamics * pth,

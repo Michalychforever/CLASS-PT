@@ -21,7 +21,6 @@
 #include "primordial.h"
 #include "harmonic.h"
 #include "fourier.h"
-#include "nonlinear_pt.h"
 #include "lensing.h"
 #include "distortions.h"
 #include "output.h"
@@ -390,7 +389,7 @@ int input_read_from_file(struct file_content * pfc,
                          struct primordial *ppm,
                          struct harmonic *phr,
                          struct fourier * pfo,
-                         struct nonlinear_pt *pnlpt,
+                         struct nonlinear_pt * pnlpt,
                          struct lensing *ple,
                          struct distortions *psd,
                          struct output *pop,
@@ -501,7 +500,7 @@ int input_shooting(struct file_content * pfc,
                    struct primordial *ppm,
                    struct harmonic *phr,
                    struct fourier * pfo,
-                   struct nonlinear_pt *pnlpt,
+                   struct nonlinear_pt * pnlpt,
                    struct lensing *ple,
                    struct distortions *psd,
                    struct output *pop,
@@ -551,8 +550,8 @@ int input_shooting(struct file_content * pfc,
                                         cs_background,     /* computation stage for target 'Omega_scf' */
                                         cs_background,     /* computation stage for target 'Omega_ini_dcdm' */
                                         cs_background,     /* computation stage for target 'omega_ini_dcdm' */
-                                        cs_nonlinear,      /* computation stage for target 'sigma8' */
-                                        cs_nonlinear_pt};      
+                                        cs_nonlinear};       /* computation stage for target 'sigma8' */
+
   struct fzerofun_workspace fzw;
 
   *has_shooting=_FALSE_;
@@ -1062,7 +1061,7 @@ int input_get_guess(double *xguess,
   struct primordial pm;       /* for primordial spectra */
   struct harmonic hr;          /* for output spectra */
   struct fourier fo;        /* for non-linear spectra */
-  struct nonlinear_pt nlpt;   /* for non-linear spectra computed in PT*/
+  struct nonlinear_pt nlpt;   /* for non-linear PT spectra */
   struct lensing le;          /* for lensed spectra */
   struct distortions sd;      /* for spectral distortions */
   struct output op;           /* for output files */
@@ -1210,7 +1209,7 @@ int input_try_unknown_parameters(double * unknown_parameter,
   struct primordial pm;       /* for primordial spectra */
   struct harmonic hr;          /* for output spectra */
   struct fourier fo;        /* for non-linear spectra */
-  struct nonlinear_pt nlpt;   /* for non-linear spectra computed in PT*/
+  struct nonlinear_pt nlpt; /* for non-linear PT spectra */
   struct lensing le;          /* for lensed spectra */
   struct distortions sd;      /* for spectral distortions */
   struct output op;           /* for output files */
@@ -1448,7 +1447,7 @@ int input_read_precisions(struct file_content * pfc,
                           struct primordial *ppm,
                           struct harmonic *phr,
                           struct fourier * pfo,
-                          struct nonlinear_pt *pnlpt,
+                          struct nonlinear_pt * pnlpt,
                           struct lensing *ple,
                           struct distortions *psd,
                           struct output *pop,
@@ -1515,7 +1514,7 @@ int input_read_parameters(struct file_content * pfc,
                           struct primordial *ppm,
                           struct harmonic *phr,
                           struct fourier * pfo,
-                          struct nonlinear_pt *pnlpt,
+                          struct nonlinear_pt * pnlpt,
                           struct lensing *ple,
                           struct distortions *psd,
                           struct output *pop,
@@ -1572,7 +1571,7 @@ int input_read_parameters(struct file_content * pfc,
              errmsg);
 
   /** Read parameters for spectra quantities */
-  class_call(input_read_parameters_spectra(pfc,ppr,pba,ppm,ppt,ptr,phr,pop,pnlpt,
+  class_call(input_read_parameters_spectra(pfc,ppr,pba,ppm,ppt,ptr,phr,pnlpt,pop,
                                            errmsg),
              errmsg,
              errmsg);
@@ -2153,6 +2152,40 @@ int input_read_parameters_general(struct file_content * pfc,
   /** 9) Damping scale */
   /* Read */
   class_read_flag_or_deprecated("compute_damping_scale","compute damping scale",pth->compute_damping_scale);
+
+  /** 10) Varying fundamental constants */
+  class_call(parser_read_string(pfc,"varying_fundamental_constants",&string1,&flag1,errmsg),
+             errmsg,
+             errmsg);
+  /* Complete set of parameters */
+  if (flag1 == _TRUE_){
+    if (strstr(string1,"none") != NULL){
+      pba->varconst_dep = varconst_none;
+    }
+    else if (strstr(string1,"instant") != NULL){
+      pba->varconst_dep = varconst_instant;
+    }
+    else{
+      class_stop(errmsg,
+                 "You specified 'varying_fundamental_constants' as '%s'. It has to be one of {'none','instantaneous'}.",string1);
+    }
+  }
+  switch(pba->varconst_dep){
+    case varconst_none:
+    /* nothing to be read*/
+    break;
+    /* 10.a) Instantaneous transition from specified values to unity at given transition redshift */
+    case varconst_instant:
+      class_read_double("varying_alpha",pba->varconst_alpha);
+      class_read_double("varying_me",pba->varconst_me);
+      class_read_double("varying_transition_redshift",pba->varconst_transition_redshift);
+    break;
+  }
+
+  if(pba->varconst_dep!=varconst_none){
+    /* 10.b) Sensitivity of bbn to a variation of the fine structure constant */
+    class_read_double("bbn_alpha_sensitivity",pth->bbn_alpha_sensitivity);
+  }
 
   return _SUCCESS_;
 
@@ -3327,25 +3360,26 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
                "You requested non-linear computation but no perturbations. You must set the 'output' field.");
     /* Complete set of parameters */
     if ((strstr(string1,"pt") != NULL) || (strstr(string1,"Pt") != NULL) || (strstr(string1,"PT") != NULL)) {
-          pnlpt->method = nlpt_spt;
-          pfo->method = nl_none;
-          ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
-          pnlpt->irres = irres_yes;
-          pnlpt->bias = bias_yes;
-          pnlpt->rsd = rsd_no;
-          pnlpt->AP_effect = AP_effect_no;
+      pnlpt->method = nlpt_spt;
+      pfo->method = nl_none;
+      ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
+      pnlpt->irres = irres_yes;
+      pnlpt->bias = bias_yes;
+      pnlpt->rsd = rsd_no;
+      pnlpt->AP_effect = AP_effect_no;
     }
-    if ((strstr(string1,"halofit") != NULL) || (strstr(string1,"Halofit") != NULL) || (strstr(string1,"HALOFIT") != NULL)) {
+    else if ((strstr(string1,"halofit") != NULL) || (strstr(string1,"Halofit") != NULL) || (strstr(string1,"HALOFIT") != NULL)) {
       pfo->method=nl_halofit;
       ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
-      pnlpt->method = nlpt_none;
       ppt->k_max_for_pk = MAX(ppt->k_max_for_pk,ppr->nonlinear_min_k_max);
+      pnlpt->method = nlpt_none;
+
     }
     else if((strstr(string1,"hmcode") != NULL) || (strstr(string1,"HMCODE") != NULL) || (strstr(string1,"HMcode") != NULL) || (strstr(string1,"Hmcode") != NULL)) {
       pfo->method=nl_HMcode;
-      pnlpt->method = nlpt_none;
       ppt->k_max_for_pk = MAX(ppt->k_max_for_pk,ppr->nonlinear_min_k_max);
       ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
+      pnlpt->method = nlpt_none;
       class_read_int("extrapolation_method",pfo->extrapolation_method);
 
       class_call(parser_read_string(pfc,
@@ -3414,6 +3448,91 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
     }
   }
 
+  /** Fiducial Om for AP */
+  class_call(parser_read_double(pfc,"Omfid",&param1,&flag1,errmsg),
+              errmsg,
+              errmsg);
+  pnlpt->OmfidAP = param1;
+
+  class_call(parser_read_string(pfc,"cb",&(string1),&(flag1),errmsg),errmsg,errmsg);
+  if (flag1 == _TRUE_) {
+    if ((strstr(string1,"No") != NULL) || (strstr(string1,"NO") != NULL) || (strstr(string1,"N") != NULL)) {
+        pnlpt->cb = _FALSE_;
+        pba->has_cb = _FALSE_;
+    }
+    else {
+        pnlpt->cb = _TRUE_;
+        pba->has_cb = _TRUE_;
+    }
+  }
+
+  // Here I include IR resummation
+    
+  if (pnlpt->method == nlpt_spt) {
+    class_call(parser_read_string(pfc,
+                              "IR resummation",
+                              &(string1),
+                              &(flag1),
+                              errmsg),
+           errmsg,
+           errmsg);
+    if ((strstr(string1,"NO") != NULL) || (strstr(string1,"No") != NULL) || (strstr(string1,"N") != NULL)) {
+        pnlpt->irres = irres_no;
+    }
+    else {
+        pnlpt->irres = irres_yes;
+    }
+  }
+    
+  // Here I include bias tracers
+    
+  if (pnlpt->method == nlpt_spt) {
+    class_call(parser_read_string(pfc,
+                                  "Bias tracers",
+                                  &(string1),
+                                  &(flag1),
+                                  errmsg),
+                errmsg,
+                errmsg);
+    if ((strstr(string1,"NO") != NULL) || (strstr(string1,"No") != NULL) || (strstr(string1,"N") != NULL)) {
+        pnlpt->bias = bias_no;
+        ppt->has_bias = _FALSE_;
+    }
+    else {
+        pnlpt->bias = bias_yes;
+        ppt->has_bias = _TRUE_;
+    }
+  }
+    
+  // Here I include RSD
+    
+  if (pnlpt->method == nlpt_spt) {
+    class_call(parser_read_string(pfc,
+                                  "RSD",
+                                  &(string1),
+                                  &(flag1),
+                                  errmsg),
+                errmsg,
+                errmsg);
+    if ((strstr(string1,"Y") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL)) {
+        pnlpt->rsd = rsd_yes;
+        // ppt->has_RSD = _TRUE_;
+
+        class_call(parser_read_string(pfc,"AP",&(string1),&(flag1),errmsg),errmsg,errmsg);
+        if ((strstr(string1,"Y") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL)) {
+            pnlpt->AP_effect = AP_effect_yes;
+        }
+            
+        else {
+            pnlpt->AP_effect = AP_effect_no;
+        }   
+    }
+        
+    else {
+        pnlpt->rsd = rsd_no;
+    }      
+  }
+
   /** - special steps if we want Halofit with wa_fld non-zero:
       so-called "Pk_equal method" of 0810.0190 and 1601.07230 */
 
@@ -3431,98 +3550,6 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
       }
     }
   }
-
-  /** Fiducial Om for AP */
-    class_call(parser_read_double(pfc,"Omfid",&param1,&flag1,errmsg),
-               errmsg,
-               errmsg);
-    pnlpt->OmfidAP = param1;
-
-      class_call(parser_read_string(pfc,"cb",&(string1),&(flag1),errmsg),errmsg,errmsg);
-      if (flag1 == _TRUE_) {
-        if ((strstr(string1,"No") != NULL) || (strstr(string1,"NO") != NULL) || (strstr(string1,"N") != NULL)) {
-            pnlpt->cb = _FALSE_;
-            // ppt->has_cb = _FALSE_;
-            pba->has_cb = _FALSE_;
-        }
-        else {
-            pnlpt->cb = _TRUE_;
-            // ppt->has_cb = _TRUE_;
-            pba->has_cb = _TRUE_;
-        }
-      }
-
-    // Here I include IR resummation
-    
-    if (pnlpt->method == nlpt_spt) {
-    class_call(parser_read_string(pfc,
-                                  "IR resummation",
-                                  &(string1),
-                                  &(flag1),
-                                  errmsg),
-               errmsg,
-               errmsg);
-        if ((strstr(string1,"NO") != NULL) || (strstr(string1,"No") != NULL) || (strstr(string1,"N") != NULL)) {
-            pnlpt->irres = irres_no;
-        }
-        else {
-            pnlpt->irres = irres_yes;
-        }
-    }
-    
-     // Here I include bias tracers
-    
-    if (pnlpt->method == nlpt_spt) {
-        class_call(parser_read_string(pfc,
-                                      "Bias tracers",
-                                      &(string1),
-                                      &(flag1),
-                                      errmsg),
-                   errmsg,
-                   errmsg);
-        if ((strstr(string1,"NO") != NULL) || (strstr(string1,"No") != NULL) || (strstr(string1,"N") != NULL)) {
-            pnlpt->bias = bias_no;
-            ppt->has_bias = _FALSE_;
-        }
-        else {
-            pnlpt->bias = bias_yes;
-            ppt->has_bias = _TRUE_;
-        }
-    }
-    
-    // Here I include RSD
-    
-    if (pnlpt->method == nlpt_spt) {
-        class_call(parser_read_string(pfc,
-                                      "RSD",
-                                      &(string1),
-                                      &(flag1),
-                                      errmsg),
-                   errmsg,
-                   errmsg);
-        if ((strstr(string1,"Y") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL)) {
-            pnlpt->rsd = rsd_yes;
-            // ppt->has_RSD = _TRUE_;
-
-            class_call(parser_read_string(pfc,"AP",&(string1),&(flag1),errmsg),errmsg,errmsg);
-            if ((strstr(string1,"Y") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL)) {
-                pnlpt->AP_effect = AP_effect_yes;
-            }
-            
-            else {
-                pnlpt->AP_effect = AP_effect_no;
-            }
-            
-            
-        }
-        
-        else {
-            pnlpt->rsd = rsd_no;
-        }
-        
-
-        
-    }
 
   return _SUCCESS_;
 }
@@ -4360,8 +4387,8 @@ int input_read_parameters_spectra(struct file_content * pfc,
                                   struct perturbations * ppt,
                                   struct transfer * ptr,
                                   struct harmonic *phr,
+                                  struct nonlinear_pt*pnlpt,
                                   struct output * pop,
-                                  struct nonlinear_pt * pnlpt,
                                   ErrorMsg errmsg){
 
   /** Summary: */
@@ -4586,6 +4613,9 @@ int input_read_parameters_spectra(struct file_content * pfc,
       ppt->k_max_for_pk=param2;
     }
 
+    /* Here I brutally force P_k_max_h/Mpc = 100. since only for this value the non-linear module is tailored */
+    ppt->k_max_for_pk=100.*pba->h;
+
     /** 3.a.1) Maximum k in primordial P(k) */
     /* Read */
     class_call(parser_read_double(pfc,"primordial_P_k_max_h/Mpc",&param1,&flag1,errmsg),
@@ -4607,9 +4637,6 @@ int input_read_parameters_spectra(struct file_content * pfc,
       ppm->k_max_for_primordial_pk=param2;
       ppm->has_k_max_for_primordial_pk = _TRUE_;
     }
-
-    /* Here I brutally force P_k_max_h/Mpc = 100. since only for this value the non-linear module is tailored */
-    ppt->k_max_for_pk=100.*pba->h;
 
     /** 3.b) Redshift values */
     /* Read */
@@ -5209,7 +5236,7 @@ int input_read_parameters_output(struct file_content * pfc,
   class_read_int("primordial_verbose",ppm->primordial_verbose);
   class_read_int("harmonic_verbose",phr->harmonic_verbose);
   class_read_int("fourier_verbose",pfo->fourier_verbose);
-  class_read_int("nonlinear_pt_verbose",pnlpt->nonlinear_pt_verbose);
+  class_read_int("nonlinear_pt_verbose",pnlpt->nonlinear_pt_verbose)
   class_read_int("lensing_verbose",ple->lensing_verbose);
   class_read_int("distortions_verbose",psd->distortions_verbose);
   class_read_int("output_verbose",pop->output_verbose);
@@ -5351,6 +5378,7 @@ int input_default_params(struct background *pba,
    */
 
   /** 1) Output spectra */
+  // ppt->has_bias = _FALSE_;
   ppt->has_cl_cmb_temperature = _FALSE_;
   ppt->has_cl_cmb_polarization = _FALSE_;
   ppt->has_cl_cmb_lensing_potential = _FALSE_;
@@ -5436,6 +5464,13 @@ int input_default_params(struct background *pba,
 
   /** 9) Damping scale */
   pth->compute_damping_scale = _FALSE_;
+
+  /** 10) Varying fundamental constants */
+  pba->varconst_dep = varconst_none;
+  pba->varconst_alpha = 1.;
+  pba->varconst_me = 1.;
+  pth->bbn_alpha_sensitivity = 1.;
+  pba->varconst_transition_redshift = 50.;
 
   /**
    * Default to input_read_parameters_species
@@ -5611,6 +5646,7 @@ int input_default_params(struct background *pba,
   pfo->extrapolation_method = extrap_max_scaled;
   pfo->feedback = nl_emu_dmonly;
   pfo->z_infinity = 10.;
+
   pnlpt->method = nlpt_none;
   pnlpt->z_pk_num = 1;
   pnlpt->z_pk[0] = 0.;

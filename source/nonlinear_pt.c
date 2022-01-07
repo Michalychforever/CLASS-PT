@@ -11,7 +11,7 @@
 #include "fft.h"
 #include "time.h"
 
-int perturb_get_k_list_nl(
+int perturbations_get_k_list_nl(
                         struct precision * ppr,
                         struct background * pba,
                         struct thermodynamics * pth,
@@ -144,7 +144,7 @@ int perturb_get_k_list_nl(
          stepsize is still fixed by k_step_super, this is just a
          reduction factor. */
 
-      scale2 = pow(pba->a_today*pba->H0,2)+fabs(pba->K);
+      scale2 = pow(pba->H0,2)+fabs(pba->K);
 
       step *= (k*k/scale2+1.)/(k*k/scale2+1./ppr->k_step_super_reduction);
 
@@ -387,7 +387,7 @@ last_index=0;
 
     if (ppt->has_cls == _TRUE_) {
 
-      class_call(perturb_get_k_list_nl(ppr,
+      class_call(perturbations_get_k_list_nl(ppr,
                                 pba,
                                 pth,
                                 ppt,
@@ -643,65 +643,65 @@ Old part -- end*/
       
       // Think better about memory optimization !
       
-      class_alloc(pnlpt->M22_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M13_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22basic_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_0_b1b2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_0_b2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_0_b1bG2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_0_bG2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M13_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22basic_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_0_b1b2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_0_b2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_0_b1bG2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_0_bG2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
       
-      class_alloc(pnlpt->M22_2_b1b2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_2_b2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_2_b1bG2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_2_bG2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
+      class_alloc(pnlpt->M22_2_b1b2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_2_b2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_2_b1bG2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_2_bG2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
       
-            class_alloc(pnlpt->M22_4_b2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-            class_alloc(pnlpt->M22_4_bG2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
+            class_alloc(pnlpt->M22_4_b2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+            class_alloc(pnlpt->M22_4_bG2_oneline_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
       
-      class_alloc(pnlpt->IFG2_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
+      class_alloc(pnlpt->IFG2_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
       
-      class_alloc(pnlpt->M_IG2G2,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M_Id2,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M_IG2,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
+      class_alloc(pnlpt->M_IG2G2,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M_Id2,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M_IG2,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
       class_alloc(pnlpt->M_Id2G2,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M13_0_vv_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_0_vv_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M13_0_vd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_0_vd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M13_0_dd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_0_dd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
+      class_alloc(pnlpt->M13_0_vv_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_0_vv_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M13_0_vd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_0_vd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M13_0_dd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_0_dd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
       
-      class_alloc(pnlpt->M13_2_vv_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_2_vv_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
+      class_alloc(pnlpt->M13_2_vv_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_2_vv_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
       
-      class_alloc(pnlpt->M13_2_vd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_2_vd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
+      class_alloc(pnlpt->M13_2_vd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_2_vd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
       
-      class_alloc(pnlpt->M13_2_dd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_2_dd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
+      class_alloc(pnlpt->M13_2_dd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_2_dd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
       
-      class_alloc(pnlpt->M13_4_vv_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_4_vv_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
+      class_alloc(pnlpt->M13_4_vv_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_4_vv_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
       
-      class_alloc(pnlpt->M13_4_vd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_4_vd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_4_dd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
+      class_alloc(pnlpt->M13_4_vd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_4_vd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_4_dd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
       
-      class_alloc(pnlpt->M13_mu2_dd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M13_mu2_vd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M13_mu4_vv_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
-       class_alloc(pnlpt->M13_mu4_vd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M13_mu6_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(double complex),pnlpt->error_message);
+      class_alloc(pnlpt->M13_mu2_dd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M13_mu2_vd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M13_mu4_vv_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
+       class_alloc(pnlpt->M13_mu4_vd_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M13_mu6_oneline_complex,(ppr->nmax_nlpt+1)*sizeof(complex double),pnlpt->error_message);
       
-      class_alloc(pnlpt->M22_oneline_mu2_vd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_mu2_dd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_mu4_vd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_mu4_vv_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_mu4_dd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_mu6_vv_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_mu6_vd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
-      class_alloc(pnlpt->M22_oneline_mu8_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(double complex),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_mu2_vd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_mu2_dd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_mu4_vd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_mu4_vv_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_mu4_dd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_mu6_vv_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_mu6_vd_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
+      class_alloc(pnlpt->M22_oneline_mu8_complex,((ppr->nmax_nlpt+1)*(ppr->nmax_nlpt+2)/2)*sizeof(complex double),pnlpt->error_message);
       
       int count = 0;
       
@@ -983,7 +983,7 @@ for (i_z=0; i_z<pnlpt->z_pk_num; i_z++) {
     double hfid = 0;
     
    
-class_call(background_at_tau(pba,tau_req[i_z],pba->long_info,pba->inter_normal,&last_indexf,pvecbackf),
+class_call(background_at_tau(pba,tau_req[i_z],long_info,inter_normal,&last_indexf,pvecbackf),
     pnlpt->error_message,
     pnlpt->error_message);
 
@@ -1069,7 +1069,7 @@ else {
 
 
 for (i_z=0; i_z<pnlpt->z_pk_num; i_z++) {
-class_call(background_at_tau(pba,tau_req[i_z],pba->long_info,pba->inter_normal,&last_indexf,pvecbackf),
+class_call(background_at_tau(pba,tau_req[i_z],long_info,inter_normal,&last_indexf,pvecbackf),
     pnlpt->error_message,
     pnlpt->error_message);
     Dref = pvecbackf[pba->index_bg_D];
@@ -1354,7 +1354,7 @@ class_call(nonlinear_pt_pk_l(pba,ppt,ppm,pnlpt,index_tau,pk_l,lnk_l,lnpk_l,ddlnp
                      pnlpt->error_message);
                      */
 
-class_call(background_at_tau(pba,pnlpt->tau[index_tau],pba->long_info,pba->inter_normal,&last_indexD,pvecbackD),pnlpt->error_message,pnlpt->error_message);
+class_call(background_at_tau(pba,pnlpt->tau[index_tau],long_info,inter_normal,&last_indexD,pvecbackD),pnlpt->error_message,pnlpt->error_message);
 
     Dplus =  pvecbackD[pba->index_bg_D];
     //printf("D+=%f \n",Dplus);
@@ -1853,12 +1853,12 @@ class_alloc(pvecback,pba->bg_size*sizeof(double),pnlpt->error_message);
 
 // class_call only calls a function!
 
-class_call(background_at_tau(pba,tau,pba->long_info,pba->inter_normal,&last_index,pvecback),
+class_call(background_at_tau(pba,tau,long_info,inter_normal,&last_index,pvecback),
                 pba->error_message,
                 pnlpt->error_message);
 
 if (pnlpt->nonlinear_pt_verbose > 0)
-printf("Computing one-loop power spectra at z=%e\n",pba->a_today/pvecback[pba->index_bg_a]-1.);
+printf("Computing one-loop power spectra at z=%e\n",1./pvecback[pba->index_bg_a]-1.);
 //printf("Alcock-Paczynski effect!\n");
 
 free(pvecback);

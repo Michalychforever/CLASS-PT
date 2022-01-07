@@ -1,8 +1,6 @@
-import classy
-from classy import Class
-print(classy.__file__)
+from classy import Class 
 import numpy as np
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from numpy import log, exp
 import sys
 from time import time 
@@ -20,23 +18,23 @@ cosmo.set({'k_pivot':'0.05',
 # 'T_cmb':'2.726',
 'h':'0.6737',
 'omega_b':'0.02237',
-'N_ncdm':'1',
-'m_ncdm':'0.06',
-'N_ur':'2.0328',
+'N_ncdm':'0',
+#'m_ncdm':'0.06',
+#'N_ur':'2.0328',
+'N_eff':'3.046',
 'omega_cdm':'0.12',
 'P_k_max_h/Mpc': '100.',
 'output':'mPk,tCl',
 'z_pk':z,
-'non linear':' PT ',
-'IR resummation':' Yes ',
-'Bias tracers':' Yes ',
-'RSD':' Yes ',
+'non linear':'PT',
+'IR resummation':'Yes',
+'Bias tracers':'Yes',
+'RSD':'Yes',
 'AP':'Yes',
-'Omfid':0.31,
- 'SigmaFOG':0.
+'Omfid':0.31
+# 'SigmaFOG':0.
 })
 t1 = time()
-print("Got to line 37")
 cosmo.compute() 
 
 
@@ -64,8 +62,6 @@ print("fz=",fz)
 #k1 = 0.1
 #print(cosmo.pk(k1,z))
 #print(cosmo.pk_lin(k1,z))
-
-print("Got to line 66")
 
 k = np.linspace(log(0.0001),log(50),200)
 k = np.exp(k)

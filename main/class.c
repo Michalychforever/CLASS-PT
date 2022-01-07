@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
   struct perturbations pt;         /* for source functions */
   struct primordial pm;       /* for primordial spectra */
   struct fourier fo;        /* for non-linear spectra */
-  struct nonlinear_pt nlpt;        /* for non-linear spectra */
+  struct nonlinear_pt nlpt;  /* for non-linear PT spectra */
   struct transfer tr;        /* for transfer functions */
   struct harmonic hr;          /* for output spectra */
   struct lensing le;          /* for lensed spectra */

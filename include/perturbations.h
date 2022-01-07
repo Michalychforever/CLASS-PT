@@ -126,7 +126,7 @@ struct perturbations
   short evolve_tensor_ur;             /**< will we evolve ur tensor perturbations (either because we have ur species, or we have ncdm species with massless approximation) ? */
   short evolve_tensor_ncdm;             /**< will we evolve ncdm tensor perturbations (if we have ncdm species and we use the exact method) ? */
 
-  short has_bias; /**<do we need bias tracers for the perturbation module ? */
+  short has_bias; /**< do we need bias tracers for the perturbation module? */
 
   short has_cl_cmb_temperature;       /**< do we need \f$ C_l \f$'s for CMB temperature? */
   short has_cl_cmb_polarization;      /**< do we need \f$ C_l \f$'s for CMB polarization? */
@@ -696,7 +696,7 @@ extern "C" {
                                       struct perturbations *ppt,
                                       int index_ic,
                                       char first_line[_LINE_LENGTH_MAX_],
-                                      FileName ic_suffix
+                                      char ic_suffix[_SUFFIXNAMESIZE_]
                                       );
 
   int perturbations_init(

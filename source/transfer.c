@@ -660,7 +660,7 @@ int transfer_perturbation_copy_sources_and_nl_corrections(
 
       for (index_tp = 0; index_tp < ppt->tp_size[index_md]; index_tp++) {
 
-        if ((pnlpt->method != nlpt_none || pfo->method != nl_none) && (_scalars_) &&
+        if ((pnlpt->method != nlpt_none) && (pfo->method != nl_none) && (_scalars_) &&
             (((ppt->has_source_delta_m == _TRUE_) && (index_tp == ppt->index_tp_delta_m)) ||
              ((ppt->has_source_delta_cb == _TRUE_) && (index_tp == ppt->index_tp_delta_cb)) ||
              ((ppt->has_source_theta_m == _TRUE_) && (index_tp == ppt->index_tp_theta_m)) ||
@@ -668,17 +668,18 @@ int transfer_perturbation_copy_sources_and_nl_corrections(
              ((ppt->has_source_phi == _TRUE_) && (index_tp == ppt->index_tp_phi)) ||
              ((ppt->has_source_phi_prime == _TRUE_) && (index_tp == ppt->index_tp_phi_prime)) ||
              ((ppt->has_source_phi_plus_psi == _TRUE_) && (index_tp == ppt->index_tp_phi_plus_psi)) ||
-             ((ppt->has_source_psi == _TRUE_) && (index_tp == ppt->index_tp_psi)))) {
+             ((ppt->has_source_psi == _TRUE_) && (index_tp == ppt->index_tp_psi)))) { //5
 
           class_alloc(sources[index_md][index_ic * ppt->tp_size[index_md] + index_tp],
                       ppt->k_size[index_md]*ppt->tau_size*sizeof(double),
                       ptr->error_message);
 
-        if (pfo->method != nl_none) {
-          for (index_tau=0; index_tau<ppt->tau_size; index_tau++) {
-            for (index_k=0; index_k<ppt->k_size[index_md]; index_k++) {
+        if (pfo->method != nl_none){ //4
+
+          for (index_tau=0; index_tau<ppt->tau_size; index_tau++) { //3
+            for (index_k=0; index_k<ppt->k_size[index_md]; index_k++) { //2
               if (((ppt->has_source_delta_cb == _TRUE_) && (index_tp == ppt->index_tp_delta_cb)) ||
-                  ((ppt->has_source_theta_cb == _TRUE_) && (index_tp == ppt->index_tp_theta_cb))){
+                  ((ppt->has_source_theta_cb == _TRUE_) && (index_tp == ppt->index_tp_theta_cb))){ //1
                 sources[index_md]
                   [index_ic * ppt->tp_size[index_md] + index_tp]
                   [index_tau * ppt->k_size[index_md] + index_k] =
@@ -686,9 +687,21 @@ int transfer_perturbation_copy_sources_and_nl_corrections(
                   [index_ic * ppt->tp_size[index_md] + index_tp]
                   [index_tau * ppt->k_size[index_md] + index_k]
                   * pfo->nl_corr_density[pfo->index_pk_cb][index_tau * ppt->k_size[index_md] + index_k];
-              }
+              } //1
               else{
-                for (index_tau=0; index_tau<ppt->tau_size; index_tau++) {
+                sources[index_md]
+                  [index_ic * ppt->tp_size[index_md] + index_tp]
+                  [index_tau * ppt->k_size[index_md] + index_k] =
+                  ppt->sources[index_md]
+                  [index_ic * ppt->tp_size[index_md] + index_tp]
+                  [index_tau * ppt->k_size[index_md] + index_k]
+                  * pfo->nl_corr_density[pfo->index_pk_m][index_tau * ppt->k_size[index_md] + index_k];
+              }
+            } //2
+          } //3
+        } //4
+        else {
+                    for (index_tau=0; index_tau<ppt->tau_size; index_tau++) {
                         for (index_k=0; index_k<ppt->k_size[index_md]; index_k++) {
                             sources[index_md]
                             [index_ic * ppt->tp_size[index_md] + index_tp]
@@ -700,10 +713,7 @@ int transfer_perturbation_copy_sources_and_nl_corrections(
                         }
                     }    
                 }
-              }
-            }
-          }
-        }
+        } //5
         else {
           sources[index_md][index_ic * ppt->tp_size[index_md] + index_tp] =
             ppt->sources[index_md][index_ic * ppt->tp_size[index_md] + index_tp];
@@ -773,7 +783,7 @@ int transfer_perturbation_sources_free(
   for (index_md = 0; index_md < ptr->md_size; index_md++) {
     for (index_ic = 0; index_ic < ppt->ic_size[index_md]; index_ic++) {
       for (index_tp = 0; index_tp < ppt->tp_size[index_md]; index_tp++) {
-        if ((pnlpt->method != nlpt_none || pfo->method != nl_none) && (_scalars_) &&
+        if ((pnlpt->method != nlpt_none) && (pfo->method != nl_none) && (_scalars_) &&
             (((ppt->has_source_delta_m == _TRUE_) && (index_tp == ppt->index_tp_delta_m)) ||
              ((ppt->has_source_theta_m == _TRUE_) && (index_tp == ppt->index_tp_theta_m)) ||
              ((ppt->has_source_delta_cb == _TRUE_) && (index_tp == ppt->index_tp_delta_cb)) ||

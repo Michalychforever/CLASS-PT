@@ -56,7 +56,7 @@ HEATING = external/heating
 #OPENBLAS = /opt/OpenBLAS/lib/libopenblas.a
 #OPENBLAS = /Users/michalychforever/Dropbox/Docs/science/OpenBLAS-0.2.20/libopenblas.a
 #OPENBLAS = /home/ivanov/Desktop/Structures/OpenBLAS-0.2.20/lib/libopenblas.a
-OPENBLAS = "/opt/anaconda3/lib/libopenblas.dylib"
+OPENBLAS = /opt/anaconda3/lib/libopenblas.a
 #/usr/local/opt/openblas/lib
 
 ########################################################

@@ -224,7 +224,7 @@ cdef class Class:
         if "fourier" in self.ncp:
             fourier_free(&self.fo)
         if "nonlinear_pt" in self.ncp:
-            nonlinear_pt_free(&self.nlpt)  
+            nonlinear_pt_free(&self.nlpt)
         if "primordial" in self.ncp:
             primordial_free(&self.pm)
         if "perturb" in self.ncp:
@@ -777,10 +777,10 @@ cdef class Class:
         free(pvecback)
         return lum_distance
 
-    # Gives the total matter pk for a given (k,z)
-    # def pk(self,double k,double z):
+    # Gives the pk for a given (k,z)
+    def pk(self,double k,double z):
         """
-        Gives the total matter pk (in Mpc**3) for a given k (in 1/Mpc) and z (will be non linear if requested to Class, linear otherwise)
+        Gives the pk (in Mpc**3) for a given k (in 1/Mpc) and z (will be non linear if requested to Class, linear otherwise)
 
         .. note::
 
@@ -788,32 +788,6 @@ cdef class Class:
             because otherwise a segfault will occur
 
         """
-        # cdef double pk
-
-        # if (self.pt.has_pk_matter == _FALSE_):
-            # raise CosmoSevereError("No power spectrum computed. You must add mPk to the list of outputs.")
-
-        # if (self.fo.method == nl_none):
-            # if fourier_pk_at_k_and_z(&self.ba,&self.pm,&self.fo,pk_linear,k,z,self.fo.index_pk_m,&pk,NULL)==_FAILURE_:
-                # raise CosmoSevereError(self.fo.error_message)
-        # else:
-            # if fourier_pk_at_k_and_z(&self.ba,&self.pm,&self.fo,pk_nonlinear,k,z,self.fo.index_pk_m,&pk,NULL)==_FAILURE_:
-                # raise CosmoSevereError(self.fo.error_message)
-
-        # return pk
-
-    def pk(self,double k,double z):    
-        
-        """
-        Gives the pk for a given k and z (will be non linear if requested to Class, linear otherwise)
-
-        .. note::
-
-            there is an additional check to verify if output contains `mPk`,
-            because otherwise a segfault will occur
-
-        """
-
         cdef double pk
         cdef double pk_Id2d2
         cdef double pk_Id2
@@ -868,17 +842,23 @@ cdef class Class:
 
         # Quantities for the isocurvature modes
         cdef double *pk_ic = <double*> calloc(self.hr.ic_ic_size[self.hr.index_md_scalars], sizeof(double))
+
         if (self.pt.has_pk_matter == _FALSE_):
-            raise CosmoSevereError(
-                "No power spectrum computed. You must add mPk to the list of outputs."
-                )
+            raise CosmoSevereError("No power spectrum computed. You must add mPk to the list of outputs.")
 
         if (self.nlpt.method == 0):
             if fourier_pk_at_k_and_z(&self.ba,&self.pm,&self.fo,pk_linear,k,z,self.fo.index_pk_m,&pk,NULL)==_FAILURE_:
                 raise CosmoSevereError(self.fo.error_message)
         else:
-             if spectra_pk_nl_at_k_and_z_i(&self.ba,&self.pm,&self.pt,&self.nlpt,k,z,&pk,&pk_Id2d2,&pk_Id2,&pk_IG2,&pk_Id2G2,&pk_IG2G2,&pk_IFG2,&pk_IFG2_0b1,&pk_IFG2_0,&pk_IFG2_2,&pk_CTR,&pk_CTR_0,&pk_CTR_2,&pk_CTR_4,&pk_Tree,&pk_Tree_0_vv,&pk_Tree_0_vd,&pk_Tree_0_dd,&pk_Tree_2_vv,&pk_Tree_2_vd,&pk_Tree_4_vv,&pk_0_vv,&pk_0_vd,&pk_0_dd,&pk_2_vv,&pk_2_vd,&pk_2_dd,&pk_4_vv,&pk_4_vd,&pk_4_dd,&pk_0_b1b2,&pk_0_b2,&pk_0_b1bG2,&pk_0_bG2,&pk_2_b1b2,&pk_2_b2,&pk_2_b1bG2,&pk_2_bG2,&pk_4_b2,&pk_4_bG2,&pk_4_b1b2,&pk_4_b1bG2,&pk_2_b2b2,&pk_2_b2bG2,&pk_2_bG2bG2,&pk_4_b2b2,&pk_4_b2bG2,&pk_4_bG2bG2) ==_FAILURE_:
+            if spectra_pk_nl_at_k_and_z_i(&self.ba,&self.pm,&self.pt,&self.nlpt,k,z,&pk,&pk_Id2d2,&pk_Id2,&pk_IG2,&pk_Id2G2,&pk_IG2G2,&pk_IFG2,&pk_IFG2_0b1,&pk_IFG2_0,&pk_IFG2_2,&pk_CTR,&pk_CTR_0,&pk_CTR_2,&pk_CTR_4,&pk_Tree,&pk_Tree_0_vv,&pk_Tree_0_vd,&pk_Tree_0_dd,&pk_Tree_2_vv,&pk_Tree_2_vd,&pk_Tree_4_vv,&pk_0_vv,&pk_0_vd,&pk_0_dd,&pk_2_vv,&pk_2_vd,&pk_2_dd,&pk_4_vv,&pk_4_vd,&pk_4_dd,&pk_0_b1b2,&pk_0_b2,&pk_0_b1bG2,&pk_0_bG2,&pk_2_b1b2,&pk_2_b2,&pk_2_b1bG2,&pk_2_bG2,&pk_4_b2,&pk_4_bG2,&pk_4_b1b2,&pk_4_b1bG2,&pk_2_b2b2,&pk_2_b2bG2,&pk_2_bG2bG2,&pk_4_b2b2,&pk_4_b2bG2,&pk_4_bG2bG2) ==_FAILURE_:
                 raise CosmoSevereError(self.nlpt.error_message)
+
+        if (self.fo.method == nl_none):
+            if fourier_pk_at_k_and_z(&self.ba,&self.pm,&self.fo,pk_linear,k,z,self.fo.index_pk_m,&pk,NULL)==_FAILURE_:
+                raise CosmoSevereError(self.fo.error_message)
+        else:
+            if fourier_pk_at_k_and_z(&self.ba,&self.pm,&self.fo,pk_nonlinear,k,z,self.fo.index_pk_m,&pk,NULL)==_FAILURE_:
+                raise CosmoSevereError(self.fo.error_message)
 
         result = [pk-5000.]
         result.append(-pk_Id2d2+10000000.)
@@ -929,7 +909,6 @@ cdef class Class:
         result.append(pk_4_b2bG2-10000000.)
         result.append(pk_4_bG2bG2-10000000.)
         free(pk_ic)
-#        return pk
         return result
 
     # Gives the cdm+b pk for a given (k,z)
@@ -1050,7 +1029,7 @@ cdef class Class:
                     pk[index_k,index_z,index_mu] = self.pk_lin(k[index_k,index_z,index_mu],z[index_z])
         return pk
 
-    # New user interface functions for CLASS-PT
+# New user interface functions
     def initialize_output(self, np.ndarray[DTYPE_t,ndim=1] k, double z, int k_size):
         """Compute and store the various non-linear power spectrum terms that will be called in the user interface routines below."""
         self.kh = k
@@ -1279,7 +1258,7 @@ cdef class Class:
             z_max_nonlinear = self.z_of_tau(self.fo.tau[self.fo.index_tau_min_nl])
             z_max_requested = z[0]
             if ((self.fo.tau_size - self.fo.ln_tau_size) < self.fo.index_tau_min_nl):
-                raise CosmoSevereError("get_pk_and_k_and_z() is trying to return P(k,z) up to z_max=%e (to encompass your requested maximum value of z); but the input parameters sent to CLASS were such that the non-linear P(k,z) could only be consistently computed up to z=%e; increase the input parameter 'P_k_max_h/Mpc' or 'P_k_max_1/Mpc', or increase the precision parameter 'fourier_min_k_max', or decrease your requested z_max"%(z_max_requested,z_max_nonlinear))
+                raise CosmoComputationError("get_pk_and_k_and_z() is trying to return P(k,z) up to z_max=%e (to encompass your requested maximum value of z); but the input parameters sent to CLASS were such that the non-linear P(k,z) could only be consistently computed up to z=%e; increase the input parameter 'P_k_max_h/Mpc' or 'P_k_max_1/Mpc', or increase the precision parameter 'fourier_min_k_max', or decrease your requested z_max"%(z_max_requested,z_max_nonlinear))
 
         # get list of k
 

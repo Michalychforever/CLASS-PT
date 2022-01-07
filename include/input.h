@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "parser.h"
+#include "nonlinear_pt.h"
 
 #define _N_FILEROOT_ 100 /* Number of files that will be not overwritten for a given root */
 
@@ -205,7 +206,7 @@
 
 enum target_names {theta_s, Omega_dcdmdr, omega_dcdmdr, Omega_scf, Omega_ini_dcdm, omega_ini_dcdm, sigma8};
 /* Important: Keep this number equal to the number of target_names */
-#define _NUM_TARGETS_ 9
+#define _NUM_TARGETS_ 7
 /* Important: add one for each new target_names */
 enum computation_stage {cs_background, cs_thermodynamics, cs_perturbations, cs_primordial, cs_nonlinear, cs_nonlinear_pt, cs_transfer, cs_spectra};
 
@@ -270,7 +271,7 @@ extern "C" {
                            struct primordial *ppm,
                            struct harmonic *phr,
                            struct fourier *pfo,
-                           struct nonlinear_pt * pnlpt,
+                           struct nonlinear_pt *pnlpt,
                            struct lensing *ple,
                            struct distortions *psd,
                            struct output *pop,
@@ -420,8 +421,8 @@ extern "C" {
                                     struct perturbations * ppt,
                                     struct transfer * ptr,
                                     struct harmonic * phr,
-                                    struct output * pop,
                                     struct nonlinear_pt * pnlpt,
+                                    struct output * pop,
                                     ErrorMsg errmsg);
 
   int input_read_parameters_lensing(struct file_content * pfc,

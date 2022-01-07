@@ -394,7 +394,7 @@ int perturbations_output_firstline_and_ic_suffix(
                                                  struct perturbations *ppt,
                                                  int index_ic,
                                                  char first_line[_LINE_LENGTH_MAX_],
-                                                 FileName ic_suffix
+                                                 char ic_suffix[_SUFFIXNAMESIZE_]
                                                  ){
 
   first_line[0]='\0';
@@ -1094,7 +1094,6 @@ int perturbations_indices(
     ppt->has_source_delta_cdm = _TRUE_;
     ppt->has_source_delta_b = _TRUE_;
     ppt->has_source_delta_cb = _TRUE_;
-
   }
 
   if (ppt->has_cl_cmb_temperature == _TRUE_) {

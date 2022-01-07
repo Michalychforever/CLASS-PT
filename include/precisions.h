@@ -88,6 +88,13 @@ class_precision_parameter(tol_shooting_deltaF,double,1.e-6)
  * Relative tolerance of root x during shooting (only 1D case)
  */
 class_precision_parameter(tol_shooting_deltax_rel,double,1.e-5)
+/**
+ * Threshold value of M_ncdm=T_ncdm/m_ncdm above wich a species is
+ * considered a "non-free-streaming" when comuting the parameter
+ * Omega0_nfsm, relevant for HyRec and non-linear correction
+ * algorithms
+ */
+class_precision_parameter(M_nfsm_threshold,double,1.e4)
 /*
  * Currently unused parameter.
  */
@@ -520,7 +527,7 @@ class_precision_parameter(hmcode_tol_sigma,double,1.e-6) /**< tolerance required
                                                             of non-linearity, k_nl=1./R_nl */
 
 /*nonlinear PT precision parameter */
-class_precision_parameter(nmax_nlpt,int,128) 
+class_precision_parameter(nmax_nlpt,int,128)
 
 /**
  * parameters controlling stepsize and min/max r & a values for

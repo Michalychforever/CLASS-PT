@@ -37,22 +37,12 @@ with open(os.path.join(include_folder, 'common.h'), 'r') as v_file:
             break
 
 # Define cython extension and fix Python version
-#classy_ext = Extension("classy", [os.path.join(classy_folder, "classy.pyx")],
-                           #include_dirs=[nm.get_include(), include_folder, heat_folder, recfast_folder, hyrec_folder],
-                           #libraries=liblist,
-                           #library_dirs=[root_folder, GCCPATH],
-                           #extra_link_args=['-lgomp']
-                       #)
-
 classy_ext = Extension("classy", [os.path.join(classy_folder, "classy.pyx")],
                            include_dirs=[nm.get_include(), include_folder, heat_folder, recfast_folder, hyrec_folder],
                            libraries=liblist,
-                           #library_dirs=[root_folder, GCCPATH, '/Users/michalychforever/Dropbox/Docs/science/OpenBLAS-0.2.20'],
-                           #extra_link_args=['/Users/michalychforever/Dropbox/Docs/science/OpenBLAS-0.2.20/libopenblas.a','-lgomp'],
-                           library_dirs=[root_folder, GCCPATH, '/usr/local/opt/anaconda3/lib'],
-                           extra_link_args=['/opt/anaconda3/lib/libopenblas.dylib','-lgomp']
-                           )
-
+                           library_dirs=[root_folder, GCCPATH, 'opt/anaconda3/lib'],
+                           extra_link_args=['opt/anaconda3/lib/libopenblas.a','-lgomp']
+                       )
 import sys
 classy_ext.cython_directives = {'language_level': "3" if sys.version_info.major>=3 else "2"}
 

@@ -130,6 +130,8 @@ struct harmonic {
                             deprecated functions are removed, it will
                             be possible to remove also this pointer. */
 
+  struct nonlinear_pt * pnlpt;
+
   short harmonic_verbose; /**< flag regulating the amount of information sent to standard output (none if set to zero) */
 
   ErrorMsg error_message; /**< zone for writing error messages */
@@ -164,7 +166,7 @@ extern "C" {
                    struct perturbations * ppt,
                    struct primordial * ppm,
                    struct fourier *pfo,
-                   struct nonlinear_pt *pnlpt,
+                   struct nonlinear_pt * pnlpt,
                    struct transfer * ptr,
                    struct harmonic * phr
                    );
@@ -210,6 +212,7 @@ extern "C" {
                         struct background * pba,
                         struct perturbations * ppt,
                         struct fourier *pfo,
+                        struct nonlinear_pt * pnlpt,
                         struct harmonic * phr
                         );
 
