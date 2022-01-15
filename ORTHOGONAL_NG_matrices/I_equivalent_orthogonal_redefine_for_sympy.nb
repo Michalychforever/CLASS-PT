@@ -1,0 +1,226 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 12.3' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      9988,        218]
+NotebookOptionsPosition[      8801,        188]
+NotebookOutlinePosition[      9249,        206]
+CellTagsIndexPosition[      9206,        203]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"ClearAll", "[", 
+   RowBox[{"Evaluate", "[", 
+    RowBox[{
+     RowBox[{"Context", "[", "]"}], "<>", "\"\<*\>\""}], "]"}], "]"}], 
+  ";"}], "\n", 
+ RowBox[{
+  RowBox[{"ClearSystemCache", "[", "]"}], ";"}]}], "Code",
+ InitializationCell->False,
+ CellChangeTimes->{{3.757242697595481*^9, 3.757242699679309*^9}},
+ CellLabel->"In[1]:=",ExpressionUUID->"fdd5d1ab-404c-45aa-abda-b6763b3cb6eb"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"ToExpression", "[", 
+   RowBox[{"Import", "[", 
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<I_equivalent_orthogonal.txt\>\""}], "]"}], "]"}], "/.", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"nu1", "->", 
+     RowBox[{
+      RowBox[{"-", "0.1"}], "+", 
+      RowBox[{"1.2", "I"}]}]}], ",", 
+    RowBox[{"nu2", "->", 
+     RowBox[{"1.2", "-", 
+      RowBox[{"0.3", "I"}]}]}]}], "}"}]}]], "Input",
+ CellChangeTimes->{{3.8493662001188583`*^9, 3.849366257904893*^9}},
+ CellLabel->"In[3]:=",ExpressionUUID->"ff2a73e6-a2ab-45b8-85c8-ec61c1cfe554"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"-", "0.00024161182174470465`"}], "-", 
+  RowBox[{"0.001960751643157016`", " ", "\[ImaginaryI]"}]}]], "Output",
+ CellChangeTimes->{{3.849366215994727*^9, 3.849366227646029*^9}, 
+   3.849366258376143*^9, 3.8493665839277353`*^9, 3.849366629072555*^9, {
+   3.849366727539909*^9, 3.8493667360394*^9}},
+ CellLabel->"Out[3]=",ExpressionUUID->"9b524caf-0551-4e31-b6d0-35d75efec397"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Import", "[", 
+  RowBox[{
+   RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+   "\"\<I_equivalent_orthogonal.txt\>\""}], "]"}]], "Input",
+ CellLabel->"In[4]:=",ExpressionUUID->"d98cb35f-306b-4585-a693-e2b578b9d526"],
+
+Cell[BoxData["\<\"((-I/128)*Gamma[3 - 2*nu1]*Gamma[3 - 2*nu2]*Gamma[-3 + \
+2*nu1 + 2*nu2]*((-8*I)*E^((2*I)*(nu1 + nu2)*Pi)*Pi + 2*E^((2*I)*(nu1 + \
+nu2)*Pi)*PolyGamma[0, 1 - 2*nu1] + 4*E^((2*I)*(nu1 + nu2)*Pi)*PolyGamma[0, 2 \
+- 2*nu1] + 2*E^((2*I)*(nu1 + nu2)*Pi)*PolyGamma[0, 3 - 2*nu1] + \
+E^((2*I)*nu2*Pi)*PolyGamma[0, 1/2 - nu1] - 3*E^((2*I)*nu2*Pi)*PolyGamma[0, 1 \
+- nu1] + 3*E^((2*I)*nu2*Pi)*PolyGamma[0, 3/2 - nu1] - \
+E^((2*I)*nu2*Pi)*PolyGamma[0, 2 - nu1] + E^((2*I)*(2*nu1 + \
+nu2)*Pi)*PolyGamma[0, -1 + nu1] - 3*E^((2*I)*(2*nu1 + nu2)*Pi)*PolyGamma[0, \
+-1/2 + nu1] + 3*E^((2*I)*(2*nu1 + nu2)*Pi)*PolyGamma[0, nu1] - \
+2*E^((2*I)*(nu1 + nu2)*Pi)*PolyGamma[0, 2*nu1] - E^((2*I)*(2*nu1 + \
+nu2)*Pi)*PolyGamma[0, 1/2 + nu1] - 2*E^((2*I)*(nu1 + nu2)*Pi)*PolyGamma[0, -2 \
++ 2*nu1] - 4*E^((2*I)*(nu1 + nu2)*Pi)*PolyGamma[0, -1 + 2*nu1] + \
+2*E^((2*I)*(nu1 + nu2)*Pi)*PolyGamma[0, 1 - 2*nu2] + 4*E^((2*I)*(nu1 + \
+nu2)*Pi)*PolyGamma[0, 2 - 2*nu2] + 2*E^((2*I)*(nu1 + nu2)*Pi)*PolyGamma[0, 3 \
+- 2*nu2] - 4*E^((2*I)*(nu1 + nu2)*Pi)*PolyGamma[0, 5 - 2*nu1 - 2*nu2] + \
+E^((2*I)*nu1*Pi)*PolyGamma[0, 1/2 - nu2] - 3*E^((2*I)*nu1*Pi)*PolyGamma[0, 1 \
+- nu2] + 3*E^((2*I)*nu1*Pi)*PolyGamma[0, 3/2 - nu2] - \
+E^((2*I)*nu1*Pi)*PolyGamma[0, 2 - nu2] + PolyGamma[0, 2 - nu1 - nu2] - \
+3*PolyGamma[0, 5/2 - nu1 - nu2] + 3*PolyGamma[0, 3 - nu1 - nu2] - \
+PolyGamma[0, 7/2 - nu1 - nu2] + E^((2*I)*(nu1 + 2*nu2)*Pi)*PolyGamma[0, -1 + \
+nu2] - 3*E^((2*I)*(nu1 + 2*nu2)*Pi)*PolyGamma[0, -1/2 + nu2] + \
+3*E^((2*I)*(nu1 + 2*nu2)*Pi)*PolyGamma[0, nu2] - 2*E^((2*I)*(nu1 + \
+nu2)*Pi)*PolyGamma[0, 2*nu2] - E^((2*I)*(nu1 + 2*nu2)*Pi)*PolyGamma[0, 1/2 + \
+nu2] - 2*E^((2*I)*(nu1 + nu2)*Pi)*PolyGamma[0, -2*(-3 + nu1 + nu2)] + \
+E^((4*I)*(nu1 + nu2)*Pi)*PolyGamma[0, -5/2 + nu1 + nu2] - 2*E^((2*I)*(nu1 + \
+nu2)*Pi)*PolyGamma[0, -2*(-2 + nu1 + nu2)] - 3*E^((4*I)*(nu1 + \
+nu2)*Pi)*PolyGamma[0, -2 + nu1 + nu2] + 4*E^((2*I)*(nu1 + \
+nu2)*Pi)*PolyGamma[0, 2*(-2 + nu1 + nu2)] + 3*E^((4*I)*(nu1 + \
+nu2)*Pi)*PolyGamma[0, -3/2 + nu1 + nu2] - E^((4*I)*(nu1 + \
+nu2)*Pi)*PolyGamma[0, -1 + nu1 + nu2] - 2*E^((2*I)*(nu1 + \
+nu2)*Pi)*PolyGamma[0, -2 + 2*nu2] - 4*E^((2*I)*(nu1 + nu2)*Pi)*PolyGamma[0, \
+-1 + 2*nu2] + 2*E^((2*I)*(nu1 + nu2)*Pi)*PolyGamma[0, -5 + 2*nu1 + 2*nu2] + \
+2*E^((2*I)*(nu1 + nu2)*Pi)*PolyGamma[0, -3 + 2*nu1 + 2*nu2]))/(E^((2*I)*(nu1 \
++ nu2)*Pi)*Pi^3)\"\>"], "Output",
+ CellChangeTimes->{
+  3.849366265549385*^9, 3.8493665839521713`*^9, 3.8493666291052856`*^9, {
+   3.849366727570595*^9, 3.849366736072001*^9}},
+ CellLabel->"Out[4]=",ExpressionUUID->"3b2d6f2e-df47-432d-9364-824efc56ff94"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"export", "=", 
+  RowBox[{"StringReplace", "[", 
+   RowBox[{
+    RowBox[{"StringReplace", "[", 
+     RowBox[{
+      RowBox[{"Import", "[", 
+       RowBox[{
+        RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+        "\"\<I_equivalent_orthogonal.txt\>\""}], "]"}], ",", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"\"\<Gamma\>\"", "->", "\"\<gamma\>\""}], ",", 
+        RowBox[{"\"\<[\>\"", "->", "\"\<(\>\""}], ",", 
+        RowBox[{"\"\<]\>\"", "->", "\"\<)\>\""}]}], "}"}]}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"\"\<Polygamma(0, \>\"", "->", "\"\<digamma(\>\""}], ",", 
+      RowBox[{"\"\<Pi\>\"", "->", "\"\<pi\>\""}]}], "}"}]}], "]"}]}]], "Input",\
+
+ CellChangeTimes->{{3.849366299454216*^9, 3.8493663069193497`*^9}, {
+   3.8493663524093637`*^9, 3.84936636724177*^9}, {3.849366445415357*^9, 
+   3.849366550826827*^9}, 3.8493666002227592`*^9, {3.8493667122019787`*^9, 
+   3.8493667240980387`*^9}},
+ CellLabel->"In[5]:=",ExpressionUUID->"ffb739fd-b638-4562-8d88-85811ee4ef3b"],
+
+Cell[BoxData["\<\"((-I/128)*gamma(3 - 2*nu1)*gamma(3 - 2*nu2)*gamma(-3 + \
+2*nu1 + 2*nu2)*((-8*I)*E^((2*I)*(nu1 + nu2)*pi)*pi + 2*E^((2*I)*(nu1 + \
+nu2)*pi)*digamma(1 - 2*nu1) + 4*E^((2*I)*(nu1 + nu2)*pi)*digamma(2 - 2*nu1) + \
+2*E^((2*I)*(nu1 + nu2)*pi)*digamma(3 - 2*nu1) + E^((2*I)*nu2*pi)*digamma(1/2 \
+- nu1) - 3*E^((2*I)*nu2*pi)*digamma(1 - nu1) + 3*E^((2*I)*nu2*pi)*digamma(3/2 \
+- nu1) - E^((2*I)*nu2*pi)*digamma(2 - nu1) + E^((2*I)*(2*nu1 + \
+nu2)*pi)*digamma(-1 + nu1) - 3*E^((2*I)*(2*nu1 + nu2)*pi)*digamma(-1/2 + nu1) \
++ 3*E^((2*I)*(2*nu1 + nu2)*pi)*digamma(nu1) - 2*E^((2*I)*(nu1 + \
+nu2)*pi)*digamma(2*nu1) - E^((2*I)*(2*nu1 + nu2)*pi)*digamma(1/2 + nu1) - \
+2*E^((2*I)*(nu1 + nu2)*pi)*digamma(-2 + 2*nu1) - 4*E^((2*I)*(nu1 + \
+nu2)*pi)*digamma(-1 + 2*nu1) + 2*E^((2*I)*(nu1 + nu2)*pi)*digamma(1 - 2*nu2) \
++ 4*E^((2*I)*(nu1 + nu2)*pi)*digamma(2 - 2*nu2) + 2*E^((2*I)*(nu1 + \
+nu2)*pi)*digamma(3 - 2*nu2) - 4*E^((2*I)*(nu1 + nu2)*pi)*digamma(5 - 2*nu1 - \
+2*nu2) + E^((2*I)*nu1*pi)*digamma(1/2 - nu2) - 3*E^((2*I)*nu1*pi)*digamma(1 - \
+nu2) + 3*E^((2*I)*nu1*pi)*digamma(3/2 - nu2) - E^((2*I)*nu1*pi)*digamma(2 - \
+nu2) + digamma(2 - nu1 - nu2) - 3*digamma(5/2 - nu1 - nu2) + 3*digamma(3 - \
+nu1 - nu2) - digamma(7/2 - nu1 - nu2) + E^((2*I)*(nu1 + 2*nu2)*pi)*digamma(-1 \
++ nu2) - 3*E^((2*I)*(nu1 + 2*nu2)*pi)*digamma(-1/2 + nu2) + 3*E^((2*I)*(nu1 + \
+2*nu2)*pi)*digamma(nu2) - 2*E^((2*I)*(nu1 + nu2)*pi)*digamma(2*nu2) - \
+E^((2*I)*(nu1 + 2*nu2)*pi)*digamma(1/2 + nu2) - 2*E^((2*I)*(nu1 + \
+nu2)*pi)*digamma(-2*(-3 + nu1 + nu2)) + E^((4*I)*(nu1 + nu2)*pi)*digamma(-5/2 \
++ nu1 + nu2) - 2*E^((2*I)*(nu1 + nu2)*pi)*digamma(-2*(-2 + nu1 + nu2)) - \
+3*E^((4*I)*(nu1 + nu2)*pi)*digamma(-2 + nu1 + nu2) + 4*E^((2*I)*(nu1 + \
+nu2)*pi)*digamma(2*(-2 + nu1 + nu2)) + 3*E^((4*I)*(nu1 + \
+nu2)*pi)*digamma(-3/2 + nu1 + nu2) - E^((4*I)*(nu1 + nu2)*pi)*digamma(-1 + \
+nu1 + nu2) - 2*E^((2*I)*(nu1 + nu2)*pi)*digamma(-2 + 2*nu2) - 4*E^((2*I)*(nu1 \
++ nu2)*pi)*digamma(-1 + 2*nu2) + 2*E^((2*I)*(nu1 + nu2)*pi)*digamma(-5 + \
+2*nu1 + 2*nu2) + 2*E^((2*I)*(nu1 + nu2)*pi)*digamma(-3 + 2*nu1 + \
+2*nu2)))/(E^((2*I)*(nu1 + nu2)*pi)*pi^3)\"\>"], "Output",
+ CellChangeTimes->{
+  3.849366367694523*^9, {3.849366443104595*^9, 3.849366499402873*^9}, 
+   3.849366531161373*^9, {3.849366583978586*^9, 3.8493666291430387`*^9}, {
+   3.8493667276063623`*^9, 3.849366736099058*^9}},
+ CellLabel->"Out[5]=",ExpressionUUID->"53ecfecc-eeae-4bae-9469-a092626cf7eb"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<I_equivalent_orthogonal_sympy.txt\>\""}], ",", "export"}], "]"}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.849366555213523*^9, 3.849366582501986*^9}},
+ CellLabel->"In[6]:=",ExpressionUUID->"42582a5b-e814-4f74-97e8-b78d2523ee7e"]
+},
+WindowToolbars->"EditBar",
+WindowSize->{808, 747},
+WindowMargins->{{4, Automatic}, {Automatic, 4}},
+Magnification:>1.25 Inherited,
+FrontEndVersion->"12.3 for Mac OS X x86 (64-bit) (July 9, 2021)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"b85b592a-4ad4-483b-a474-b9ba7b9c9d5f"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 423, 11, 70, "Code",ExpressionUUID->"fdd5d1ab-404c-45aa-abda-b6763b3cb6eb",
+ InitializationCell->False],
+Cell[CellGroupData[{
+Cell[1006, 35, 606, 17, 90, "Input",ExpressionUUID->"ff2a73e6-a2ab-45b8-85c8-ec61c1cfe554"],
+Cell[1615, 54, 409, 7, 42, "Output",ExpressionUUID->"9b524caf-0551-4e31-b6d0-35d75efec397"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[2061, 66, 239, 5, 37, "Input",ExpressionUUID->"d98cb35f-306b-4585-a693-e2b578b9d526"],
+Cell[2303, 73, 2590, 37, 1109, "Output",ExpressionUUID->"3b2d6f2e-df47-432d-9364-824efc56ff94"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[4930, 115, 1038, 24, 168, "Input",ExpressionUUID->"ffb739fd-b638-4562-8d88-85811ee4ef3b"],
+Cell[5971, 141, 2444, 33, 1031, "Output",ExpressionUUID->"53ecfecc-eeae-4bae-9469-a092626cf7eb"]
+}, Open  ]],
+Cell[8430, 177, 367, 9, 64, "Input",ExpressionUUID->"42582a5b-e814-4f74-97e8-b78d2523ee7e"]
+}
+]
+*)
+

@@ -328,54 +328,105 @@ cdef extern from "class.h":
         void * pnlpt,
         double k,
         double z,
-        double * pk,
-        double * pk_Id2d2,
-        double * pk_Id2,
-        double * pk_IG2,
-        double * pk_Id2G2,
-        double * pk_IG2G2,
-        double * pk_IFG2,
-        double * pk_IFG2_0b1,
-        double * pk_IFG2_0,
-        double * pk_IFG2_2,
-        double * pk_CTR,
-        double * pk_CTR_0,
-        double * pk_CTR_2,
-        double * pk_CTR_4,
-        double * pk_Tree,
-        double * pk_Tree_0_vv,
-        double * pk_Tree_0_vd,
-        double * pk_Tree_0_dd,
-        double * pk_Tree_2_vv,
-        double * pk_Tree_2_vd,
-        double * pk_Tree_4_vv,
-        double * pk_0_vv,
-        double * pk_0_vd,
-        double * pk_0_dd,
-        double * pk_2_vv,
-        double * pk_2_vd,
-        double * pk_2_dd,
-        double * pk_4_vv,
-        double * pk_4_vd,
-        double * pk_4_dd,
-        double * pk_0_b1b2,
-        double * pk_0_b2,
-        double * pk_0_b1bG2,
-        double * pk_0_bG2,
-        double * pk_2_b1b2,
-        double * pk_2_b2,
-        double * pk_2_b1bG2,
-        double * pk_2_bG2,
-        double * pk_4_b2,
-        double * pk_4_bG2,
-        double * pk_4_b1b2,
-        double * pk_4_b1bG2,
-        double * pk_2_b2b2,
-        double * pk_2_b2bG2,
-        double * pk_2_bG2bG2,
-        double * pk_4_b2b2,
-        double * pk_4_b2bG2,
-        double * pk_4_bG2G2)
+        double * pk, #1
+        double * pk_Id2d2, #2
+        double * pk_Id2, #3
+        double * pk_IG2, #4
+        double * pk_Id2G2, #5
+        double * pk_IG2G2, #6
+        double * pk_IFG2, #7
+        double * pk_IFG2_0b1, #8
+        double * pk_IFG2_0, #9
+        double * pk_IFG2_2, #10
+        double * pk_CTR, #11
+        double * pk_CTR_0, #12
+        double * pk_CTR_2, #13
+        double * pk_CTR_4, #14
+        double * pk_Tree, #15
+        double * pk_Tree_0_vv, #16
+        double * pk_Tree_0_vd, #17
+        double * pk_Tree_0_dd, #18
+        double * pk_Tree_2_vv, #19
+        double * pk_Tree_2_vd, #20
+        double * pk_Tree_4_vv, #21
+        double * pk_0_vv, #22
+        double * pk_0_vd, #23
+        double * pk_0_dd, #24
+        double * pk_2_vv, #25
+        double * pk_2_vd, #26
+        double * pk_2_dd, #27
+        double * pk_4_vv, #28
+        double * pk_4_vd, #29
+        double * pk_4_dd, #30
+        double * pk_0_b1b2, #31
+        double * pk_0_b2, #32
+        double * pk_0_b1bG2, #33
+        double * pk_0_bG2, #34
+        double * pk_2_b1b2, #35
+        double * pk_2_b2, #36
+        double * pk_2_b1bG2, #37
+        double * pk_2_bG2, #38
+        double * pk_4_b2, #39
+        double * pk_4_bG2, #40
+        double * pk_4_b1b2, #41
+        double * pk_4_b1bG2, #42
+        double * pk_2_b2b2, #43
+        double * pk_2_b2bG2, #44
+        double * pk_2_bG2bG2, #45
+        double * pk_4_b2b2, #46
+        double * pk_4_b2bG2, #47
+        double * pk_4_bG2G2, #48
+        double * pk_nl_fNL, #49
+        double * pk_fNLd2, #50
+        double * pk_fNLG2, #51
+        double * pk_fNL_0_vv, #52
+        double * pk_fNL_0_vd, #53
+        double * pk_fNL_0_dd, #54
+        double * pk_fNL_2_vv, #55
+        double * pk_fNL_2_vd, #56
+        double * pk_fNL_2_dd, #57
+        double * pk_fNL_4_vv, #58
+        double * pk_fNL_4_vd, #59
+        double * pk_fNL_4_dd, #60
+        double * pk12_0_b1b2, #61
+        double * pk12_0_b2, #62
+        double * pk12_0_b1bG2, #63
+        double * pk12_0_bG2, #64
+        double * pk12_2_b1b2, #65
+        double * pk12_2_b2, #66
+        double * pk12_2_b1bG2, #67
+        double * pk12_2_bG2, #68
+        double * pk12_4_b1b2, #69
+        double * pk12_4_b2, #70
+        double * pk12_4_b1bG2, #71
+        double * pk12_4_bG2, #72 #GC: ORTHOGONAL
+        #GC: ORTHOGONAL -- start
+        double * pk_nl_fNL_ortho, #73
+        double * pk_fNLd2_ortho, #74
+        double * pk_fNLG2_ortho, #75
+        double * pk_fNL_0_vv_ortho, #76
+        double * pk_fNL_0_vd_ortho, #77
+        double * pk_fNL_0_dd_ortho, #78
+        double * pk_fNL_2_vv_ortho, #79
+        double * pk_fNL_2_vd_ortho, #80
+        double * pk_fNL_2_dd_ortho, #81
+        double * pk_fNL_4_vv_ortho, #82
+        double * pk_fNL_4_vd_ortho, #83
+        double * pk_fNL_4_dd_ortho, #84
+        double * pk12_0_b1b2_ortho, #85
+        double * pk12_0_b2_ortho, #86
+        double * pk12_0_b1bG2_ortho, #87
+        double * pk12_0_bG2_ortho, #88
+        double * pk12_2_b1b2_ortho, #89
+        double * pk12_2_b2_ortho, #90
+        double * pk12_2_b1bG2_ortho, #91
+        double * pk12_2_bG2_ortho, #92
+        double * pk12_4_b1b2_ortho, #93
+        double * pk12_4_b2_ortho, #94
+        double * pk12_4_b1bG2_ortho, #95
+        double * pk12_4_bG2_ortho #96
+        #GC: ORTHOGONAL -- finish
+        )
 
     int spectra_pk_nl_at_z(
         void * pba,
@@ -436,7 +487,64 @@ cdef extern from "class.h":
         double * output_tot_2_bG2bG2,
         double * output_tot_4_b2b2,
         double * output_tot_4_b2bG2,
-        double * output_tot_4_bG2bG2)
+        double * output_tot_4_bG2bG2,
+        #GC...
+        double * output_tot_pk_nl_fNL,
+        double * output_tot_pk_fNLd2,
+        double * output_tot_pk_fNLG2,
+        #GC...
+        double * output_tot_pk_l_fNL_0_vv,
+        double * output_tot_pk_l_fNL_0_vd,
+        double * output_tot_pk_l_fNL_0_dd,
+        double * output_tot_pk_l_fNL_2_vv,
+        double * output_tot_pk_l_fNL_2_vd,
+        double * output_tot_pk_l_fNL_2_dd,
+        double * output_tot_pk_l_fNL_4_vv,
+        double * output_tot_pk_l_fNL_4_vd,
+        double * output_tot_pk_l_fNL_4_dd,
+        #GC...
+        double * output_tot_pk12_l_0_b1b2,
+        double * output_tot_pk12_l_0_b2,
+        double * output_tot_pk12_l_0_b1bG2,
+        double * output_tot_pk12_l_0_bG2,
+        double * output_tot_pk12_l_2_b1b2,
+        double * output_tot_pk12_l_2_b2,
+        double * output_tot_pk12_l_2_b1bG2,
+        double * output_tot_pk12_l_2_bG2,
+        double * output_tot_pk12_l_4_b1b2,
+        double * output_tot_pk12_l_4_b2,
+        double * output_tot_pk12_l_4_b1bG2,
+        double * output_tot_pk12_l_4_bG2, #GC: ORTHOGONAL...
+        #GC: ORTHOGONAL -- start
+        #GC...
+        double * output_tot_pk_nl_fNL_ortho,
+        double * output_tot_pk_fNLd2_ortho,
+        double * output_tot_pk_fNLG2_ortho,
+        #GC...
+        double * output_tot_pk_l_fNL_0_vv_ortho,
+        double * output_tot_pk_l_fNL_0_vd_ortho,
+        double * output_tot_pk_l_fNL_0_dd_ortho,
+        double * output_tot_pk_l_fNL_2_vv_ortho,
+        double * output_tot_pk_l_fNL_2_vd_ortho,
+        double * output_tot_pk_l_fNL_2_dd_ortho,
+        double * output_tot_pk_l_fNL_4_vv_ortho,
+        double * output_tot_pk_l_fNL_4_vd_ortho,
+        double * output_tot_pk_l_fNL_4_dd_ortho,
+        #GC...
+        double * output_tot_pk12_l_0_b1b2_ortho,
+        double * output_tot_pk12_l_0_b2_ortho,
+        double * output_tot_pk12_l_0_b1bG2_ortho,
+        double * output_tot_pk12_l_0_bG2_ortho,
+        double * output_tot_pk12_l_2_b1b2_ortho,
+        double * output_tot_pk12_l_2_b2_ortho,
+        double * output_tot_pk12_l_2_b1bG2_ortho,
+        double * output_tot_pk12_l_2_bG2_ortho,
+        double * output_tot_pk12_l_4_b1b2_ortho,
+        double * output_tot_pk12_l_4_b2_ortho,
+        double * output_tot_pk12_l_4_b1bG2_ortho,
+        double * output_tot_pk12_l_4_bG2_ortho
+        #GC: ORTHOGONAL -- finish
+        )
 
 
     int nonlinear_k_nl_at_z(void* pba, void* pnl, double z, double* k_nl)

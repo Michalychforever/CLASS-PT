@@ -55,7 +55,9 @@ HYREC = hyrec
 #OPENBLAS = /opt/OpenBLAS/lib/libopenblas.a
 #OPENBLAS = /Users/michalychforever/Dropbox/Docs/science/OpenBLAS-0.2.20/libopenblas.a
 #OPENBLAS = /home/ivanov/Desktop/Structures/OpenBLAS-0.2.20/lib/libopenblas.a
-OPENBLAS = /home/ophilcox/OpenBLAS-0.3.9/libopenblas.a
+#OPENBLAS = /Users/gcabass/anaconda3/lib/libopenblas.dylib
+OPENBLAS = /Users/gcabass/anaconda3/envs/openblas_test/lib/libopenblas.dylib
+#OPENBLAS = /Users/gcabass/anaconda3/envs/openblas_test/lib/libopenblas.a
 
 ########################################################
 ###### IN PRINCIPLE THE REST SHOULD BE LEFT UNCHANGED ##

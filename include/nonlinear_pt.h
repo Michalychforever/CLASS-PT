@@ -100,6 +100,97 @@ double * M13_oneline;
 double * M22_oneline;
 double * M22basic_oneline;
 double * IFG2_oneline;
+//double * M12_oneline;    //GC!
+
+
+double * M12_oneline;
+
+    //GC: ORTHOGONAL -- start
+
+double * M12_oneline_ortho;
+    
+    //GC: ORTHOGONAL -- finish
+    
+/**/
+double * M12_oneline_matter_multipoles_vv0_f2;
+double * M12_oneline_matter_multipoles_vv0_f3;
+double * M12_oneline_matter_multipoles_vd0_f1;
+double * M12_oneline_matter_multipoles_vd0_f2;
+double * M12_oneline_matter_multipoles_dd0_f0;
+double * M12_oneline_matter_multipoles_dd0_f1;
+double * M12_oneline_matter_multipoles_vv2_f3;
+double * M12_oneline_matter_multipoles_vd2_f2;
+double * M12_oneline_matter_multipoles_vv4_f3;
+double * M12_oneline_matter_multipoles_vd4_f2;
+/**/
+    
+    //GC: ORTHOGONAL -- start
+
+    double * M12_oneline_matter_multipoles_vv0_f2_ortho;
+    double * M12_oneline_matter_multipoles_vv0_f3_ortho;
+    double * M12_oneline_matter_multipoles_vd0_f1_ortho;
+    double * M12_oneline_matter_multipoles_vd0_f2_ortho;
+    double * M12_oneline_matter_multipoles_dd0_f0_ortho;
+    double * M12_oneline_matter_multipoles_dd0_f1_ortho;
+    double * M12_oneline_matter_multipoles_vv2_f3_ortho;
+    double * M12_oneline_matter_multipoles_vd2_f2_ortho;
+    double * M12_oneline_matter_multipoles_vv4_f3_ortho;
+    double * M12_oneline_matter_multipoles_vd4_f2_ortho;
+    
+    //GC: ORTHOGONAL -- finish
+
+ 
+double * M12_oneline_matter_mu_powers_vd2_f1;
+double * M12_oneline_matter_mu_powers_vd2_f2;
+double * M12_oneline_matter_mu_powers_dd2_f1;
+double * M12_oneline_matter_mu_powers_vv4_f2;
+double * M12_oneline_matter_mu_powers_vd4_f2;
+double * M12_oneline_matter_mu_powers_vv6_f3;
+
+    
+    //GC: ORTHOGONAL -- start
+
+double * M12_oneline_matter_mu_powers_vd2_f1_ortho;
+double * M12_oneline_matter_mu_powers_vd2_f2_ortho;
+double * M12_oneline_matter_mu_powers_dd2_f1_ortho;
+double * M12_oneline_matter_mu_powers_vv4_f2_ortho;
+double * M12_oneline_matter_mu_powers_vd4_f2_ortho;
+double * M12_oneline_matter_mu_powers_vv6_f3_ortho;
+
+    
+    //GC: ORTHOGONAL -- finish
+
+    
+/**/
+double * M12_oneline_bias_real_space_b2;
+double * M12_oneline_bias_real_space_bG2;
+/**/
+
+    
+    //GC: ORTHOGONAL -- start
+
+    
+    double * M12_oneline_bias_real_space_b2_ortho;
+    double * M12_oneline_bias_real_space_bG2_ortho;
+
+    
+    //GC: ORTHOGONAL -- finish
+
+ 
+double * M12_oneline_bias_multipoles_b2_vv0_f1;
+double * M12_oneline_bias_multipoles_bG2_vv0_f1;
+    
+    //GC: ORTHOGONAL -- finish
+
+    double * M12_oneline_bias_multipoles_b2_vv0_f1_ortho;
+    double * M12_oneline_bias_multipoles_bG2_vv0_f1_ortho;
+        
+    //GC: ORTHOGONAL -- finish
+
+    
+    //GC --> go now to the complexified ones...
+    
+    //GC --> THESE ALL REMAIN...
 
 double complex * M13_oneline_complex;
 double complex * M22_oneline_complex;
@@ -165,6 +256,171 @@ double complex * M13_mu2_dd_oneline_complex;
     double complex * M13_mu4_vv_oneline_complex;
     double complex * M13_mu4_vd_oneline_complex;
     double complex * M13_mu6_oneline_complex;
+    
+    
+    //GC!
+    
+    
+    double complex * M12_oneline_complex;
+    
+    //GC: ORTHOGONAL -- start
+
+    double complex * M12_oneline_complex_ortho;
+
+    //GC: ORTHOGONAL -- finish
+
+
+
+    double complex * M12_oneline_complex_matter_multipoles_vv0_f2;
+    double complex * M12_oneline_complex_matter_multipoles_vv0_f3;
+    double complex * M12_oneline_complex_matter_multipoles_vd0_f1;
+    double complex * M12_oneline_complex_matter_multipoles_vd0_f2;
+    double complex * M12_oneline_complex_matter_multipoles_dd0_f0;
+    double complex * M12_oneline_complex_matter_multipoles_dd0_f1;
+    double complex * M12_oneline_complex_matter_multipoles_vv2_f3;
+    double complex * M12_oneline_complex_matter_multipoles_vd2_f2;
+    double complex * M12_oneline_complex_matter_multipoles_vv4_f3;
+    double complex * M12_oneline_complex_matter_multipoles_vd4_f2;
+    
+    
+    //GC: ORTHOGONAL -- start
+    
+    
+    double complex * M12_oneline_complex_matter_multipoles_vv0_f2_ortho;
+    double complex * M12_oneline_complex_matter_multipoles_vv0_f3_ortho;
+    double complex * M12_oneline_complex_matter_multipoles_vd0_f1_ortho;
+    double complex * M12_oneline_complex_matter_multipoles_vd0_f2_ortho;
+    double complex * M12_oneline_complex_matter_multipoles_dd0_f0_ortho;
+    double complex * M12_oneline_complex_matter_multipoles_dd0_f1_ortho;
+    double complex * M12_oneline_complex_matter_multipoles_vv2_f3_ortho;
+    double complex * M12_oneline_complex_matter_multipoles_vd2_f2_ortho;
+    double complex * M12_oneline_complex_matter_multipoles_vv4_f3_ortho;
+    double complex * M12_oneline_complex_matter_multipoles_vd4_f2_ortho;
+
+
+    //GC: ORTHOGONAL -- finish
+
+
+
+    double complex * M12_oneline_complex_matter_mu_powers_vd2_f1;
+    double complex * M12_oneline_complex_matter_mu_powers_vd2_f2;
+    double complex * M12_oneline_complex_matter_mu_powers_dd2_f1;
+    double complex * M12_oneline_complex_matter_mu_powers_vv4_f2;
+    double complex * M12_oneline_complex_matter_mu_powers_vd4_f2;
+    double complex * M12_oneline_complex_matter_mu_powers_vv6_f3;
+    
+    
+    //GC: ORTHOGONAL -- start
+    
+    
+    double complex * M12_oneline_complex_matter_mu_powers_vd2_f1_ortho;
+    double complex * M12_oneline_complex_matter_mu_powers_vd2_f2_ortho;
+    double complex * M12_oneline_complex_matter_mu_powers_dd2_f1_ortho;
+    double complex * M12_oneline_complex_matter_mu_powers_vv4_f2_ortho;
+    double complex * M12_oneline_complex_matter_mu_powers_vd4_f2_ortho;
+    double complex * M12_oneline_complex_matter_mu_powers_vv6_f3_ortho;
+
+
+    //GC: ORTHOGONAL -- finish
+
+
+
+    double complex * M12_oneline_complex_bias_real_space_b2;
+    double complex * M12_oneline_complex_bias_real_space_bG2;
+    
+    
+    //GC: ORTHOGONAL -- start
+
+    double complex * M12_oneline_complex_bias_real_space_b2_ortho;
+    double complex * M12_oneline_complex_bias_real_space_bG2_ortho;
+
+    //GC: ORTHOGONAL -- finish
+
+
+
+    double complex * M12_oneline_complex_bias_multipoles_b2_vv0_f1;
+    double complex * M12_oneline_complex_bias_multipoles_bG2_vv0_f1;
+    
+    
+    //GC: ORTHOGONAL -- start
+
+    double complex * M12_oneline_complex_bias_multipoles_b2_vv0_f1_ortho;
+    double complex * M12_oneline_complex_bias_multipoles_bG2_vv0_f1_ortho;
+    
+
+    //GC: ORTHOGONAL -- finish
+
+
+
+    double complex * M12_oneline_0_vv_complex;
+    double complex * M12_oneline_0_vd_complex;
+    double complex * M12_oneline_0_dd_complex;
+    double complex * M12_oneline_2_vv_complex;
+    double complex * M12_oneline_2_vd_complex;
+    double complex * M12_oneline_2_dd_complex;
+    double complex * M12_oneline_4_vv_complex;
+    double complex * M12_oneline_4_vd_complex;
+    double complex * M12_oneline_mu2_vd_complex;
+    double complex * M12_oneline_mu2_dd_complex;
+    double complex * M12_oneline_mu4_vv_complex;
+    double complex * M12_oneline_mu4_vd_complex;
+    double complex * M12_oneline_mu6_vv_complex;
+    
+    
+    //GC: ORTHOGONAL -- start
+
+    double complex * M12_oneline_0_vv_complex_ortho;
+    double complex * M12_oneline_0_vd_complex_ortho;
+    double complex * M12_oneline_0_dd_complex_ortho;
+    double complex * M12_oneline_2_vv_complex_ortho;
+    double complex * M12_oneline_2_vd_complex_ortho;
+    double complex * M12_oneline_2_dd_complex_ortho;
+    double complex * M12_oneline_4_vv_complex_ortho;
+    double complex * M12_oneline_4_vd_complex_ortho;
+    double complex * M12_oneline_mu2_vd_complex_ortho;
+    double complex * M12_oneline_mu2_dd_complex_ortho;
+    double complex * M12_oneline_mu4_vv_complex_ortho;
+    double complex * M12_oneline_mu4_vd_complex_ortho;
+    double complex * M12_oneline_mu6_vv_complex_ortho;
+
+    //GC: ORTHOGONAL -- finish
+
+    
+    
+    double complex * M12_2_bG2_oneline_complex;
+    double complex * M12_2_b2_oneline_complex;
+    double complex * M12_0_bG2_oneline_complex;
+    double complex * M12_0_b1bG2_oneline_complex;
+    double complex * M12_0_b2_oneline_complex;
+    double complex * M12_0_b1b2_oneline_complex;
+    
+    
+    //GC: ORTHOGONAL -- start
+
+    double complex * M12_2_bG2_oneline_complex_ortho;
+    double complex * M12_2_b2_oneline_complex_ortho;
+    double complex * M12_0_bG2_oneline_complex_ortho;
+    double complex * M12_0_b1bG2_oneline_complex_ortho;
+    double complex * M12_0_b2_oneline_complex_ortho;
+    double complex * M12_0_b1b2_oneline_complex_ortho;
+    
+
+    //GC: ORTHOGONAL -- finish
+
+
+    double complex * M_fNLd2;
+    double complex * M_fNLG2;
+    
+    
+    //GC: ORTHOGONAL -- start
+
+    double complex * M_fNLd2_ortho;
+    double complex * M_fNLG2_ortho;
+
+    //GC: ORTHOGONAL -- finish
+    
+    
+    //GC!
 
 
 double * ln_pk_nl;     /*For classy[i_z*pnlpt->k_size+index_k]*/
@@ -222,6 +478,95 @@ double * ln_pk_0_b2;
     double * ln_pk_4_bG2;
     double * ln_pk_4_b1b2;
     double * ln_pk_4_b1bG2;
+    
+    //GC!
+        
+    double * ln_pk_fNL_0_vv;
+    double * ln_pk_fNL_0_vd;
+    double * ln_pk_fNL_0_dd;
+
+    double * ln_pk_fNL_2_vv;
+    double * ln_pk_fNL_2_vd;
+    double * ln_pk_fNL_2_dd;
+
+    double * ln_pk_fNL_4_vv;
+    double * ln_pk_fNL_4_vd;
+    double * ln_pk_fNL_4_dd;
+    
+    
+    //GC: ORTHOGONAL -- start
+
+
+    double * ln_pk_fNL_0_vv_ortho;
+    double * ln_pk_fNL_0_vd_ortho;
+    double * ln_pk_fNL_0_dd_ortho;
+
+    double * ln_pk_fNL_2_vv_ortho;
+    double * ln_pk_fNL_2_vd_ortho;
+    double * ln_pk_fNL_2_dd_ortho;
+
+    double * ln_pk_fNL_4_vv_ortho;
+    double * ln_pk_fNL_4_vd_ortho;
+    double * ln_pk_fNL_4_dd_ortho;
+
+    
+    //GC: ORTHOGONAL -- finish
+
+
+    
+    double * ln_pk12_0_b1b2;
+    double * ln_pk12_0_b2;
+    double * ln_pk12_0_b1bG2;
+    double * ln_pk12_0_bG2;
+    double * ln_pk12_2_b1b2;
+    double * ln_pk12_2_b2;
+    double * ln_pk12_2_b1bG2;
+    double * ln_pk12_2_bG2;
+    double * ln_pk12_4_b1b2;
+    double * ln_pk12_4_b2;
+    double * ln_pk12_4_b1bG2;
+    double * ln_pk12_4_bG2;
+    
+    
+    
+    //GC: ORTHOGONAL -- start
+    
+    
+    double * ln_pk12_0_b1b2_ortho;
+    double * ln_pk12_0_b2_ortho;
+    double * ln_pk12_0_b1bG2_ortho;
+    double * ln_pk12_0_bG2_ortho;
+    double * ln_pk12_2_b1b2_ortho;
+    double * ln_pk12_2_b2_ortho;
+    double * ln_pk12_2_b1bG2_ortho;
+    double * ln_pk12_2_bG2_ortho;
+    double * ln_pk12_4_b1b2_ortho;
+    double * ln_pk12_4_b2_ortho;
+    double * ln_pk12_4_b1bG2_ortho;
+    double * ln_pk12_4_bG2_ortho;
+
+
+    //GC: ORTHOGONAL -- finish
+
+
+    
+    double * ln_pk_nl_fNL;
+    double * ln_pk_fNLd2;
+    double * ln_pk_fNLG2;
+    
+    
+    //GC: ORTHOGONAL -- start
+    
+    
+    double * ln_pk_nl_fNL_ortho;
+    double * ln_pk_fNLd2_ortho;
+    double * ln_pk_fNLG2_ortho;
+
+
+    //GC: ORTHOGONAL -- finish
+
+
+    //GC!
 
     double * growthf;   /*For RSD effect[i_z]*/
     double * hratio_array;   /*For RSD effect[i_z]*/
@@ -314,7 +659,27 @@ extern "C" {
                      double *pk_l,
                      double *lnk,
                      double *lnpk,
-                     double *ddlnpk);
+                     double *ddlnpk); //,
+                     //double *tk_l,
+                     //double *lntk,
+                     //double *ddlntk); //GC
+
+//GC!
+
+//GC: the function that extracts the primordial PS to get the transfer function {\cal M}(k)...
+
+    int nonlinear_pt_pPRIMk_l(
+                              //struct background *pba,
+                              struct perturbs *ppt,
+                              struct primordial *ppm,
+                              struct nonlinear_pt *pnlpt,
+                              double *lnk,
+                              double *pPRIMk_l,
+                              double *lnpPRIMk,
+                              double *ddlnpPRIMk);
+
+//GC!
+
 
     int nonlinear_pt_loop(
                           struct precision *ppr,
@@ -327,6 +692,7 @@ extern "C" {
                           double hratio,
                           double Dratio,
                           double *pk_l,
+                          double *pPRIMk_l, //GC! Never used...
                           double *pk_l_0_vv,
                           double *pk_l_0_vd,
                           double *pk_l_0_dd,
@@ -337,6 +703,14 @@ extern "C" {
                           double *pk_l_4_vd,
                           double *pk_l_4_dd,
                           double *pk_nl,
+                          double *pk_nl_fNL, //GC!
+                          double *pk_fNLd2, //GC!
+                          double *pk_fNLG2, //GC!
+                          //GC: ORTHOGONAL -- start
+                          double *pk_nl_fNL_ortho, //GC!
+                          double *pk_fNLd2_ortho, //GC!
+                          double *pk_fNLG2_ortho, //GC!
+                          //GC: ORTHOGONAL -- finish
                           double *pk_Id2d2,
                           double *pk_Id2d2_2,
                           double *pk_Id2d2_4,
@@ -375,8 +749,55 @@ extern "C" {
                           double *pk_Tree_2_vv,
                           double *pk_Tree_2_vd,
                           double *pk_Tree_4_vv,
+                          //GC!
+                          double *pk_l_fNL_0_vv,
+                          double *pk_l_fNL_0_vd,
+                          double *pk_l_fNL_0_dd,
+                          double *pk_l_fNL_2_vv,
+                          double *pk_l_fNL_2_vd,
+                          double *pk_l_fNL_2_dd,
+                          double *pk_l_fNL_4_vv,
+                          double *pk_l_fNL_4_vd,
+                          double *pk_l_fNL_4_dd,
+                          double *pk12_l_0_b1b2,
+                          double *pk12_l_0_b2,
+                          double *pk12_l_0_b1bG2,
+                          double *pk12_l_0_bG2,
+                          double *pk12_l_2_b1b2,
+                          double *pk12_l_2_b2,
+                          double *pk12_l_2_b1bG2,
+                          double *pk12_l_2_bG2,
+                          double *pk12_l_4_b1b2,
+                          double *pk12_l_4_b2,
+                          double *pk12_l_4_b1bG2,
+                          double *pk12_l_4_bG2,
+                          //GC: ORTHOGONAL -- start
+                          double *pk_l_fNL_0_vv_ortho,
+                          double *pk_l_fNL_0_vd_ortho,
+                          double *pk_l_fNL_0_dd_ortho,
+                          double *pk_l_fNL_2_vv_ortho,
+                          double *pk_l_fNL_2_vd_ortho,
+                          double *pk_l_fNL_2_dd_ortho,
+                          double *pk_l_fNL_4_vv_ortho,
+                          double *pk_l_fNL_4_vd_ortho,
+                          double *pk_l_fNL_4_dd_ortho,
+                          double *pk12_l_0_b1b2_ortho,
+                          double *pk12_l_0_b2_ortho,
+                          double *pk12_l_0_b1bG2_ortho,
+                          double *pk12_l_0_bG2_ortho,
+                          double *pk12_l_2_b1b2_ortho,
+                          double *pk12_l_2_b2_ortho,
+                          double *pk12_l_2_b1bG2_ortho,
+                          double *pk12_l_2_bG2_ortho,
+                          double *pk12_l_4_b1b2_ortho,
+                          double *pk12_l_4_b2_ortho,
+                          double *pk12_l_4_b1bG2_ortho,
+                          double *pk12_l_4_bG2_ortho,
+                          //GC: ORTHOGONAL -- finish
+                          //GC!
                           double *lnk_l,
-                          double *lnpk_l
+                          double *lnpk_l,
+                          double *lnpPRIMk_l //GC!
                           );
 
 
