@@ -515,6 +515,7 @@ int spectra_pk_at_z(
 
 }
 
+
 /**
  * Matter power spectrum for arbitrary wavenumber, redshift and initial condition.
  *
@@ -936,53 +937,109 @@ int spectra_pk_nl_bias_at_z_i(
                        enum linear_or_logarithmic mode,
                        int i_z, /* number(s) of redshift at which P(k,z) and T_i(k,z) should be written*/
                        double * output_tot, /* array with argument output_tot[index_k] (must be already allocated) */
-                       double * output_tot_Id2d2,
-                       double * output_tot_Id2,
-                            double * output_tot_IG2,
-                            double * output_tot_Id2G2,
-                            double * output_tot_IG2G2,
-                            double * output_tot_IFG2,
-                              double * output_tot_IFG2_0b1,
-                              double * output_tot_IFG2_0,
-                              double * output_tot_IFG2_2,
-                            double * output_tot_CTR,
-                              double * output_tot_CTR_0,
-                              double * output_tot_CTR_2,
-                              double * output_tot_CTR_4,
-				double * output_tot_Tree,
-                              double * output_tot_Tree_0_vv,
-                              double * output_tot_Tree_0_vd,
-                              double * output_tot_Tree_0_dd,
-                              double * output_tot_Tree_2_vv,
-                              double * output_tot_Tree_2_vd,
-                              double * output_tot_Tree_4_vv,
-                  double * output_tot_0_vv,
-                              double * output_tot_0_vd,
-                              double * output_tot_0_dd,
-                              double * output_tot_2_vv,
-                              double * output_tot_2_vd,
-                              double * output_tot_2_dd,
-                              double * output_tot_4_vv,
-                              double * output_tot_4_vd,
-                              double * output_tot_4_dd,
-                              double * output_tot_0_b1b2,
-                              double * output_tot_0_b2,
-                              double * output_tot_0_b1bG2,
-                              double * output_tot_0_bG2,
-                              double * output_tot_2_b1b2,
-                              double * output_tot_2_b2,
-                              double * output_tot_2_b1bG2,
-                              double * output_tot_2_bG2,
-                              double * output_tot_4_b2,
-                              double * output_tot_4_bG2,
-                              double * output_tot_4_b1b2,
-                              double * output_tot_4_b1bG2,
-                              double * output_tot_2_b2b2,
-                              double * output_tot_2_b2bG2,
-                              double * output_tot_2_bG2bG2,
-                              double * output_tot_4_b2b2,
-                              double * output_tot_4_b2bG2,
-                              double * output_tot_4_bG2bG2
+                       double * output_tot_Id2d2, //1
+                       double * output_tot_Id2, //2
+                            double * output_tot_IG2, //3
+                            double * output_tot_Id2G2, //4
+                            double * output_tot_IG2G2, //5
+                            double * output_tot_IFG2, //6
+                              double * output_tot_IFG2_0b1, //7
+                              double * output_tot_IFG2_0, //8
+                              double * output_tot_IFG2_2, //9
+                            double * output_tot_CTR, //10
+                              double * output_tot_CTR_0, //11
+                              double * output_tot_CTR_2, //12
+                              double * output_tot_CTR_4, //13
+				double * output_tot_Tree, //14
+                              double * output_tot_Tree_0_vv, //15
+                              double * output_tot_Tree_0_vd, //16
+                              double * output_tot_Tree_0_dd, //17
+                              double * output_tot_Tree_2_vv, //18
+                              double * output_tot_Tree_2_vd, //19
+                              double * output_tot_Tree_4_vv, //20
+                  double * output_tot_0_vv, //21
+                              double * output_tot_0_vd, //22
+                              double * output_tot_0_dd, //23
+                              double * output_tot_2_vv, //24
+                              double * output_tot_2_vd, //25
+                              double * output_tot_2_dd, //26
+                              double * output_tot_4_vv, //27
+                              double * output_tot_4_vd, //28
+                              double * output_tot_4_dd, //29
+                              double * output_tot_0_b1b2, //30
+                              double * output_tot_0_b2, //31
+                              double * output_tot_0_b1bG2, //32
+                              double * output_tot_0_bG2, //33
+                              double * output_tot_2_b1b2, //34
+                              double * output_tot_2_b2, //35
+                              double * output_tot_2_b1bG2, //36
+                              double * output_tot_2_bG2, //37
+                              double * output_tot_4_b2, //38
+                              double * output_tot_4_bG2, //39
+                              double * output_tot_4_b1b2, //40
+                              double * output_tot_4_b1bG2, //41
+                              double * output_tot_2_b2b2, //42
+                              double * output_tot_2_b2bG2, //43
+                              double * output_tot_2_bG2bG2, //44
+                              double * output_tot_4_b2b2, //45
+                              double * output_tot_4_b2bG2, //46
+                              double * output_tot_4_bG2bG2, //47 //GC!
+                              //GC -> account for the +1... 48+3+9+12=72...
+                              double * output_tot_pk_nl_fNL, //49
+                              double * output_tot_pk_fNLd2, //50
+                              double * output_tot_pk_fNLG2, //51
+                              //GC -> in real space...
+                              double * output_tot_pk_l_fNL_0_vv, //52
+                              double * output_tot_pk_l_fNL_0_vd, //53
+                              double * output_tot_pk_l_fNL_0_dd, //54
+                              double * output_tot_pk_l_fNL_2_vv, //55
+                              double * output_tot_pk_l_fNL_2_vd, //56
+                              double * output_tot_pk_l_fNL_2_dd, //57
+                              double * output_tot_pk_l_fNL_4_vv, //58
+                              double * output_tot_pk_l_fNL_4_vd, //59
+                              double * output_tot_pk_l_fNL_4_dd, //60
+                              //GC -> multipoles with matter...
+                              double * output_tot_pk12_l_0_b1b2, //61
+                              double * output_tot_pk12_l_0_b2, //62
+                              double * output_tot_pk12_l_0_b1bG2, //63
+                              double * output_tot_pk12_l_0_bG2, //64
+                              double * output_tot_pk12_l_2_b1b2, //65
+                              double * output_tot_pk12_l_2_b2, //66
+                              double * output_tot_pk12_l_2_b1bG2, //67
+                              double * output_tot_pk12_l_2_bG2, //68
+                              double * output_tot_pk12_l_4_b1b2, //69
+                              double * output_tot_pk12_l_4_b2, //70
+                              double * output_tot_pk12_l_4_b1bG2, //71
+                              double * output_tot_pk12_l_4_bG2, //72 //GC: ORTHOGONAL...
+                              //GC -> multipoles with biased tracers...
+                                //GC: ORTHOGONAL -- start
+                              double * output_tot_pk_nl_fNL_ortho, //73
+                              double * output_tot_pk_fNLd2_ortho, //74
+                              double * output_tot_pk_fNLG2_ortho, //75
+                              //GC -> in real space...
+                              double * output_tot_pk_l_fNL_0_vv_ortho, //76
+                              double * output_tot_pk_l_fNL_0_vd_ortho, //77
+                              double * output_tot_pk_l_fNL_0_dd_ortho, //78
+                              double * output_tot_pk_l_fNL_2_vv_ortho, //79
+                              double * output_tot_pk_l_fNL_2_vd_ortho, //80
+                              double * output_tot_pk_l_fNL_2_dd_ortho, //81
+                              double * output_tot_pk_l_fNL_4_vv_ortho, //82
+                              double * output_tot_pk_l_fNL_4_vd_ortho, //83
+                              double * output_tot_pk_l_fNL_4_dd_ortho, //84
+                              //GC -> multipoles with matter...
+                              double * output_tot_pk12_l_0_b1b2_ortho, //85
+                              double * output_tot_pk12_l_0_b2_ortho, //86
+                              double * output_tot_pk12_l_0_b1bG2_ortho, //87
+                              double * output_tot_pk12_l_0_bG2_ortho, //88
+                              double * output_tot_pk12_l_2_b1b2_ortho, //89
+                              double * output_tot_pk12_l_2_b2_ortho, //90
+                              double * output_tot_pk12_l_2_b1bG2_ortho, //91
+                              double * output_tot_pk12_l_2_bG2_ortho, //92
+                              double * output_tot_pk12_l_4_b1b2_ortho, //93
+                              double * output_tot_pk12_l_4_b2_ortho, //94
+                              double * output_tot_pk12_l_4_b1bG2_ortho, //95
+                              double * output_tot_pk12_l_4_bG2_ortho // 96: which is right, 72 + 24 (which is 3+9+12)...
+                                //GC: ORTHOGONAL -- finish
                        ) {
     
     /** Summary: */
@@ -1061,6 +1118,92 @@ int spectra_pk_nl_bias_at_z_i(
             output_tot_4_b2b2[index_k] = pnlpt->ln_pk_Id2d2_4[i_z*pnlpt->k_size+index_k];
             output_tot_4_b2bG2[index_k] = pnlpt->ln_pk_Id2G2_4[i_z*pnlpt->k_size+index_k];
             output_tot_4_bG2bG2[index_k] = pnlpt->ln_pk_IG2G2_4[i_z*pnlpt->k_size+index_k];
+            
+            
+           //GC!!!
+            
+            output_tot_pk_nl_fNL[index_k] = pnlpt->ln_pk_nl_fNL[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_fNLd2[index_k] = pnlpt->ln_pk_fNLd2[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_fNLG2[index_k] = pnlpt->ln_pk_fNLG2[i_z*pnlpt->k_size+index_k];
+            
+            
+            //GC: ORTHOGONAL -- start
+
+
+            output_tot_pk_nl_fNL_ortho[index_k] = pnlpt->ln_pk_nl_fNL_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_fNLd2_ortho[index_k] = pnlpt->ln_pk_fNLd2_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_fNLG2_ortho[index_k] = pnlpt->ln_pk_fNLG2_ortho[i_z*pnlpt->k_size+index_k];
+
+
+            //GC: ORTHOGONAL -- finish
+
+
+            //GC...
+            
+            output_tot_pk_l_fNL_0_vv[index_k] = pnlpt->ln_pk_fNL_0_vv[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_0_vd[index_k] = pnlpt->ln_pk_fNL_0_vd[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_0_dd[index_k] = pnlpt->ln_pk_fNL_0_dd[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_2_vv[index_k] = pnlpt->ln_pk_fNL_2_vv[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_2_vd[index_k] = pnlpt->ln_pk_fNL_2_vd[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_2_dd[index_k] = pnlpt->ln_pk_fNL_2_dd[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_4_vv[index_k] = pnlpt->ln_pk_fNL_4_vv[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_4_vd[index_k] = pnlpt->ln_pk_fNL_4_vd[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_4_dd[index_k] = pnlpt->ln_pk_fNL_4_dd[i_z*pnlpt->k_size+index_k];
+            
+            
+            //GC: ORTHOGONAL -- start
+
+
+            output_tot_pk_l_fNL_0_vv_ortho[index_k] = pnlpt->ln_pk_fNL_0_vv_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_0_vd_ortho[index_k] = pnlpt->ln_pk_fNL_0_vd_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_0_dd_ortho[index_k] = pnlpt->ln_pk_fNL_0_dd_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_2_vv_ortho[index_k] = pnlpt->ln_pk_fNL_2_vv_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_2_vd_ortho[index_k] = pnlpt->ln_pk_fNL_2_vd_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_2_dd_ortho[index_k] = pnlpt->ln_pk_fNL_2_dd_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_4_vv_ortho[index_k] = pnlpt->ln_pk_fNL_4_vv_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_4_vd_ortho[index_k] = pnlpt->ln_pk_fNL_4_vd_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk_l_fNL_4_dd_ortho[index_k] = pnlpt->ln_pk_fNL_4_dd_ortho[i_z*pnlpt->k_size+index_k];
+            
+
+
+            //GC: ORTHOGONAL -- finish
+
+            
+            //GC...
+            
+            output_tot_pk12_l_0_b1b2[index_k] = pnlpt->ln_pk12_0_b1b2[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_0_b2[index_k] = pnlpt->ln_pk12_0_b2[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_0_b1bG2[index_k] = pnlpt->ln_pk12_0_b1bG2[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_0_bG2[index_k] = pnlpt->ln_pk12_0_bG2[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_2_b1b2[index_k] = pnlpt->ln_pk12_2_b1b2[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_2_b2[index_k] = pnlpt->ln_pk12_2_b2[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_2_b1bG2[index_k] = pnlpt->ln_pk12_2_b1bG2[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_2_bG2[index_k] = pnlpt->ln_pk12_2_bG2[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_4_b1b2[index_k] = pnlpt->ln_pk12_4_b1b2[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_4_b2[index_k] = pnlpt->ln_pk12_4_b2[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_4_b1bG2[index_k] = pnlpt->ln_pk12_4_b1bG2[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_4_bG2[index_k] = pnlpt->ln_pk12_4_bG2[i_z*pnlpt->k_size+index_k];
+            
+            
+            //GC: ORTHOGONAL -- start
+
+
+            output_tot_pk12_l_0_b1b2_ortho[index_k] = pnlpt->ln_pk12_0_b1b2_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_0_b2_ortho[index_k] = pnlpt->ln_pk12_0_b2_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_0_b1bG2_ortho[index_k] = pnlpt->ln_pk12_0_b1bG2_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_0_bG2_ortho[index_k] = pnlpt->ln_pk12_0_bG2_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_2_b1b2_ortho[index_k] = pnlpt->ln_pk12_2_b1b2_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_2_b2_ortho[index_k] = pnlpt->ln_pk12_2_b2_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_2_b1bG2_ortho[index_k] = pnlpt->ln_pk12_2_b1bG2_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_2_bG2_ortho[index_k] = pnlpt->ln_pk12_2_bG2_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_4_b1b2_ortho[index_k] = pnlpt->ln_pk12_4_b1b2_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_4_b2_ortho[index_k] = pnlpt->ln_pk12_4_b2_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_4_b1bG2_ortho[index_k] = pnlpt->ln_pk12_4_b1bG2_ortho[i_z*pnlpt->k_size+index_k];
+            output_tot_pk12_l_4_bG2_ortho[index_k] = pnlpt->ln_pk12_4_bG2_ortho[i_z*pnlpt->k_size+index_k];
+
+
+            //GC: ORTHOGONAL -- finish
+
 
             
         }
@@ -1121,6 +1264,96 @@ int spectra_pk_nl_bias_at_z_i(
             output_tot_4_b2b2[index_k] = exp(output_tot_4_b2b2[index_k]);
             output_tot_4_b2bG2[index_k] = exp(output_tot_4_b2bG2[index_k]);
             output_tot_4_bG2bG2[index_k] = exp(output_tot_4_bG2bG2[index_k]);
+            
+            //GC!!!
+            
+            output_tot_pk_nl_fNL[index_k] = exp(output_tot_pk_nl_fNL[index_k]);
+            output_tot_pk_fNLd2[index_k] = exp(output_tot_pk_fNLd2[index_k]);
+            output_tot_pk_fNLG2[index_k] = exp(output_tot_pk_fNLG2[index_k]);
+            
+            
+            //GC: ORTHOGONAL -- start
+
+
+            output_tot_pk_nl_fNL_ortho[index_k] = exp(output_tot_pk_nl_fNL_ortho[index_k]);
+            output_tot_pk_fNLd2_ortho[index_k] = exp(output_tot_pk_fNLd2_ortho[index_k]);
+            output_tot_pk_fNLG2_ortho[index_k] = exp(output_tot_pk_fNLG2_ortho[index_k]);
+            
+
+
+            //GC: ORTHOGONAL -- finish
+
+
+            
+            //GC!
+            
+            output_tot_pk_l_fNL_0_vv[index_k] = exp(output_tot_pk_l_fNL_0_vv[index_k]);
+            output_tot_pk_l_fNL_0_vd[index_k] = exp(output_tot_pk_l_fNL_0_vd[index_k]);
+            output_tot_pk_l_fNL_0_dd[index_k] = exp(output_tot_pk_l_fNL_0_dd[index_k]);
+            output_tot_pk_l_fNL_2_vv[index_k] = exp(output_tot_pk_l_fNL_2_vv[index_k]);
+            output_tot_pk_l_fNL_2_vd[index_k] = exp(output_tot_pk_l_fNL_2_vd[index_k]);
+            output_tot_pk_l_fNL_2_dd[index_k] = exp(output_tot_pk_l_fNL_2_dd[index_k]);
+            output_tot_pk_l_fNL_4_vv[index_k] = exp(output_tot_pk_l_fNL_4_vv[index_k]);
+            output_tot_pk_l_fNL_4_vd[index_k] = exp(output_tot_pk_l_fNL_4_vd[index_k]);
+            output_tot_pk_l_fNL_4_dd[index_k] = exp(output_tot_pk_l_fNL_4_dd[index_k]);
+            
+            
+            
+            //GC: ORTHOGONAL -- start
+
+
+            output_tot_pk_l_fNL_0_vv_ortho[index_k] = exp(output_tot_pk_l_fNL_0_vv_ortho[index_k]);
+            output_tot_pk_l_fNL_0_vd_ortho[index_k] = exp(output_tot_pk_l_fNL_0_vd_ortho[index_k]);
+            output_tot_pk_l_fNL_0_dd_ortho[index_k] = exp(output_tot_pk_l_fNL_0_dd_ortho[index_k]);
+            output_tot_pk_l_fNL_2_vv_ortho[index_k] = exp(output_tot_pk_l_fNL_2_vv_ortho[index_k]);
+            output_tot_pk_l_fNL_2_vd_ortho[index_k] = exp(output_tot_pk_l_fNL_2_vd_ortho[index_k]);
+            output_tot_pk_l_fNL_2_dd_ortho[index_k] = exp(output_tot_pk_l_fNL_2_dd_ortho[index_k]);
+            output_tot_pk_l_fNL_4_vv_ortho[index_k] = exp(output_tot_pk_l_fNL_4_vv_ortho[index_k]);
+            output_tot_pk_l_fNL_4_vd_ortho[index_k] = exp(output_tot_pk_l_fNL_4_vd_ortho[index_k]);
+            output_tot_pk_l_fNL_4_dd_ortho[index_k] = exp(output_tot_pk_l_fNL_4_dd_ortho[index_k]);
+
+
+            //GC: ORTHOGONAL -- finish
+
+
+            
+            
+            //GC!
+            
+            output_tot_pk12_l_0_b1b2[index_k] = exp(output_tot_pk12_l_0_b1b2[index_k]);
+            output_tot_pk12_l_0_b2[index_k] = exp(output_tot_pk12_l_0_b2[index_k]);
+            output_tot_pk12_l_0_b1bG2[index_k] = exp(output_tot_pk12_l_0_b1bG2[index_k]);
+            output_tot_pk12_l_0_bG2[index_k] = exp(output_tot_pk12_l_0_bG2[index_k]);
+            output_tot_pk12_l_2_b1b2[index_k] = exp(output_tot_pk12_l_2_b1b2[index_k]);
+            output_tot_pk12_l_2_b2[index_k] = exp(output_tot_pk12_l_2_b2[index_k]);
+            output_tot_pk12_l_2_b1bG2[index_k] = exp(output_tot_pk12_l_2_b1bG2[index_k]);
+            output_tot_pk12_l_2_bG2[index_k] = exp(output_tot_pk12_l_2_bG2[index_k]);
+            output_tot_pk12_l_4_b1b2[index_k] = exp(output_tot_pk12_l_4_b1b2[index_k]);
+            output_tot_pk12_l_4_b2[index_k] = exp(output_tot_pk12_l_4_b2[index_k]);
+            output_tot_pk12_l_4_b1bG2[index_k] = exp(output_tot_pk12_l_4_b1bG2[index_k]);
+            output_tot_pk12_l_4_bG2[index_k] = exp(output_tot_pk12_l_4_bG2[index_k]);
+            
+            
+            //GC: ORTHOGONAL -- start
+
+
+            output_tot_pk12_l_0_b1b2_ortho[index_k] = exp(output_tot_pk12_l_0_b1b2_ortho[index_k]);
+            output_tot_pk12_l_0_b2_ortho[index_k] = exp(output_tot_pk12_l_0_b2_ortho[index_k]);
+            output_tot_pk12_l_0_b1bG2_ortho[index_k] = exp(output_tot_pk12_l_0_b1bG2_ortho[index_k]);
+            output_tot_pk12_l_0_bG2_ortho[index_k] = exp(output_tot_pk12_l_0_bG2_ortho[index_k]);
+            output_tot_pk12_l_2_b1b2_ortho[index_k] = exp(output_tot_pk12_l_2_b1b2_ortho[index_k]);
+            output_tot_pk12_l_2_b2_ortho[index_k] = exp(output_tot_pk12_l_2_b2_ortho[index_k]);
+            output_tot_pk12_l_2_b1bG2_ortho[index_k] = exp(output_tot_pk12_l_2_b1bG2_ortho[index_k]);
+            output_tot_pk12_l_2_bG2_ortho[index_k] = exp(output_tot_pk12_l_2_bG2_ortho[index_k]);
+            output_tot_pk12_l_4_b1b2_ortho[index_k] = exp(output_tot_pk12_l_4_b1b2_ortho[index_k]);
+            output_tot_pk12_l_4_b2_ortho[index_k] = exp(output_tot_pk12_l_4_b2_ortho[index_k]);
+            output_tot_pk12_l_4_b1bG2_ortho[index_k] = exp(output_tot_pk12_l_4_b1bG2_ortho[index_k]);
+            output_tot_pk12_l_4_bG2_ortho[index_k] = exp(output_tot_pk12_l_4_bG2_ortho[index_k]);
+
+
+            //GC: ORTHOGONAL -- finish
+
+            
 
         }
     }
@@ -1163,53 +1396,109 @@ int spectra_pk_nl_at_k_and_z(
                              double k,
                              double z,
                              double * pk_tot, /* pointer to a single number (must be already allocated) */
-                             double * pk_tot_Id2d2,
-                             double * pk_tot_Id2,
-                             double * pk_tot_IG2,
-                             double * pk_tot_Id2G2,
-                             double * pk_tot_IG2G2,
-                             double * pk_tot_IFG2,
-                             double * pk_tot_IFG2_0b1,
-                             double * pk_tot_IFG2_0,
-                             double * pk_tot_IFG2_2,
-                             double * pk_tot_CTR,
-                             double * pk_tot_CTR_0,
-                             double * pk_tot_CTR_2,
-                             double * pk_tot_CTR_4,
-                             double * pk_tot_Tree,
-                             double * pk_tot_Tree_0_vv,
-                             double * pk_tot_Tree_0_vd,
-                             double * pk_tot_Tree_0_dd,
-                             double * pk_tot_Tree_2_vv,
-                             double * pk_tot_Tree_2_vd,
-                             double * pk_tot_Tree_4_vv,
-                             double * pk_tot_0_vv,
-                             double * pk_tot_0_vd,
-                             double * pk_tot_0_dd,
-                             double * pk_tot_2_vv,
-                             double * pk_tot_2_vd,
-                             double * pk_tot_2_dd,
-                             double * pk_tot_4_vv,
-                             double * pk_tot_4_vd,
-                             double * pk_tot_4_dd,
-                             double * pk_tot_0_b1b2,
-                             double * pk_tot_0_b2,
-                             double * pk_tot_0_b1bG2,
-                             double * pk_tot_0_bG2,
-                             double * pk_tot_2_b1b2,
-                             double * pk_tot_2_b2,
-                             double * pk_tot_2_b1bG2,
-                             double * pk_tot_2_bG2,
-                             double * pk_tot_4_b2,
-                             double * pk_tot_4_bG2,
-                             double * pk_tot_4_b1b2,
-                             double * pk_tot_4_b1bG2,
-                             double * pk_tot_2_b2b2,
-                             double * pk_tot_2_b2bG2,
-                             double * pk_tot_2_bG2bG2,
-                             double * pk_tot_4_b2b2,
-                             double * pk_tot_4_b2bG2,
-                             double * pk_tot_4_bG2bG2
+                             //GC -> the first counts as well... The issue now is that I do not understand if I really only need to modify this function... The key is the function spectra_pk_nl_at_z -> it calls the spectra that... No, I need also spectra_pk_nl_bias_at_z_i since this is used below...
+                             double * pk_tot_Id2d2, //1
+                             double * pk_tot_Id2, //2
+                             double * pk_tot_IG2, //3
+                             double * pk_tot_Id2G2, //4
+                             double * pk_tot_IG2G2, //5
+                             double * pk_tot_IFG2, //6
+                             double * pk_tot_IFG2_0b1, //7
+                             double * pk_tot_IFG2_0, //8
+                             double * pk_tot_IFG2_2, //9
+                             double * pk_tot_CTR, //10
+                             double * pk_tot_CTR_0, //11
+                             double * pk_tot_CTR_2, //12
+                             double * pk_tot_CTR_4, //13
+                             double * pk_tot_Tree, //14
+                             double * pk_tot_Tree_0_vv, //15
+                             double * pk_tot_Tree_0_vd, //16
+                             double * pk_tot_Tree_0_dd, //17
+                             double * pk_tot_Tree_2_vv, //18
+                             double * pk_tot_Tree_2_vd, //19
+                             double * pk_tot_Tree_4_vv, //20
+                             double * pk_tot_0_vv, //21
+                             double * pk_tot_0_vd, //22
+                             double * pk_tot_0_dd, //23
+                             double * pk_tot_2_vv, //24
+                             double * pk_tot_2_vd, //25
+                             double * pk_tot_2_dd, //26
+                             double * pk_tot_4_vv, //27
+                             double * pk_tot_4_vd, //28
+                             double * pk_tot_4_dd, //29
+                             double * pk_tot_0_b1b2, //30
+                             double * pk_tot_0_b2, //31
+                             double * pk_tot_0_b1bG2, //32
+                             double * pk_tot_0_bG2, //33
+                             double * pk_tot_2_b1b2, //34
+                             double * pk_tot_2_b2, //35
+                             double * pk_tot_2_b1bG2, //36
+                             double * pk_tot_2_bG2, //37
+                             double * pk_tot_4_b2, //38
+                             double * pk_tot_4_bG2, //39
+                             double * pk_tot_4_b1b2, //40
+                             double * pk_tot_4_b1bG2, //41
+                             double * pk_tot_2_b2b2, //42
+                             double * pk_tot_2_b2bG2, //43
+                             double * pk_tot_2_bG2bG2, //44
+                             double * pk_tot_4_b2b2, //45
+                             double * pk_tot_4_b2bG2, //46
+                             double * pk_tot_4_bG2bG2, //47
+                             //GC!
+                             double * pk_tot_fNL,
+                             double * pk_tot_fNLd2,
+                             double * pk_tot_fNLG2,
+                             //GC!!!
+                             double * pk_tot_fNL_0_vv,
+                             double * pk_tot_fNL_0_vd,
+                             double * pk_tot_fNL_0_dd,
+                             double * pk_tot_fNL_2_vv,
+                             double * pk_tot_fNL_2_vd,
+                             double * pk_tot_fNL_2_dd,
+                             double * pk_tot_fNL_4_vv,
+                             double * pk_tot_fNL_4_vd,
+                             double * pk_tot_fNL_4_dd,
+                             //GC!
+                             double * pk_tot_fNL_0_b1b2,
+                             double * pk_tot_fNL_0_b2,
+                             double * pk_tot_fNL_0_b1bG2,
+                             double * pk_tot_fNL_0_bG2,
+                             double * pk_tot_fNL_2_b1b2,
+                             double * pk_tot_fNL_2_b2,
+                             double * pk_tot_fNL_2_b1bG2,
+                             double * pk_tot_fNL_2_bG2,
+                             double * pk_tot_fNL_4_b1b2,
+                             double * pk_tot_fNL_4_b2,
+                             double * pk_tot_fNL_4_b1bG2,
+                             double * pk_tot_fNL_4_bG2, //GC: ORTHOGONAL...
+                                //GC: ORTHOGONAL -- start
+                             double * pk_tot_fNL_ortho,
+                             double * pk_tot_fNLd2_ortho,
+                             double * pk_tot_fNLG2_ortho,
+                             //GC!!!
+                             double * pk_tot_fNL_0_vv_ortho,
+                             double * pk_tot_fNL_0_vd_ortho,
+                             double * pk_tot_fNL_0_dd_ortho,
+                             double * pk_tot_fNL_2_vv_ortho,
+                             double * pk_tot_fNL_2_vd_ortho,
+                             double * pk_tot_fNL_2_dd_ortho,
+                             double * pk_tot_fNL_4_vv_ortho,
+                             double * pk_tot_fNL_4_vd_ortho,
+                             double * pk_tot_fNL_4_dd_ortho,
+                             //GC!
+                             double * pk_tot_fNL_0_b1b2_ortho,
+                             double * pk_tot_fNL_0_b2_ortho,
+                             double * pk_tot_fNL_0_b1bG2_ortho,
+                             double * pk_tot_fNL_0_bG2_ortho,
+                             double * pk_tot_fNL_2_b1b2_ortho,
+                             double * pk_tot_fNL_2_b2_ortho,
+                             double * pk_tot_fNL_2_b1bG2_ortho,
+                             double * pk_tot_fNL_2_bG2_ortho,
+                             double * pk_tot_fNL_4_b1b2_ortho,
+                             double * pk_tot_fNL_4_b2_ortho,
+                             double * pk_tot_fNL_4_b1bG2_ortho,
+                             double * pk_tot_fNL_4_bG2_ortho
+                                //GC: ORTHOGONAL -- finish
                              ) {
 
   /** Summary: */
@@ -1232,6 +1521,11 @@ int spectra_pk_nl_at_k_and_z(
     int last_index11;
     int last_index12;
     
+    //GC -> I do not understand why you need all of these... For example, last_index12 is not used... For now, I keep last_index_fNL_, and then I will see what to do... It seems that only one index is needed... This makes sense with how it is coded in nonlinear_pt.c... But here the index is not even initialized... I will follow this...
+    
+    //int last_index_fNL_;
+    int last_index_fNL;
+
 
   double * spectrum_at_z = NULL;
   double * spectrum_Id2d2_at_z = NULL;
@@ -1338,6 +1632,201 @@ int spectra_pk_nl_at_k_and_z(
     double * spline_4_b2bG2;
     double * spectrum_4_bG2bG2_at_z = NULL;
     double * spline_4_bG2bG2;
+    
+    //GC!
+    
+    double * spectrum_fNL_at_z = NULL;
+    double * spline_fNL;
+
+    double * spectrum_fNLd2_at_z = NULL;
+    double * spline_fNLd2;
+
+    double * spectrum_fNLG2_at_z = NULL;
+    double * spline_fNLG2;
+
+                                 //GC: ORTHOGONAL -- start
+
+                                 double * spectrum_fNL_at_z_ortho = NULL;
+                                 double * spline_fNL_ortho;
+
+                                 double * spectrum_fNLd2_at_z_ortho = NULL;
+                                 double * spline_fNLd2_ortho;
+
+                                 double * spectrum_fNLG2_at_z_ortho = NULL;
+                                 double * spline_fNLG2_ortho;
+
+                                 //GC: ORTHOGONAL -- finish
+
+    
+    //GC!
+    
+    double * spectrum_fNL_0_vv_at_z = NULL;
+    double * spline_fNL_0_vv;
+
+    double * spectrum_fNL_0_vd_at_z = NULL;
+    double * spline_fNL_0_vd;
+
+    double * spectrum_fNL_0_dd_at_z = NULL;
+    double * spline_fNL_0_dd;
+
+    double * spectrum_fNL_2_vv_at_z = NULL;
+    double * spline_fNL_2_vv;
+
+    double * spectrum_fNL_2_vd_at_z = NULL;
+    double * spline_fNL_2_vd;
+
+    double * spectrum_fNL_2_dd_at_z = NULL;
+    double * spline_fNL_2_dd;
+
+    double * spectrum_fNL_4_vv_at_z = NULL;
+    double * spline_fNL_4_vv;
+
+    double * spectrum_fNL_4_vd_at_z = NULL;
+    double * spline_fNL_4_vd;
+
+    double * spectrum_fNL_4_dd_at_z = NULL;
+    double * spline_fNL_4_dd;
+                                 
+                                 
+                                 //GC: ORTHOGONAL -- start
+
+
+                                 double * spectrum_fNL_0_vv_at_z_ortho = NULL;
+                                 double * spline_fNL_0_vv_ortho;
+
+                                 double * spectrum_fNL_0_vd_at_z_ortho = NULL;
+                                 double * spline_fNL_0_vd_ortho;
+
+                                 double * spectrum_fNL_0_dd_at_z_ortho = NULL;
+                                 double * spline_fNL_0_dd_ortho;
+
+                                 double * spectrum_fNL_2_vv_at_z_ortho = NULL;
+                                 double * spline_fNL_2_vv_ortho;
+
+                                 double * spectrum_fNL_2_vd_at_z_ortho = NULL;
+                                 double * spline_fNL_2_vd_ortho;
+
+                                 double * spectrum_fNL_2_dd_at_z_ortho = NULL;
+                                 double * spline_fNL_2_dd_ortho;
+
+                                 double * spectrum_fNL_4_vv_at_z_ortho = NULL;
+                                 double * spline_fNL_4_vv_ortho;
+
+                                 double * spectrum_fNL_4_vd_at_z_ortho = NULL;
+                                 double * spline_fNL_4_vd_ortho;
+
+                                 double * spectrum_fNL_4_dd_at_z_ortho = NULL;
+                                 double * spline_fNL_4_dd_ortho;
+
+
+                                 //GC: ORTHOGONAL -- finish
+
+
+        
+    //GC!
+    
+    double * spectrum_fNL_0_b1b2_at_z = NULL;
+    double * spline_fNL_0_b1b2;
+
+    double * spectrum_fNL_0_b2_at_z = NULL;
+    double * spline_fNL_0_b2;
+
+    double * spectrum_fNL_0_b1bG2_at_z = NULL;
+    double * spline_fNL_0_b1bG2;
+
+    double * spectrum_fNL_0_bG2_at_z = NULL;
+    double * spline_fNL_0_bG2;
+
+
+    
+    
+    
+    double * spectrum_fNL_2_b1b2_at_z = NULL;
+    double * spline_fNL_2_b1b2;
+
+    double * spectrum_fNL_2_b2_at_z = NULL;
+    double * spline_fNL_2_b2;
+
+    double * spectrum_fNL_2_b1bG2_at_z = NULL;
+    double * spline_fNL_2_b1bG2;
+
+    double * spectrum_fNL_2_bG2_at_z = NULL;
+    double * spline_fNL_2_bG2;
+
+
+    
+    
+    double * spectrum_fNL_4_b1b2_at_z = NULL;
+    double * spline_fNL_4_b1b2;
+
+    double * spectrum_fNL_4_b2_at_z = NULL;
+    double * spline_fNL_4_b2;
+
+    double * spectrum_fNL_4_b1bG2_at_z = NULL;
+    double * spline_fNL_4_b1bG2;
+
+    double * spectrum_fNL_4_bG2_at_z = NULL;
+    double * spline_fNL_4_bG2;
+                                 
+                                 
+                                 
+                                 
+                                 //GC: ORTHOGONAL -- start
+
+                                 
+                                 
+                                 
+                                 double * spectrum_fNL_0_b1b2_at_z_ortho = NULL;
+                                 double * spline_fNL_0_b1b2_ortho;
+
+                                 double * spectrum_fNL_0_b2_at_z_ortho = NULL;
+                                 double * spline_fNL_0_b2_ortho;
+
+                                 double * spectrum_fNL_0_b1bG2_at_z_ortho = NULL;
+                                 double * spline_fNL_0_b1bG2_ortho;
+
+                                 double * spectrum_fNL_0_bG2_at_z_ortho = NULL;
+                                 double * spline_fNL_0_bG2_ortho;
+
+
+                                 
+                                 
+                                 
+                                 double * spectrum_fNL_2_b1b2_at_z_ortho = NULL;
+                                 double * spline_fNL_2_b1b2_ortho;
+
+                                 double * spectrum_fNL_2_b2_at_z_ortho = NULL;
+                                 double * spline_fNL_2_b2_ortho;
+
+                                 double * spectrum_fNL_2_b1bG2_at_z_ortho = NULL;
+                                 double * spline_fNL_2_b1bG2_ortho;
+
+                                 double * spectrum_fNL_2_bG2_at_z_ortho = NULL;
+                                 double * spline_fNL_2_bG2_ortho;
+
+
+                                 
+                                 
+                                 double * spectrum_fNL_4_b1b2_at_z_ortho = NULL;
+                                 double * spline_fNL_4_b1b2_ortho;
+
+                                 double * spectrum_fNL_4_b2_at_z_ortho = NULL;
+                                 double * spline_fNL_4_b2_ortho;
+
+                                 double * spectrum_fNL_4_b1bG2_at_z_ortho = NULL;
+                                 double * spline_fNL_4_b1bG2_ortho;
+
+                                 double * spectrum_fNL_4_bG2_at_z_ortho = NULL;
+                                 double * spline_fNL_4_bG2_ortho;
+
+
+
+
+                                 //GC: ORTHOGONAL -- finish
+
+
+    
+    
 
   index_md = psp->index_md_scalars;
 
@@ -1515,6 +2004,255 @@ int spectra_pk_nl_at_k_and_z(
                 pnlpt->ln_k_size*sizeof(double),
                 psp->error_message);
     
+    
+    //GC!
+    
+    class_alloc(spectrum_fNL_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNLd2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNLG2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+                                 
+                                 
+                                 //GC: ORTHOGONAL -- start
+
+
+                                 class_alloc(spectrum_fNL_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNLd2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNLG2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+
+                                 //GC: ORTHOGONAL -- finish
+
+    
+    
+    //GC!
+    
+    class_alloc(spectrum_fNL_0_vv_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_0_vd_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_0_dd_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    
+    
+    class_alloc(spectrum_fNL_2_vv_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_2_vd_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_2_dd_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    
+    
+    class_alloc(spectrum_fNL_4_vv_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_4_vd_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_4_dd_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    
+                                 //GC: ORTHOGONAL -- start
+
+
+                                 class_alloc(spectrum_fNL_0_vv_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_0_vd_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_0_dd_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 
+                                 
+                                 class_alloc(spectrum_fNL_2_vv_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_2_vd_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_2_dd_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 
+                                 
+                                 class_alloc(spectrum_fNL_4_vv_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_4_vd_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_4_dd_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+
+                                 //GC: ORTHOGONAL -- finish
+
+                                 
+    
+    
+    //GC!
+    
+    
+    class_alloc(spectrum_fNL_0_b1b2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_0_b2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_0_b1bG2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_0_bG2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    
+    
+    
+    class_alloc(spectrum_fNL_2_b1b2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_2_b2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_2_b1bG2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_2_bG2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    
+    
+    
+    class_alloc(spectrum_fNL_4_b1b2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_4_b2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_4_b1bG2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    class_alloc(spectrum_fNL_4_bG2_at_z,
+                pnlpt->ln_k_size*sizeof(double),
+                psp->error_message);
+
+    
+                                 //GC: ORTHOGONAL -- start
+
+
+                                 class_alloc(spectrum_fNL_0_b1b2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_0_b2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_0_b1bG2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_0_bG2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 
+                                 
+                                 
+                                 class_alloc(spectrum_fNL_2_b1b2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_2_b2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_2_b1bG2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_2_bG2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 
+                                 
+                                 
+                                 class_alloc(spectrum_fNL_4_b1b2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_4_b2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_4_b1bG2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+                                 class_alloc(spectrum_fNL_4_bG2_at_z_ortho,
+                                             pnlpt->ln_k_size*sizeof(double),
+                                             psp->error_message);
+
+
+                                 //GC: ORTHOGONAL -- finish
+
+    
+    
 
     if (pnlpt->method == nlpt_none && pnl->method != nl_none){
     class_call(spectra_pk_nl_at_z(pba,
@@ -1589,7 +2327,63 @@ for (i_z=0; i_z<pnlpt->z_pk_num; i_z++) {
                                             spectrum_2_bG2bG2_at_z,
                                             spectrum_4_b2b2_at_z,
                                             spectrum_4_b2bG2_at_z,
-                                            spectrum_4_bG2bG2_at_z),
+                                            spectrum_4_bG2bG2_at_z, //GC!
+                                            //GC!
+                                            spectrum_fNL_at_z,
+                                            spectrum_fNLd2_at_z,
+                                            spectrum_fNLG2_at_z,
+                                            //GC!
+                                            spectrum_fNL_0_vv_at_z,
+                                            spectrum_fNL_0_vd_at_z,
+                                            spectrum_fNL_0_dd_at_z,
+                                            spectrum_fNL_2_vv_at_z,
+                                            spectrum_fNL_2_vd_at_z,
+                                            spectrum_fNL_2_dd_at_z,
+                                            spectrum_fNL_4_vv_at_z,
+                                            spectrum_fNL_4_vd_at_z,
+                                            spectrum_fNL_4_dd_at_z,
+                                            //GC!
+                                            spectrum_fNL_0_b1b2_at_z,
+                                            spectrum_fNL_0_b2_at_z,
+                                            spectrum_fNL_0_b1bG2_at_z,
+                                            spectrum_fNL_0_bG2_at_z,
+                                            spectrum_fNL_2_b1b2_at_z,
+                                            spectrum_fNL_2_b2_at_z,
+                                            spectrum_fNL_2_b1bG2_at_z,
+                                            spectrum_fNL_2_bG2_at_z,
+                                            spectrum_fNL_4_b1b2_at_z,
+                                            spectrum_fNL_4_b2_at_z,
+                                            spectrum_fNL_4_b1bG2_at_z,
+                                            spectrum_fNL_4_bG2_at_z, //GC: ORTHOGONAL...
+                                            //GC: ORTHOGONAL -- start
+                                            spectrum_fNL_at_z_ortho,
+                                            spectrum_fNLd2_at_z_ortho,
+                                            spectrum_fNLG2_at_z_ortho,
+                                            //GC!
+                                            spectrum_fNL_0_vv_at_z_ortho,
+                                            spectrum_fNL_0_vd_at_z_ortho,
+                                            spectrum_fNL_0_dd_at_z_ortho,
+                                            spectrum_fNL_2_vv_at_z_ortho,
+                                            spectrum_fNL_2_vd_at_z_ortho,
+                                            spectrum_fNL_2_dd_at_z_ortho,
+                                            spectrum_fNL_4_vv_at_z_ortho,
+                                            spectrum_fNL_4_vd_at_z_ortho,
+                                            spectrum_fNL_4_dd_at_z_ortho,
+                                            //GC!
+                                            spectrum_fNL_0_b1b2_at_z_ortho,
+                                            spectrum_fNL_0_b2_at_z_ortho,
+                                            spectrum_fNL_0_b1bG2_at_z_ortho,
+                                            spectrum_fNL_0_bG2_at_z_ortho,
+                                            spectrum_fNL_2_b1b2_at_z_ortho,
+                                            spectrum_fNL_2_b2_at_z_ortho,
+                                            spectrum_fNL_2_b1bG2_at_z_ortho,
+                                            spectrum_fNL_2_bG2_at_z_ortho,
+                                            spectrum_fNL_4_b1b2_at_z_ortho,
+                                            spectrum_fNL_4_b2_at_z_ortho,
+                                            spectrum_fNL_4_b1bG2_at_z_ortho,
+                                            spectrum_fNL_4_bG2_at_z_ortho
+                                            //GC: ORTHOGONAL -- finish
+                                            ),
                psp->error_message,
                psp->error_message);
 
@@ -1782,6 +2576,273 @@ for (i_z=0; i_z<pnlpt->z_pk_num; i_z++) {
     class_alloc(spline_4_bG2bG2,
                 sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
                 psp->error_message);
+    
+    
+    //GC!
+    
+    
+    class_alloc(spline_fNL,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNLd2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    
+    class_alloc(spline_fNLG2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+                                 
+                                 
+                                 //GC: ORTHOGONAL -- start
+
+
+
+                                 class_alloc(spline_fNL_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNLd2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 
+                                 class_alloc(spline_fNLG2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 
+                                 //GC: ORTHOGONAL -- finish
+
+
+
+    
+    //GC!
+    
+    
+    class_alloc(spline_fNL_0_vv,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_0_vd,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_0_dd,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+
+    
+    
+    class_alloc(spline_fNL_2_vv,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_2_vd,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_2_dd,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+
+    
+    class_alloc(spline_fNL_4_vv,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_4_vd,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_4_dd,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+
+                                 //GC: ORTHOGONAL -- start
+
+
+                                 class_alloc(spline_fNL_0_vv_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_0_vd_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_0_dd_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+
+                                 
+                                 
+                                 class_alloc(spline_fNL_2_vv_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_2_vd_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_2_dd_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+
+                                 
+                                 class_alloc(spline_fNL_4_vv_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_4_vd_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_4_dd_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+
+                                 //GC: ORTHOGONAL -- finish
+
+    
+    
+    
+    //GC!
+    
+    
+    class_alloc(spline_fNL_0_b1b2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_0_b2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_0_b1bG2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_0_bG2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+
+    
+    
+    class_alloc(spline_fNL_2_b1b2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_2_b2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_2_b1bG2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_2_bG2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+
+    
+    
+    class_alloc(spline_fNL_4_b1b2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_4_b2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_4_b1bG2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+    class_alloc(spline_fNL_4_bG2,
+                sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                psp->error_message);
+
+
+    
+                                 //GC: ORTHOGONAL -- start
+
+
+                                 class_alloc(spline_fNL_0_b1b2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_0_b2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_0_b1bG2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_0_bG2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+
+                                 
+                                 
+                                 class_alloc(spline_fNL_2_b1b2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_2_b2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_2_b1bG2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_2_bG2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+
+                                 
+                                 
+                                 class_alloc(spline_fNL_4_b1b2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_4_b2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_4_b1bG2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+                                 class_alloc(spline_fNL_4_bG2_ortho,
+                                             sizeof(double)*psp->ic_ic_size[index_md]*pnlpt->ln_k_size,
+                                             psp->error_message);
+
+
+                                 //GC: ORTHOGONAL -- finish
+
+    
+    
+    
+    /*[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]*/
+    
+    
+    
+    
+    
+    
+    
     
   class_call(array_spline_table_lines(pnlpt->ln_k,
                                       pnlpt->ln_k_size,
@@ -2978,6 +4039,1499 @@ for (i_z=0; i_z<pnlpt->z_pk_num; i_z++) {
     *pk_tot_4_bG2bG2 = exp(*pk_tot_4_bG2bG2);
     free(spectrum_4_bG2bG2_at_z);
     free(spline_4_bG2bG2);
+    
+    
+    /*()()()()()()()()()()()()()()()()()()()()()()()*/
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_at_z, //spectrum_at_z_...,
+                                        spline_fNL, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL = exp(*pk_tot_fNL);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNLd2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNLd2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNLd2_at_z, //spectrum_at_z_...,
+                                        spline_fNLd2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNLd2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNLd2 = exp(*pk_tot_fNLd2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNLd2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNLd2);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNLG2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNLG2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNLG2_at_z, //spectrum_at_z_...,
+                                        spline_fNLG2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNLG2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNLG2 = exp(*pk_tot_fNLG2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNLG2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNLG2);  //free(spline_...);
+
+                                 
+    
+                                 //GC: ORTHOGONAL -- start
+
+
+                                 class_call(array_spline_table_lines(pnlpt->ln_k,
+                                                                     pnlpt->ln_k_size,
+                                                                     spectrum_fNL_at_z_ortho, //spectrum_at_z_...,
+                                                                     1,
+                                                                     spline_fNL_ortho, //spline_...,
+                                                                     _SPLINE_NATURAL_,
+                                                                     psp->error_message),
+                                            psp->error_message,
+                                            psp->error_message);
+
+                                 class_call(array_interpolate_spline(pnlpt->ln_k,
+                                                                     pnlpt->ln_k_size,
+                                                                     spectrum_fNL_at_z_ortho, //spectrum_at_z_...,
+                                                                     spline_fNL_ortho, //spline_...,
+                                                                     1,
+                                                                     log(k),
+                                                                     &last_index_fNL,
+                                                                     pk_tot_fNL_ortho, //pk_tot_...,
+                                                                     1,
+                                                                     psp->error_message),
+                                            psp->error_message,
+                                            psp->error_message);
+
+                                 *pk_tot_fNL_ortho = exp(*pk_tot_fNL_ortho);//*pk_tot_... = exp(*pk_tot_...);
+                                 free(spectrum_fNL_at_z_ortho);  //free(spectrum_at_z_...);
+                                 free(spline_fNL_ortho);  //free(spline_...);
+
+                                 
+                                 
+                                 class_call(array_spline_table_lines(pnlpt->ln_k,
+                                                                     pnlpt->ln_k_size,
+                                                                     spectrum_fNLd2_at_z_ortho, //spectrum_at_z_...,
+                                                                     1,
+                                                                     spline_fNLd2_ortho, //spline_...,
+                                                                     _SPLINE_NATURAL_,
+                                                                     psp->error_message),
+                                            psp->error_message,
+                                            psp->error_message);
+
+                                 class_call(array_interpolate_spline(pnlpt->ln_k,
+                                                                     pnlpt->ln_k_size,
+                                                                     spectrum_fNLd2_at_z_ortho, //spectrum_at_z_...,
+                                                                     spline_fNLd2_ortho, //spline_...,
+                                                                     1,
+                                                                     log(k),
+                                                                     &last_index_fNL,
+                                                                     pk_tot_fNLd2_ortho, //pk_tot_...,
+                                                                     1,
+                                                                     psp->error_message),
+                                            psp->error_message,
+                                            psp->error_message);
+
+                                 *pk_tot_fNLd2_ortho = exp(*pk_tot_fNLd2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+                                 free(spectrum_fNLd2_at_z_ortho);  //free(spectrum_at_z_...);
+                                 free(spline_fNLd2_ortho);  //free(spline_...);
+
+                                 
+                                 
+                                 class_call(array_spline_table_lines(pnlpt->ln_k,
+                                                                     pnlpt->ln_k_size,
+                                                                     spectrum_fNLG2_at_z_ortho, //spectrum_at_z_...,
+                                                                     1,
+                                                                     spline_fNLG2_ortho, //spline_...,
+                                                                     _SPLINE_NATURAL_,
+                                                                     psp->error_message),
+                                            psp->error_message,
+                                            psp->error_message);
+
+                                 class_call(array_interpolate_spline(pnlpt->ln_k,
+                                                                     pnlpt->ln_k_size,
+                                                                     spectrum_fNLG2_at_z_ortho, //spectrum_at_z_...,
+                                                                     spline_fNLG2_ortho, //spline_...,
+                                                                     1,
+                                                                     log(k),
+                                                                     &last_index_fNL,
+                                                                     pk_tot_fNLG2_ortho, //pk_tot_...,
+                                                                     1,
+                                                                     psp->error_message),
+                                            psp->error_message,
+                                            psp->error_message);
+
+                                 *pk_tot_fNLG2_ortho = exp(*pk_tot_fNLG2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+                                 free(spectrum_fNLG2_at_z_ortho);  //free(spectrum_at_z_...);
+                                 free(spline_fNLG2_ortho);  //free(spline_...);
+
+
+                                 //GC: ORTHOGONAL -- finish
+
+                                 
+                                 
+    
+            /*==============================================================*/
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_vv_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_vv, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_vv_at_z, //spectrum_at_z_...,
+                                        spline_fNL_0_vv, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_vv, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_vv = exp(*pk_tot_fNL_0_vv);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_vv_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_vv);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_vd_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_vd, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_vd_at_z, //spectrum_at_z_...,
+                                        spline_fNL_0_vd, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_vd, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_vd = exp(*pk_tot_fNL_0_vd);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_vd_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_vd);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_dd_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_dd, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_dd_at_z, //spectrum_at_z_...,
+                                        spline_fNL_0_dd, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_dd, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_dd = exp(*pk_tot_fNL_0_dd);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_dd_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_dd);  //free(spline_...);
+
+    
+    
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_vv_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_vv, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_vv_at_z, //spectrum_at_z_...,
+                                        spline_fNL_2_vv, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_vv, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_vv = exp(*pk_tot_fNL_2_vv);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_vv_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_vv);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_vd_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_vd, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_vd_at_z, //spectrum_at_z_...,
+                                        spline_fNL_2_vd, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_vd, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_vd = exp(*pk_tot_fNL_2_vd);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_vd_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_vd);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_dd_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_dd, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_dd_at_z, //spectrum_at_z_...,
+                                        spline_fNL_2_dd, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_dd, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_dd = exp(*pk_tot_fNL_2_dd);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_dd_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_dd);  //free(spline_...);
+
+    
+    
+
+    
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_vv_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_vv, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_vv_at_z, //spectrum_at_z_...,
+                                        spline_fNL_4_vv, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_vv, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_vv = exp(*pk_tot_fNL_4_vv);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_vv_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_vv);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_vd_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_vd, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_vd_at_z, //spectrum_at_z_...,
+                                        spline_fNL_4_vd, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_vd, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_vd = exp(*pk_tot_fNL_4_vd);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_vd_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_vd);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_dd_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_dd, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_dd_at_z, //spectrum_at_z_...,
+                                        spline_fNL_4_dd, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_dd, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_dd = exp(*pk_tot_fNL_4_dd);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_dd_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_dd);  //free(spline_...);
+
+                                 
+                                 
+                                 
+                                 
+                                 
+      //GC: ORTHOGONAL -- start
+
+
+                                 
+                                 
+       class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_vv_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_vv_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_vv_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_0_vv_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_vv_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_vv_ortho = exp(*pk_tot_fNL_0_vv_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_vv_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_vv_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_vd_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_vd_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_vd_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_0_vd_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_vd_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_vd_ortho = exp(*pk_tot_fNL_0_vd_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_vd_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_vd_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_dd_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_dd_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_dd_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_0_dd_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_dd_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_dd_ortho = exp(*pk_tot_fNL_0_dd_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_dd_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_dd_ortho);  //free(spline_...);
+
+    
+    
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_vv_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_vv_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_vv_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_2_vv_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_vv_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_vv_ortho = exp(*pk_tot_fNL_2_vv_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_vv_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_vv_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_vd_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_vd_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_vd_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_2_vd_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_vd_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_vd_ortho = exp(*pk_tot_fNL_2_vd_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_vd_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_vd_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_dd_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_dd_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_dd_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_2_dd_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_dd_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_dd_ortho = exp(*pk_tot_fNL_2_dd_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_dd_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_dd_ortho);  //free(spline_...);
+
+    
+    
+
+    
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_vv_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_vv_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_vv_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_4_vv_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_vv_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_vv_ortho = exp(*pk_tot_fNL_4_vv_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_vv_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_vv_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_vd_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_vd_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_vd_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_4_vd_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_vd_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_vd_ortho = exp(*pk_tot_fNL_4_vd_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_vd_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_vd_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_dd_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_dd_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_dd_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_4_dd_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_dd_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_dd_ortho = exp(*pk_tot_fNL_4_dd_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_dd_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_dd_ortho);  //free(spline_...);
+                              
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+
+
+    //GC: ORTHOGONAL -- finish
+                               
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+    
+    
+                /*===========================================================*/
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_b1b2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_b1b2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_b1b2_at_z, //spectrum_at_z_...,
+                                        spline_fNL_0_b1b2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_b1b2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_b1b2 = exp(*pk_tot_fNL_0_b1b2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_b1b2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_b1b2);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_b2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_b2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_b2_at_z, //spectrum_at_z_...,
+                                        spline_fNL_0_b2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_b2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_b2 = exp(*pk_tot_fNL_0_b2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_b2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_b2);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_b1bG2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_b1bG2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_b1bG2_at_z, //spectrum_at_z_...,
+                                        spline_fNL_0_b1bG2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_b1bG2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_b1bG2 = exp(*pk_tot_fNL_0_b1bG2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_b1bG2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_b1bG2);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_bG2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_bG2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_bG2_at_z, //spectrum_at_z_...,
+                                        spline_fNL_0_bG2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_bG2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_bG2 = exp(*pk_tot_fNL_0_bG2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_bG2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_bG2);  //free(spline_...);
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_b1b2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_b1b2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_b1b2_at_z, //spectrum_at_z_...,
+                                        spline_fNL_2_b1b2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_b1b2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_b1b2 = exp(*pk_tot_fNL_2_b1b2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_b1b2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_b1b2);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_b2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_b2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_b2_at_z, //spectrum_at_z_...,
+                                        spline_fNL_2_b2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_b2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_b2 = exp(*pk_tot_fNL_2_b2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_b2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_b2);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_b1bG2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_b1bG2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_b1bG2_at_z, //spectrum_at_z_...,
+                                        spline_fNL_2_b1bG2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_b1bG2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_b1bG2 = exp(*pk_tot_fNL_2_b1bG2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_b1bG2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_b1bG2);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_bG2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_bG2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_bG2_at_z, //spectrum_at_z_...,
+                                        spline_fNL_2_bG2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_bG2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_bG2 = exp(*pk_tot_fNL_2_bG2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_bG2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_bG2);  //free(spline_...);
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_b1b2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_b1b2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_b1b2_at_z, //spectrum_at_z_...,
+                                        spline_fNL_4_b1b2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_b1b2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_b1b2 = exp(*pk_tot_fNL_4_b1b2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_b1b2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_b1b2);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_b2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_b2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_b2_at_z, //spectrum_at_z_...,
+                                        spline_fNL_4_b2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_b2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_b2 = exp(*pk_tot_fNL_4_b2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_b2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_b2);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_b1bG2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_b1bG2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_b1bG2_at_z, //spectrum_at_z_...,
+                                        spline_fNL_4_b1bG2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_b1bG2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_b1bG2 = exp(*pk_tot_fNL_4_b1bG2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_b1bG2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_b1bG2);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_bG2_at_z, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_bG2, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_bG2_at_z, //spectrum_at_z_...,
+                                        spline_fNL_4_bG2, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_bG2, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_bG2 = exp(*pk_tot_fNL_4_bG2);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_bG2_at_z);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_bG2);  //free(spline_...);
+
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 //GC: ORTHOGONAL -- start
+
+                                 
+                                 
+                                 
+     class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_b1b2_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_b1b2_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_b1b2_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_0_b1b2_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_b1b2_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_b1b2_ortho = exp(*pk_tot_fNL_0_b1b2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_b1b2_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_b1b2_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_b2_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_b2_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_b2_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_0_b2_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_b2_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_b2_ortho = exp(*pk_tot_fNL_0_b2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_b2_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_b2_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_b1bG2_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_b1bG2_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_b1bG2_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_0_b1bG2_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_b1bG2_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_b1bG2_ortho = exp(*pk_tot_fNL_0_b1bG2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_b1bG2_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_b1bG2_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_bG2_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_0_bG2_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_0_bG2_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_0_bG2_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_0_bG2_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_0_bG2_ortho = exp(*pk_tot_fNL_0_bG2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_0_bG2_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_0_bG2_ortho);  //free(spline_...);
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_b1b2_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_b1b2_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_b1b2_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_2_b1b2_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_b1b2_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_b1b2_ortho = exp(*pk_tot_fNL_2_b1b2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_b1b2_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_b1b2_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_b2_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_b2_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_b2_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_2_b2_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_b2_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_b2_ortho = exp(*pk_tot_fNL_2_b2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_b2_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_b2_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_b1bG2_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_b1bG2_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_b1bG2_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_2_b1bG2_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_b1bG2_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_b1bG2_ortho = exp(*pk_tot_fNL_2_b1bG2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_b1bG2_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_b1bG2_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_bG2_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_2_bG2_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_2_bG2_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_2_bG2_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_2_bG2_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_2_bG2_ortho = exp(*pk_tot_fNL_2_bG2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_2_bG2_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_2_bG2_ortho);  //free(spline_...);
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_b1b2_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_b1b2_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_b1b2_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_4_b1b2_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_b1b2_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_b1b2_ortho = exp(*pk_tot_fNL_4_b1b2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_b1b2_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_b1b2_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_b2_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_b2_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_b2_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_4_b2_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_b2_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_b2_ortho = exp(*pk_tot_fNL_4_b2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_b2_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_b2_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_b1bG2_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_b1bG2_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_b1bG2_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_4_b1bG2_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_b1bG2_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_b1bG2_ortho = exp(*pk_tot_fNL_4_b1bG2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_b1bG2_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_b1bG2_ortho);  //free(spline_...);
+
+    
+    
+    class_call(array_spline_table_lines(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_bG2_at_z_ortho, //spectrum_at_z_...,
+                                        1,
+                                        spline_fNL_4_bG2_ortho, //spline_...,
+                                        _SPLINE_NATURAL_,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    class_call(array_interpolate_spline(pnlpt->ln_k,
+                                        pnlpt->ln_k_size,
+                                        spectrum_fNL_4_bG2_at_z_ortho, //spectrum_at_z_...,
+                                        spline_fNL_4_bG2_ortho, //spline_...,
+                                        1,
+                                        log(k),
+                                        &last_index_fNL,
+                                        pk_tot_fNL_4_bG2_ortho, //pk_tot_...,
+                                        1,
+                                        psp->error_message),
+               psp->error_message,
+               psp->error_message);
+
+    *pk_tot_fNL_4_bG2_ortho = exp(*pk_tot_fNL_4_bG2_ortho);//*pk_tot_... = exp(*pk_tot_...);
+    free(spectrum_fNL_4_bG2_at_z_ortho);  //free(spectrum_at_z_...);
+    free(spline_fNL_4_bG2_ortho);  //free(spline_...);
+                                
+                                 
+                                 
+
+
+                                 //GC: ORTHOGONAL -- finish
+
+        
+    
 
   return _SUCCESS_;
 
@@ -3546,6 +6100,8 @@ int spectra_free(
         }
 
         if (psp->ln_pk_nl != NULL) {
+            
+          //GC -> I only need to free things defined in psp, so no transfer function stuff... Great! This means, I forget about ln_pk_l or these things... I just treat everything as an addition to the bias terms, essentially... I should look more into including the contribution to the matter if I look at lensing... Whatever...
 
           free(psp->ln_tau_nl);
           free(psp->ln_pk_nl);
@@ -3599,6 +6155,108 @@ int spectra_free(
             free(psp->ln_pk_4_b2b2);
             free(psp->ln_pk_4_b2bG2);
             free(psp->ln_pk_4_bG2bG2);
+            
+            
+            
+            //GC!!!
+            
+            //GC -> Misha has been a bit random with the names here... I can take the same names as nonlinear_pt.c...
+            
+            
+            free(psp->ln_pk_nl_fNL);
+            free(psp->ln_pk_fNLd2);
+            free(psp->ln_pk_fNLG2);
+
+            
+            //GC: ORTHOGONAL -- start
+
+
+            free(psp->ln_pk_nl_fNL_ortho);
+            free(psp->ln_pk_fNLd2_ortho);
+            free(psp->ln_pk_fNLG2_ortho);
+
+
+
+            //GC: ORTHOGONAL -- finish
+
+            
+            
+            
+            //GC!
+            
+            
+            free(psp->ln_pk_fNL_0_vv);
+            free(psp->ln_pk_fNL_0_vd);
+            free(psp->ln_pk_fNL_0_dd);
+            
+            free(psp->ln_pk_fNL_2_vv);
+            free(psp->ln_pk_fNL_2_vd);
+            free(psp->ln_pk_fNL_2_dd);
+            
+            free(psp->ln_pk_fNL_4_vv);
+            free(psp->ln_pk_fNL_4_vd);
+            free(psp->ln_pk_fNL_4_dd);
+            
+
+            //GC: ORTHOGONAL -- start
+
+
+            free(psp->ln_pk_fNL_0_vv_ortho);
+            free(psp->ln_pk_fNL_0_vd_ortho);
+            free(psp->ln_pk_fNL_0_dd_ortho);
+            
+            free(psp->ln_pk_fNL_2_vv_ortho);
+            free(psp->ln_pk_fNL_2_vd_ortho);
+            free(psp->ln_pk_fNL_2_dd_ortho);
+            
+            free(psp->ln_pk_fNL_4_vv_ortho);
+            free(psp->ln_pk_fNL_4_vd_ortho);
+            free(psp->ln_pk_fNL_4_dd_ortho);
+
+
+            //GC: ORTHOGONAL -- finish
+
+            
+            
+            //GC!
+            
+            
+            
+            free(psp->ln_pk12_0_b1b2);
+            free(psp->ln_pk12_0_b2);
+            free(psp->ln_pk12_0_b1bG2);
+            free(psp->ln_pk12_0_bG2);
+            free(psp->ln_pk12_2_b1b2);
+            free(psp->ln_pk12_2_b2);
+            free(psp->ln_pk12_2_b1bG2);
+            free(psp->ln_pk12_2_bG2);
+            free(psp->ln_pk12_4_b1b2);
+            free(psp->ln_pk12_4_b2);
+            free(psp->ln_pk12_4_b1bG2);
+            free(psp->ln_pk12_4_bG2);
+
+            
+            //GC: ORTHOGONAL -- start
+
+
+            free(psp->ln_pk12_0_b1b2_ortho);
+            free(psp->ln_pk12_0_b2_ortho);
+            free(psp->ln_pk12_0_b1bG2_ortho);
+            free(psp->ln_pk12_0_bG2_ortho);
+            free(psp->ln_pk12_2_b1b2_ortho);
+            free(psp->ln_pk12_2_b2_ortho);
+            free(psp->ln_pk12_2_b1bG2_ortho);
+            free(psp->ln_pk12_2_bG2_ortho);
+            free(psp->ln_pk12_4_b1b2_ortho);
+            free(psp->ln_pk12_4_b2_ortho);
+            free(psp->ln_pk12_4_b1bG2_ortho);
+            free(psp->ln_pk12_4_bG2_ortho);
+
+
+            //GC: ORTHOGONAL -- finish
+
+            
+            
 
           if (psp->ln_tau_nl_size > 1) {
             free(psp->ddln_pk_nl);
@@ -3652,6 +6310,110 @@ int spectra_free(
               free(psp->ddln_pk_4_b2b2);
               free(psp->ddln_pk_4_b2bG2);
               free(psp->ddln_pk_4_bG2bG2);
+              
+              
+              
+              //GC!
+              
+              
+              free(psp->ddln_pk_nl_fNL);
+              free(psp->ddln_pk_fNLd2);
+              free(psp->ddln_pk_fNLG2);
+
+              
+              
+              //GC: ORTHOGONAL -- start
+
+
+              free(psp->ddln_pk_nl_fNL_ortho);
+              free(psp->ddln_pk_fNLd2_ortho);
+              free(psp->ddln_pk_fNLG2_ortho);
+
+
+
+              //GC: ORTHOGONAL -- finish
+
+              
+              
+              
+              
+              //GC!
+              
+              
+              
+              free(psp->ddln_pk_fNL_0_vv);
+              free(psp->ddln_pk_fNL_0_vd);
+              free(psp->ddln_pk_fNL_0_dd);
+              
+              free(psp->ddln_pk_fNL_2_vv);
+              free(psp->ddln_pk_fNL_2_vd);
+              free(psp->ddln_pk_fNL_2_dd);
+              
+              free(psp->ddln_pk_fNL_4_vv);
+              free(psp->ddln_pk_fNL_4_vd);
+              free(psp->ddln_pk_fNL_4_dd);
+
+              
+              //GC: ORTHOGONAL -- start
+
+
+              free(psp->ddln_pk_fNL_0_vv_ortho);
+              free(psp->ddln_pk_fNL_0_vd_ortho);
+              free(psp->ddln_pk_fNL_0_dd_ortho);
+              
+              free(psp->ddln_pk_fNL_2_vv_ortho);
+              free(psp->ddln_pk_fNL_2_vd_ortho);
+              free(psp->ddln_pk_fNL_2_dd_ortho);
+              
+              free(psp->ddln_pk_fNL_4_vv_ortho);
+              free(psp->ddln_pk_fNL_4_vd_ortho);
+              free(psp->ddln_pk_fNL_4_dd_ortho);
+
+
+              //GC: ORTHOGONAL -- finish
+
+              
+              
+              //GC!
+              
+              
+              free(psp->ddln_pk12_0_b1b2);
+              free(psp->ddln_pk12_0_b2);
+              free(psp->ddln_pk12_0_b1bG2);
+              free(psp->ddln_pk12_0_bG2);
+              free(psp->ddln_pk12_2_b1b2);
+              free(psp->ddln_pk12_2_b2);
+              free(psp->ddln_pk12_2_b1bG2);
+              free(psp->ddln_pk12_2_bG2);
+              free(psp->ddln_pk12_4_b1b2);
+              free(psp->ddln_pk12_4_b2);
+              free(psp->ddln_pk12_4_b1bG2);
+              free(psp->ddln_pk12_4_bG2);
+              
+              
+              
+              //GC: ORTHOGONAL -- start
+
+
+              free(psp->ddln_pk12_0_b1b2_ortho);
+              free(psp->ddln_pk12_0_b2_ortho);
+              free(psp->ddln_pk12_0_b1bG2_ortho);
+              free(psp->ddln_pk12_0_bG2_ortho);
+              free(psp->ddln_pk12_2_b1b2_ortho);
+              free(psp->ddln_pk12_2_b2_ortho);
+              free(psp->ddln_pk12_2_b1bG2_ortho);
+              free(psp->ddln_pk12_2_bG2_ortho);
+              free(psp->ddln_pk12_4_b1b2_ortho);
+              free(psp->ddln_pk12_4_b2_ortho);
+              free(psp->ddln_pk12_4_b1bG2_ortho);
+              free(psp->ddln_pk12_4_bG2_ortho);
+
+
+              //GC: ORTHOGONAL -- finish
+
+
+              
+              
           }
         }
 
@@ -5030,6 +7792,268 @@ int spectra_pk(
             class_alloc(psp->ln_pk_4_bG2bG2,
                         sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
                         psp->error_message);
+            
+            
+            //GC!!!
+            
+            
+            
+            class_alloc(psp->ln_pk_nl_fNL,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNLd2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNLG2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+            
+            
+            //GC: ORTHOGONAL -- start
+
+
+            class_alloc(psp->ln_pk_nl_fNL_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNLd2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNLG2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+
+            //GC: ORTHOGONAL -- finish
+
+
+
+            
+            //GC!
+            
+            
+            class_alloc(psp->ln_pk_fNL_0_vv,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNL_0_vd,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNL_0_dd,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+
+            
+            
+            class_alloc(psp->ln_pk_fNL_2_vv,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNL_2_vd,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNL_2_dd,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+
+            
+            
+            class_alloc(psp->ln_pk_fNL_4_vv,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNL_4_vd,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNL_4_dd,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            
+            
+            //GC: ORTHOGONAL -- start
+
+
+            class_alloc(psp->ln_pk_fNL_0_vv_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNL_0_vd_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNL_0_dd_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+
+            
+            
+            class_alloc(psp->ln_pk_fNL_2_vv_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNL_2_vd_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNL_2_dd_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+
+            
+            
+            class_alloc(psp->ln_pk_fNL_4_vv_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNL_4_vd_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk_fNL_4_dd_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+
+            //GC: ORTHOGONAL -- finish
+
+            
+            
+            //GC!
+            
+            
+            class_alloc(psp->ln_pk12_0_b1b2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_0_b2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_0_b1bG2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_0_bG2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+
+            
+            
+            
+            class_alloc(psp->ln_pk12_2_b1b2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_2_b2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_2_b1bG2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_2_bG2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+
+            
+            
+            
+            
+            class_alloc(psp->ln_pk12_4_b1b2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_4_b2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_4_b1bG2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_4_bG2,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            
+            //GC: ORTHOGONAL -- start
+
+
+            class_alloc(psp->ln_pk12_0_b1b2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_0_b2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_0_b1bG2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_0_bG2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+
+            
+            
+            
+            class_alloc(psp->ln_pk12_2_b1b2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_2_b2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_2_b1bG2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_2_bG2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+
+            
+            
+            
+            
+            class_alloc(psp->ln_pk12_4_b1b2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_4_b2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_4_b1bG2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+            class_alloc(psp->ln_pk12_4_bG2_ortho,
+                        sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,
+                        psp->error_message);
+
+
+            //GC: ORTHOGONAL -- finish
+
+            
 
 
     /* possible index shift between the first value of time used for
@@ -5116,6 +8140,104 @@ int spectra_pk(
             psp->ln_pk_4_b2b2 = NULL;
             psp->ln_pk_4_b2bG2 = NULL;
             psp->ln_pk_4_bG2bG2 = NULL;
+            
+            
+            //GC!!!
+            
+            
+            
+            psp->ln_pk_nl_fNL = NULL;
+            psp->ln_pk_fNLd2 = NULL;
+            psp->ln_pk_fNLG2 = NULL;
+            
+            
+            //GC: ORTHOGONAL -- start
+
+
+            psp->ln_pk_nl_fNL_ortho = NULL;
+            psp->ln_pk_fNLd2_ortho = NULL;
+            psp->ln_pk_fNLG2_ortho = NULL;
+
+
+            //GC: ORTHOGONAL -- finish
+
+            
+            //GC!
+            
+            
+            
+            
+                psp->ln_pk_fNL_0_vv = NULL;
+                psp->ln_pk_fNL_0_vd = NULL;
+                psp->ln_pk_fNL_0_dd = NULL;
+                
+                psp->ln_pk_fNL_2_vv = NULL;
+                psp->ln_pk_fNL_2_vd = NULL;
+                psp->ln_pk_fNL_2_dd = NULL;
+                
+                psp->ln_pk_fNL_4_vv = NULL;
+                psp->ln_pk_fNL_4_vd = NULL;
+                psp->ln_pk_fNL_4_dd = NULL;
+
+            
+            //GC: ORTHOGONAL -- start
+
+
+            psp->ln_pk_fNL_0_vv_ortho = NULL;
+            psp->ln_pk_fNL_0_vd_ortho = NULL;
+            psp->ln_pk_fNL_0_dd_ortho = NULL;
+            
+            psp->ln_pk_fNL_2_vv_ortho = NULL;
+            psp->ln_pk_fNL_2_vd_ortho = NULL;
+            psp->ln_pk_fNL_2_dd_ortho = NULL;
+            
+            psp->ln_pk_fNL_4_vv_ortho = NULL;
+            psp->ln_pk_fNL_4_vd_ortho = NULL;
+            psp->ln_pk_fNL_4_dd_ortho = NULL;
+
+
+            //GC: ORTHOGONAL -- finish
+
+            
+            
+            
+            //GC!
+            
+            
+            psp->ln_pk12_0_b1b2 = NULL;
+            psp->ln_pk12_0_b2 = NULL;
+            psp->ln_pk12_0_b1bG2 = NULL;
+            psp->ln_pk12_0_bG2 = NULL;
+            psp->ln_pk12_2_b1b2 = NULL;
+            psp->ln_pk12_2_b2 = NULL;
+            psp->ln_pk12_2_b1bG2 = NULL;
+            psp->ln_pk12_2_bG2 = NULL;
+            psp->ln_pk12_4_b1b2 = NULL;
+            psp->ln_pk12_4_b2 = NULL;
+            psp->ln_pk12_4_b1bG2 = NULL;
+            psp->ln_pk12_4_bG2 = NULL;
+            
+            
+            //GC: ORTHOGONAL -- start
+
+
+            psp->ln_pk12_0_b1b2_ortho = NULL;
+            psp->ln_pk12_0_b2_ortho = NULL;
+            psp->ln_pk12_0_b1bG2_ortho = NULL;
+            psp->ln_pk12_0_bG2_ortho = NULL;
+            psp->ln_pk12_2_b1b2_ortho = NULL;
+            psp->ln_pk12_2_b2_ortho = NULL;
+            psp->ln_pk12_2_b1bG2_ortho = NULL;
+            psp->ln_pk12_2_bG2_ortho = NULL;
+            psp->ln_pk12_4_b1b2_ortho = NULL;
+            psp->ln_pk12_4_b2_ortho = NULL;
+            psp->ln_pk12_4_b1bG2_ortho = NULL;
+            psp->ln_pk12_4_bG2_ortho = NULL;
+
+
+            //GC: ORTHOGONAL -- finish
+
+            
         }
     
     }
@@ -5169,6 +8291,108 @@ int spectra_pk(
         psp->ln_pk_4_b2b2 = NULL;
         psp->ln_pk_4_b2bG2 = NULL;
         psp->ln_pk_4_bG2bG2 = NULL;
+        
+        
+        
+        
+        //GC!!!
+        
+        
+        
+        psp->ln_pk_nl_fNL = NULL;
+        psp->ln_pk_fNLd2 = NULL;
+        psp->ln_pk_fNLG2 = NULL;
+        
+        //GC: ORTHOGONAL -- start
+
+
+        psp->ln_pk_nl_fNL_ortho = NULL;
+        psp->ln_pk_fNLd2_ortho = NULL;
+        psp->ln_pk_fNLG2_ortho = NULL;
+        
+
+
+        //GC: ORTHOGONAL -- finish
+
+        
+        
+        //GC!
+        
+        
+        
+        
+            psp->ln_pk_fNL_0_vv = NULL;
+            psp->ln_pk_fNL_0_vd = NULL;
+            psp->ln_pk_fNL_0_dd = NULL;
+            
+            psp->ln_pk_fNL_2_vv = NULL;
+            psp->ln_pk_fNL_2_vd = NULL;
+            psp->ln_pk_fNL_2_dd = NULL;
+            
+            psp->ln_pk_fNL_4_vv = NULL;
+            psp->ln_pk_fNL_4_vd = NULL;
+            psp->ln_pk_fNL_4_dd = NULL;
+
+        
+        
+        //GC: ORTHOGONAL -- start
+
+
+        psp->ln_pk_fNL_0_vv_ortho = NULL;
+        psp->ln_pk_fNL_0_vd_ortho = NULL;
+        psp->ln_pk_fNL_0_dd_ortho = NULL;
+        
+        psp->ln_pk_fNL_2_vv_ortho = NULL;
+        psp->ln_pk_fNL_2_vd_ortho = NULL;
+        psp->ln_pk_fNL_2_dd_ortho = NULL;
+        
+        psp->ln_pk_fNL_4_vv_ortho = NULL;
+        psp->ln_pk_fNL_4_vd_ortho = NULL;
+        psp->ln_pk_fNL_4_dd_ortho = NULL;
+
+
+        //GC: ORTHOGONAL -- finish
+
+        
+        
+        //GC!
+        
+        
+        psp->ln_pk12_0_b1b2 = NULL;
+        psp->ln_pk12_0_b2 = NULL;
+        psp->ln_pk12_0_b1bG2 = NULL;
+        psp->ln_pk12_0_bG2 = NULL;
+        psp->ln_pk12_2_b1b2 = NULL;
+        psp->ln_pk12_2_b2 = NULL;
+        psp->ln_pk12_2_b1bG2 = NULL;
+        psp->ln_pk12_2_bG2 = NULL;
+        psp->ln_pk12_4_b1b2 = NULL;
+        psp->ln_pk12_4_b2 = NULL;
+        psp->ln_pk12_4_b1bG2 = NULL;
+        psp->ln_pk12_4_bG2 = NULL;
+        
+        
+        //GC: ORTHOGONAL -- start
+
+
+        psp->ln_pk12_0_b1b2_ortho = NULL;
+        psp->ln_pk12_0_b2_ortho = NULL;
+        psp->ln_pk12_0_b1bG2_ortho = NULL;
+        psp->ln_pk12_0_bG2_ortho = NULL;
+        psp->ln_pk12_2_b1b2_ortho = NULL;
+        psp->ln_pk12_2_b2_ortho = NULL;
+        psp->ln_pk12_2_b1bG2_ortho = NULL;
+        psp->ln_pk12_2_bG2_ortho = NULL;
+        psp->ln_pk12_4_b1b2_ortho = NULL;
+        psp->ln_pk12_4_b2_ortho = NULL;
+        psp->ln_pk12_4_b1bG2_ortho = NULL;
+        psp->ln_pk12_4_bG2_ortho = NULL;
+
+
+        //GC: ORTHOGONAL -- finish
+
+        
+        
     }
     
     
@@ -5839,6 +9063,720 @@ Old part -- end*/
         
         class_alloc(psp->ddln_pk_4_bG2bG2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
         class_call(array_spline_table_lines(psp->ln_tau_nl,psp->ln_tau_nl_size,psp->ln_pk_4_bG2bG2,psp->ln_k_size,psp->ddln_pk_4_bG2bG2,_SPLINE_EST_DERIV_,psp->error_message),psp->error_message,psp->error_message);
+        
+        
+        //GC!!!
+        
+        
+        class_alloc(psp->ddln_pk_nl_fNL,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_nl_fNL,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_nl_fNL,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNLd2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNLd2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNLd2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNLG2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNLG2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNLG2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+        
+        
+        
+        //GC: ORTHOGONAL -- start
+
+
+        class_alloc(psp->ddln_pk_nl_fNL_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_nl_fNL_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_nl_fNL_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNLd2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNLd2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNLd2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNLG2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNLG2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNLG2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+
+
+        //GC: ORTHOGONAL -- finish
+
+        
+
+        
+        //GC!
+        
+        
+        
+        class_alloc(psp->ddln_pk_fNL_0_vv,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_0_vv,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_0_vv,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNL_0_vd,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_0_vd,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_0_vd,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNL_0_dd,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_0_dd,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_0_dd,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+
+        
+        
+        
+        
+        
+        class_alloc(psp->ddln_pk_fNL_2_vv,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_2_vv,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_2_vv,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNL_2_vd,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_2_vd,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_2_vd,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNL_2_dd,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_2_dd,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_2_dd,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+
+        
+        
+        
+        
+        
+        class_alloc(psp->ddln_pk_fNL_4_vv,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_4_vv,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_4_vv,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNL_4_vd,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_4_vd,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_4_vd,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNL_4_dd,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_4_dd,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_4_dd,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        
+        
+        
+        //GC: ORTHOGONAL -- start
+
+
+        class_alloc(psp->ddln_pk_fNL_0_vv_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_0_vv_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_0_vv_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNL_0_vd_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_0_vd_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_0_vd_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNL_0_dd_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_0_dd_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_0_dd_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+
+        
+        
+        
+        
+        
+        class_alloc(psp->ddln_pk_fNL_2_vv_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_2_vv_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_2_vv_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNL_2_vd_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_2_vd_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_2_vd_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNL_2_dd_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_2_dd_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_2_dd_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+
+        
+        
+        
+        
+        
+        class_alloc(psp->ddln_pk_fNL_4_vv_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_4_vv_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_4_vv_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNL_4_vd_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_4_vd_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_4_vd_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk_fNL_4_dd_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk_fNL_4_dd_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk_fNL_4_dd_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+
+
+        //GC: ORTHOGONAL -- finish
+
+        
+        
+        
+        
+        //GC!
+        
+        
+        class_alloc(psp->ddln_pk12_0_b1b2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_0_b1b2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_0_b1b2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_0_b2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_0_b2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_0_b2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_0_b1bG2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_0_b1bG2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_0_b1bG2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_0_bG2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_0_bG2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_0_bG2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+
+        
+        
+        
+        
+        
+        class_alloc(psp->ddln_pk12_2_b1b2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_2_b1b2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_2_b1b2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_2_b2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_2_b2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_2_b2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_2_b1bG2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_2_b1bG2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_2_b1bG2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_2_bG2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_2_bG2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_2_bG2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+
+        
+        
+        
+        
+        
+        class_alloc(psp->ddln_pk12_4_b1b2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_4_b1b2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_4_b1b2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_4_b2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_4_b2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_4_b2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_4_b1bG2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_4_b1bG2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_4_b1bG2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_4_bG2,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_4_bG2,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_4_bG2,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+        
+        
+        
+        
+        //GC: ORTHOGONAL -- start
+
+
+        class_alloc(psp->ddln_pk12_0_b1b2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_0_b1b2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_0_b1b2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_0_b2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_0_b2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_0_b2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_0_b1bG2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_0_b1bG2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_0_b1bG2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_0_bG2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_0_bG2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_0_bG2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+
+        
+        
+        
+        
+        
+        class_alloc(psp->ddln_pk12_2_b1b2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_2_b1b2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_2_b1b2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_2_b2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_2_b2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_2_b2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_2_b1bG2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_2_b1bG2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_2_b1bG2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_2_bG2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_2_bG2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_2_bG2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+
+        
+        
+        
+        
+        
+        class_alloc(psp->ddln_pk12_4_b1b2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_4_b1b2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_4_b1b2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_4_b2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_4_b2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_4_b2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_4_b1bG2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_4_b1bG2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_4_b1bG2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+          
+
+        class_alloc(psp->ddln_pk12_4_bG2_ortho,sizeof(double)*psp->ln_tau_nl_size*psp->ln_k_size,psp->error_message);
+
+        class_call(array_spline_table_lines(psp->ln_tau_nl,
+                                            psp->ln_tau_nl_size,
+                                            psp->ln_pk12_4_bG2_ortho,
+                                            psp->ln_k_size,
+                                            psp->ddln_pk12_4_bG2_ortho,
+                                            _SPLINE_EST_DERIV_,
+                                            psp->error_message),
+                   psp->error_message,
+                   psp->error_message);
+
+
+        //GC: ORTHOGONAL -- finish
+
+          
 
     }
   }

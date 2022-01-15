@@ -33,9 +33,8 @@ AR        = ar rv
 PYTHON ?= python
 
 # your optimization flag
-OPTFLAG = -O4 -ffast-math #-lgsl -lgslcblas #-march=native
+OPTFLAG = -O4 -ffast-math
 #OPTFLAG = -O4 -ffast-math -lgsl -lgslcblas -lfftw3 -lm #-march=native
-#OPTFLAG = -Ofast -ffast-math #-march=native
 #OPTFLAG = -fast
 
 # your openmp flag (comment for compiling without openmp)
@@ -52,9 +51,6 @@ LDFLAG = -g -fPIC
 HYREC = hyrec
 
 #put your path to libopenblas.a here
-#OPENBLAS = /opt/OpenBLAS/lib/libopenblas.a
-#OPENBLAS = /Users/michalychforever/Dropbox/Docs/science/OpenBLAS-0.2.20/libopenblas.a
-#OPENBLAS = /home/ivanov/Desktop/Structures/OpenBLAS-0.2.20/lib/libopenblas.a
 OPENBLAS = /home/ophilcox/OpenBLAS-0.3.10/libopenblas.a
 
 ########################################################
