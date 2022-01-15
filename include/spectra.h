@@ -1,5 +1,7 @@
 /** @file spectra.h Documented includes for spectra module */
 
+//GC -> I see that nothing needs to change here...
+
 #ifndef __SPECTRA__
 #define __SPECTRA__
 
@@ -336,6 +338,191 @@ struct spectra {
     double * ddln_pk_4_b2bG2;
     double * ln_pk_4_bG2bG2;
     double * ddln_pk_4_bG2bG2;
+    
+    //GC!!!
+    
+    double * ln_pk_nl_fNL;
+    double * ddln_pk_nl_fNL;
+
+    double * ln_pk_fNLd2;
+    double * ddln_pk_fNLd2;
+
+    double * ln_pk_fNLG2;
+    double * ddln_pk_fNLG2;
+
+    //GC: ORTHOGONAL -- start
+
+
+    double * ln_pk_nl_fNL_ortho;
+    double * ddln_pk_nl_fNL_ortho;
+
+    double * ln_pk_fNLd2_ortho;
+    double * ddln_pk_fNLd2_ortho;
+
+    double * ln_pk_fNLG2_ortho;
+    double * ddln_pk_fNLG2_ortho;
+
+
+    //GC: ORTHOGONAL -- finish
+
+    
+    
+    //GC!
+    
+    double * ln_pk_fNL_0_vv;
+    double * ln_pk_fNL_0_vd;
+    double * ln_pk_fNL_0_dd;
+
+    
+    double * ln_pk_fNL_2_vv;
+    double * ln_pk_fNL_2_vd;
+    double * ln_pk_fNL_2_dd;
+
+    
+    double * ln_pk_fNL_4_vv;
+    double * ln_pk_fNL_4_vd;
+    double * ln_pk_fNL_4_dd;
+
+    
+    double * ddln_pk_fNL_0_vv;
+    double * ddln_pk_fNL_0_vd;
+    double * ddln_pk_fNL_0_dd;
+
+    
+    double * ddln_pk_fNL_2_vv;
+    double * ddln_pk_fNL_2_vd;
+    double * ddln_pk_fNL_2_dd;
+
+    
+    double * ddln_pk_fNL_4_vv;
+    double * ddln_pk_fNL_4_vd;
+    double * ddln_pk_fNL_4_dd;
+    
+    
+    //GC: ORTHOGONAL -- start
+
+
+    double * ln_pk_fNL_0_vv_ortho;
+    double * ln_pk_fNL_0_vd_ortho;
+    double * ln_pk_fNL_0_dd_ortho;
+
+    
+    double * ln_pk_fNL_2_vv_ortho;
+    double * ln_pk_fNL_2_vd_ortho;
+    double * ln_pk_fNL_2_dd_ortho;
+
+    
+    double * ln_pk_fNL_4_vv_ortho;
+    double * ln_pk_fNL_4_vd_ortho;
+    double * ln_pk_fNL_4_dd_ortho;
+
+    
+    double * ddln_pk_fNL_0_vv_ortho;
+    double * ddln_pk_fNL_0_vd_ortho;
+    double * ddln_pk_fNL_0_dd_ortho;
+
+    
+    double * ddln_pk_fNL_2_vv_ortho;
+    double * ddln_pk_fNL_2_vd_ortho;
+    double * ddln_pk_fNL_2_dd_ortho;
+
+    
+    double * ddln_pk_fNL_4_vv_ortho;
+    double * ddln_pk_fNL_4_vd_ortho;
+    double * ddln_pk_fNL_4_dd_ortho;
+    
+
+
+    //GC: ORTHOGONAL -- finish
+
+    
+    
+    
+    //GC!
+    
+    
+    double * ln_pk12_0_b1b2;
+    double * ln_pk12_0_b2;
+    double * ln_pk12_0_b1bG2;
+    double * ln_pk12_0_bG2;
+
+    
+    double * ln_pk12_2_b1b2;
+    double * ln_pk12_2_b2;
+    double * ln_pk12_2_b1bG2;
+    double * ln_pk12_2_bG2;
+
+    
+    double * ln_pk12_4_b1b2;
+    double * ln_pk12_4_b2;
+    double * ln_pk12_4_b1bG2;
+    double * ln_pk12_4_bG2;
+
+    
+    
+    
+    double * ddln_pk12_0_b1b2;
+    double * ddln_pk12_0_b2;
+    double * ddln_pk12_0_b1bG2;
+    double * ddln_pk12_0_bG2;
+
+    
+    double * ddln_pk12_2_b1b2;
+    double * ddln_pk12_2_b2;
+    double * ddln_pk12_2_b1bG2;
+    double * ddln_pk12_2_bG2;
+
+    
+    double * ddln_pk12_4_b1b2;
+    double * ddln_pk12_4_b2;
+    double * ddln_pk12_4_b1bG2;
+    double * ddln_pk12_4_bG2;
+
+    //GC: ORTHOGONAL -- start
+
+
+    double * ln_pk12_0_b1b2_ortho;
+    double * ln_pk12_0_b2_ortho;
+    double * ln_pk12_0_b1bG2_ortho;
+    double * ln_pk12_0_bG2_ortho;
+
+    
+    double * ln_pk12_2_b1b2_ortho;
+    double * ln_pk12_2_b2_ortho;
+    double * ln_pk12_2_b1bG2_ortho;
+    double * ln_pk12_2_bG2_ortho;
+
+    
+    double * ln_pk12_4_b1b2_ortho;
+    double * ln_pk12_4_b2_ortho;
+    double * ln_pk12_4_b1bG2_ortho;
+    double * ln_pk12_4_bG2_ortho;
+
+    
+    
+    
+    double * ddln_pk12_0_b1b2_ortho;
+    double * ddln_pk12_0_b2_ortho;
+    double * ddln_pk12_0_b1bG2_ortho;
+    double * ddln_pk12_0_bG2_ortho;
+
+    
+    double * ddln_pk12_2_b1b2_ortho;
+    double * ddln_pk12_2_b2_ortho;
+    double * ddln_pk12_2_b1bG2_ortho;
+    double * ddln_pk12_2_bG2_ortho;
+
+    
+    double * ddln_pk12_4_b1b2_ortho;
+    double * ddln_pk12_4_b2_ortho;
+    double * ddln_pk12_4_b1bG2_ortho;
+    double * ddln_pk12_4_bG2_ortho;
+
+
+    //GC: ORTHOGONAL -- finish
+
+    
+    
 
   int index_tr_delta_g;        /**< index of gamma density transfer function */
   int index_tr_delta_b;        /**< index of baryon density transfer function */
@@ -503,7 +690,61 @@ extern "C" {
                                   double * output_tot_2_bG2bG2,
                                   double * output_tot_4_b2b2,
                                   double * output_tot_4_b2bG2,
-                                  double * output_tot_4_bG2bG2
+                                  double * output_tot_4_bG2bG2, //GC!
+                                  double * output_tot_pk_nl_fNL, //49
+                                  double * output_tot_pk_fNLd2, //50
+                                  double * output_tot_pk_fNLG2, //51
+                                  //GC -> in real space...
+                                  double * output_tot_pk_l_fNL_0_vv, //52
+                                  double * output_tot_pk_l_fNL_0_vd, //53
+                                  double * output_tot_pk_l_fNL_0_dd, //54
+                                  double * output_tot_pk_l_fNL_2_vv, //55
+                                  double * output_tot_pk_l_fNL_2_vd, //56
+                                  double * output_tot_pk_l_fNL_2_dd, //57
+                                  double * output_tot_pk_l_fNL_4_vv, //58
+                                  double * output_tot_pk_l_fNL_4_vd, //59
+                                  double * output_tot_pk_l_fNL_4_dd, //60
+                                  //GC -> multipoles with matter...
+                                  double * output_tot_pk12_l_0_b1b2, //61
+                                  double * output_tot_pk12_l_0_b2, //62
+                                  double * output_tot_pk12_l_0_b1bG2, //63
+                                  double * output_tot_pk12_l_0_bG2, //64
+                                  double * output_tot_pk12_l_2_b1b2, //65
+                                  double * output_tot_pk12_l_2_b2, //66
+                                  double * output_tot_pk12_l_2_b1bG2, //67
+                                  double * output_tot_pk12_l_2_bG2, //68
+                                  double * output_tot_pk12_l_4_b1b2, //69
+                                  double * output_tot_pk12_l_4_b2, //70
+                                  double * output_tot_pk12_l_4_b1bG2, //71
+                                  double * output_tot_pk12_l_4_bG2, //72 //GC: ORTHOGONAL...
+                                    //GC: ORTHOGONAL -- start
+                                  double * output_tot_pk_nl_fNL_ortho, //73
+                                  double * output_tot_pk_fNLd2_ortho, //74
+                                  double * output_tot_pk_fNLG2_ortho, //75
+                                  //GC -> in real space...
+                                  double * output_tot_pk_l_fNL_0_vv_ortho, //76
+                                  double * output_tot_pk_l_fNL_0_vd_ortho, //77
+                                  double * output_tot_pk_l_fNL_0_dd_ortho, //78
+                                  double * output_tot_pk_l_fNL_2_vv_ortho, //79
+                                  double * output_tot_pk_l_fNL_2_vd_ortho, //80
+                                  double * output_tot_pk_l_fNL_2_dd_ortho, //81
+                                  double * output_tot_pk_l_fNL_4_vv_ortho, //82
+                                  double * output_tot_pk_l_fNL_4_vd_ortho, //83
+                                  double * output_tot_pk_l_fNL_4_dd_ortho, //84
+                                  //GC -> multipoles with matter...
+                                  double * output_tot_pk12_l_0_b1b2_ortho, //85
+                                  double * output_tot_pk12_l_0_b2_ortho, //86
+                                  double * output_tot_pk12_l_0_b1bG2_ortho, //87
+                                  double * output_tot_pk12_l_0_bG2_ortho, //88
+                                  double * output_tot_pk12_l_2_b1b2_ortho, //89
+                                  double * output_tot_pk12_l_2_b2_ortho, //90
+                                  double * output_tot_pk12_l_2_b1bG2_ortho, //91
+                                  double * output_tot_pk12_l_2_bG2_ortho, //92
+                                  double * output_tot_pk12_l_4_b1b2_ortho, //93
+                                  double * output_tot_pk12_l_4_b2_ortho, //94
+                                  double * output_tot_pk12_l_4_b1bG2_ortho, //95
+                                  double * output_tot_pk12_l_4_bG2_ortho //96
+                                    //GC: ORTHOGONAL -- finish
                                 );
 
   int spectra_pk_nl_at_k_and_z(
@@ -561,7 +802,62 @@ extern "C" {
                                double * pk_tot_2_bG2bG2,
                                double * pk_tot_4_b2b2,
                                double * pk_tot_4_b2bG2,
-                               double * pk_tot_4_bG2bG2
+                               double * pk_tot_4_bG2bG2, //GC!
+                               //GC!
+                               double * pk_tot_fNL,
+                               double * pk_tot_fNLd2,
+                               double * pk_tot_fNLG2,
+                               //GC!!!
+                               double * pk_tot_fNL_0_vv,
+                               double * pk_tot_fNL_0_vd,
+                               double * pk_tot_fNL_0_dd,
+                               double * pk_tot_fNL_2_vv,
+                               double * pk_tot_fNL_2_vd,
+                               double * pk_tot_fNL_2_dd,
+                               double * pk_tot_fNL_4_vv,
+                               double * pk_tot_fNL_4_vd,
+                               double * pk_tot_fNL_4_dd,
+                               //GC!
+                               double * pk_tot_fNL_0_b1b2,
+                               double * pk_tot_fNL_0_b2,
+                               double * pk_tot_fNL_0_b1bG2,
+                               double * pk_tot_fNL_0_bG2,
+                               double * pk_tot_fNL_2_b1b2,
+                               double * pk_tot_fNL_2_b2,
+                               double * pk_tot_fNL_2_b1bG2,
+                               double * pk_tot_fNL_2_bG2,
+                               double * pk_tot_fNL_4_b1b2,
+                               double * pk_tot_fNL_4_b2,
+                               double * pk_tot_fNL_4_b1bG2,
+                               double * pk_tot_fNL_4_bG2, //GC: ORTHOGONAL...
+                                //GC: ORTHOGONAL -- start
+                               double * pk_tot_fNL_ortho,
+                               double * pk_tot_fNLd2_ortho,
+                               double * pk_tot_fNLG2_ortho,
+                               //GC!!!
+                               double * pk_tot_fNL_0_vv_ortho,
+                               double * pk_tot_fNL_0_vd_ortho,
+                               double * pk_tot_fNL_0_dd_ortho,
+                               double * pk_tot_fNL_2_vv_ortho,
+                               double * pk_tot_fNL_2_vd_ortho,
+                               double * pk_tot_fNL_2_dd_ortho,
+                               double * pk_tot_fNL_4_vv_ortho,
+                               double * pk_tot_fNL_4_vd_ortho,
+                               double * pk_tot_fNL_4_dd_ortho,
+                               //GC!
+                               double * pk_tot_fNL_0_b1b2_ortho,
+                               double * pk_tot_fNL_0_b2_ortho,
+                               double * pk_tot_fNL_0_b1bG2_ortho,
+                               double * pk_tot_fNL_0_bG2_ortho,
+                               double * pk_tot_fNL_2_b1b2_ortho,
+                               double * pk_tot_fNL_2_b2_ortho,
+                               double * pk_tot_fNL_2_b1bG2_ortho,
+                               double * pk_tot_fNL_2_bG2_ortho,
+                               double * pk_tot_fNL_4_b1b2_ortho,
+                               double * pk_tot_fNL_4_b2_ortho,
+                               double * pk_tot_fNL_4_b1bG2_ortho,
+                               double * pk_tot_fNL_4_bG2_ortho
+                                //GC: ORTHOGONAL -- finish
                                );
     
     int spectra_pk_nl_halofit_at_k_and_z(

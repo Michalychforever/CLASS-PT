@@ -3,7 +3,7 @@
 #
 ncdm_psd_filenames = psd_FD_single.dat
 ncdm_psd_parameters = 0.3 ,0.5, 0.05
-m_ncdm = 0.06
+Omega_ncdm = 0.0
 T_ncdm = 0.715985
 w0_fld = -1.
 wa_fld = 0.0

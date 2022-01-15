@@ -13,6 +13,8 @@
  * hence there is no output_free() routine like in other modules.
  */
 
+/* GC -> no, it is not necessary to change this now... The functions in spectra.c are... No, I need to modify them since now they require more entries... But I just modify the ARGUMENTS of the function... Notice that I will NOT have changes of signs, but only subtractions of constants... */
+
 #include "output.h"
 
 int output_total_cl_at_l(
@@ -1035,6 +1037,8 @@ int output_pk_nl(
 // Misha: my brand new output is here !!!
 // modified by Anton
 
+//GC -> THIS ONE I KEEP AS IS. No, I need to modify it...
+
 int output_pk_nl_pt(
                  struct background * pba,
                  struct perturbs * ppt,
@@ -1103,6 +1107,90 @@ int output_pk_nl_pt(
     double * pk_tot_4_b2b2;
     double * pk_tot_4_b2bG2;
     double * pk_tot_4_bG2bG2;
+    
+    //GC!!!
+    
+    double * pk_tot_fNL;
+    double * pk_tot_fNLd2;
+    double * pk_tot_fNLG2;
+    
+    
+    //GC: ORTHOGONAL -- start
+
+
+    double * pk_tot_fNL_ortho;
+    double * pk_tot_fNLd2_ortho;
+    double * pk_tot_fNLG2_ortho;
+
+
+    //GC: ORTHOGONAL -- finish
+
+    
+    //GC!!!
+    double * pk_tot_fNL_0_vv;
+    double * pk_tot_fNL_0_vd;
+    double * pk_tot_fNL_0_dd;
+    double * pk_tot_fNL_2_vv;
+    double * pk_tot_fNL_2_vd;
+    double * pk_tot_fNL_2_dd;
+    double * pk_tot_fNL_4_vv;
+    double * pk_tot_fNL_4_vd;
+    double * pk_tot_fNL_4_dd;
+    
+    
+    //GC: ORTHOGONAL -- start
+
+
+    double * pk_tot_fNL_0_vv_ortho;
+    double * pk_tot_fNL_0_vd_ortho;
+    double * pk_tot_fNL_0_dd_ortho;
+    double * pk_tot_fNL_2_vv_ortho;
+    double * pk_tot_fNL_2_vd_ortho;
+    double * pk_tot_fNL_2_dd_ortho;
+    double * pk_tot_fNL_4_vv_ortho;
+    double * pk_tot_fNL_4_vd_ortho;
+    double * pk_tot_fNL_4_dd_ortho;
+
+
+    //GC: ORTHOGONAL -- finish
+
+    
+    //GC!
+    double * pk_tot_fNL_0_b1b2;
+    double * pk_tot_fNL_0_b2;
+    double * pk_tot_fNL_0_b1bG2;
+    double * pk_tot_fNL_0_bG2;
+    double * pk_tot_fNL_2_b1b2;
+    double * pk_tot_fNL_2_b2;
+    double * pk_tot_fNL_2_b1bG2;
+    double * pk_tot_fNL_2_bG2;
+    double * pk_tot_fNL_4_b1b2;
+    double * pk_tot_fNL_4_b2;
+    double * pk_tot_fNL_4_b1bG2;
+    double * pk_tot_fNL_4_bG2;
+    
+    
+    //GC: ORTHOGONAL -- start
+
+
+    double * pk_tot_fNL_0_b1b2_ortho;
+    double * pk_tot_fNL_0_b2_ortho;
+    double * pk_tot_fNL_0_b1bG2_ortho;
+    double * pk_tot_fNL_0_bG2_ortho;
+    double * pk_tot_fNL_2_b1b2_ortho;
+    double * pk_tot_fNL_2_b2_ortho;
+    double * pk_tot_fNL_2_b1bG2_ortho;
+    double * pk_tot_fNL_2_bG2_ortho;
+    double * pk_tot_fNL_4_b1b2_ortho;
+    double * pk_tot_fNL_4_b2_ortho;
+    double * pk_tot_fNL_4_b1bG2_ortho;
+    double * pk_tot_fNL_4_bG2_ortho;
+
+
+    //GC: ORTHOGONAL -- finish
+
+
+    
     
     double * pk_ic=NULL;
     
@@ -1312,7 +1400,269 @@ int output_pk_nl_pt(
                     pnlpt->ln_k_size*sizeof(double),
                     pop->error_message);
         
+        
+        //GC!
+        
+        
+        class_alloc(pk_tot_fNL,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNLd2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNLG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        
+        //GC: ORTHOGONAL -- start
+
+
+        class_alloc(pk_tot_fNL_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNLd2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNLG2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+
+        //GC: ORTHOGONAL -- finish
+
+
+        
+        //GC!
+        
+        
+        class_alloc(pk_tot_fNL_0_vv,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_0_vd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_0_dd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+
+        
+        
+        class_alloc(pk_tot_fNL_2_vv,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_2_vd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_2_dd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+
+        
+        
+        class_alloc(pk_tot_fNL_4_vv,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_4_vd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_4_dd,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        
+        
+        //GC: ORTHOGONAL -- start
+
+
+        class_alloc(pk_tot_fNL_0_vv_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_0_vd_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_0_dd_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+
+        
+        
+        class_alloc(pk_tot_fNL_2_vv_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_2_vd_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_2_dd_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+
+        
+        
+        class_alloc(pk_tot_fNL_4_vv_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_4_vd_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_4_dd_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+
+        //GC: ORTHOGONAL -- finish
+
+
+
+        
+        //GC!
+        
+        
+        class_alloc(pk_tot_fNL_0_b1b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_0_b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_0_b1bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_0_bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+
+        
+        
+        
+        class_alloc(pk_tot_fNL_2_b1b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_2_b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_2_b1bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_2_bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+
+        
+        
+        class_alloc(pk_tot_fNL_4_b1b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_4_b2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_4_b1bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_4_bG2,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+        
+        
+        
+        //GC: ORTHOGONAL -- start
+
+
+        class_alloc(pk_tot_fNL_0_b1b2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_0_b2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_0_b1bG2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_0_bG2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+
+        
+        
+        
+        class_alloc(pk_tot_fNL_2_b1b2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_2_b2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_2_b1bG2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_2_bG2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+
+        
+        
+        class_alloc(pk_tot_fNL_4_b1b2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_4_b2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_4_b1bG2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+        class_alloc(pk_tot_fNL_4_bG2_ortho,
+                    pnlpt->ln_k_size*sizeof(double),
+                    pop->error_message);
+
+
+        //GC: ORTHOGONAL -- finish
+
+
+
+        
+        
         /** - third, compute P(k) for each k (if several ic's, compute it for each ic and compute also the total); all computations are made at the required value of tau. */
+        
+        //GC -> THIS I HAVE TO MODIFY SLIGHTLY...
                     class_call(spectra_pk_nl_bias_at_z_i(pba,
                                           pnlpt,
                                           psp,
@@ -1365,7 +1715,106 @@ int output_pk_nl_pt(
                                                          pk_tot_2_bG2bG2,
                                                          pk_tot_4_b2b2,
                                                          pk_tot_4_b2bG2,
-                                                         pk_tot_4_bG2bG2),
+                                                         pk_tot_4_bG2bG2, //GC!
+                                                         //GC!
+                                                         pk_tot_fNL,
+                                                         pk_tot_fNLd2,
+                                                         pk_tot_fNLG2,
+                                                         
+                                                         /*
+                                                         
+                                                         //GC: ORTHOGONAL -- start
+
+                                                         pk_tot_fNL_ortho,
+                                                         pk_tot_fNLd2_ortho,
+                                                         pk_tot_fNLG2_ortho,
+
+                                                         //GC: ORTHOGONAL -- finish
+
+                                                          */
+                                                         
+                                                         //GC!
+                                                         pk_tot_fNL_0_vv,
+                                                         pk_tot_fNL_0_vd,
+                                                         pk_tot_fNL_0_dd,
+                                                         pk_tot_fNL_2_vv,
+                                                         pk_tot_fNL_2_vd,
+                                                         pk_tot_fNL_2_dd,
+                                                         pk_tot_fNL_4_vv,
+                                                         pk_tot_fNL_4_vd,
+                                                         pk_tot_fNL_4_dd,
+                                                         
+                                                         /*
+                                                         
+                                                         //GC: ORTHOGONAL -- start
+
+
+                                                         pk_tot_fNL_0_vv_ortho,
+                                                         pk_tot_fNL_0_vd_ortho,
+                                                         pk_tot_fNL_0_dd_ortho,
+                                                         pk_tot_fNL_2_vv_ortho,
+                                                         pk_tot_fNL_2_vd_ortho,
+                                                         pk_tot_fNL_2_dd_ortho,
+                                                         pk_tot_fNL_4_vv_ortho,
+                                                         pk_tot_fNL_4_vd_ortho,
+                                                         pk_tot_fNL_4_dd_ortho,
+
+
+                                                         //GC: ORTHOGONAL -- finish
+
+                                                          */
+                                                         
+                                                         //GC!
+                                                         pk_tot_fNL_0_b1b2,
+                                                         pk_tot_fNL_0_b2,
+                                                         pk_tot_fNL_0_b1bG2,
+                                                         pk_tot_fNL_0_bG2,
+                                                         pk_tot_fNL_2_b1b2,
+                                                         pk_tot_fNL_2_b2,
+                                                         pk_tot_fNL_2_b1bG2,
+                                                         pk_tot_fNL_2_bG2,
+                                                         pk_tot_fNL_4_b1b2,
+                                                         pk_tot_fNL_4_b2,
+                                                         pk_tot_fNL_4_b1bG2,
+                                                         pk_tot_fNL_4_bG2, //GC: ORTHOGONAL...
+                                                         
+                                                         //GC: ORTHOGONAL -- start
+
+                                                         pk_tot_fNL_ortho,
+                                                         pk_tot_fNLd2_ortho,
+                                                         pk_tot_fNLG2_ortho,
+
+                                                         //GC!
+                                                         
+                                                         pk_tot_fNL_0_vv_ortho,
+                                                         pk_tot_fNL_0_vd_ortho,
+                                                         pk_tot_fNL_0_dd_ortho,
+                                                         pk_tot_fNL_2_vv_ortho,
+                                                         pk_tot_fNL_2_vd_ortho,
+                                                         pk_tot_fNL_2_dd_ortho,
+                                                         pk_tot_fNL_4_vv_ortho,
+                                                         pk_tot_fNL_4_vd_ortho,
+                                                         pk_tot_fNL_4_dd_ortho,
+
+                                                         //GC!
+
+                                                         pk_tot_fNL_0_b1b2_ortho,
+                                                         pk_tot_fNL_0_b2_ortho,
+                                                         pk_tot_fNL_0_b1bG2_ortho,
+                                                         pk_tot_fNL_0_bG2_ortho,
+                                                         pk_tot_fNL_2_b1b2_ortho,
+                                                         pk_tot_fNL_2_b2_ortho,
+                                                         pk_tot_fNL_2_b1bG2_ortho,
+                                                         pk_tot_fNL_2_bG2_ortho,
+                                                         pk_tot_fNL_4_b1b2_ortho,
+                                                         pk_tot_fNL_4_b2_ortho,
+                                                         pk_tot_fNL_4_b1bG2_ortho,
+                                                         pk_tot_fNL_4_bG2_ortho
+
+                                                         //GC: ORTHOGONAL -- finish
+
+                                                         
+                                                         ),
                        pop->error_message,
                        pop->error_message);
         
@@ -1733,7 +2182,111 @@ fclose(out_0);
 
 free(pk_tot_IFG2_0b1);
 free(pk_tot_IFG2_0);
-free(pk_tot_IFG2_2);          
+free(pk_tot_IFG2_2);
+        
+        
+        //GC!
+        
+        free(pk_tot_fNL);
+        free(pk_tot_fNLd2);
+        free(pk_tot_fNLG2);
+        
+        //GC: ORTHOGONAL -- start
+
+
+        free(pk_tot_fNL_ortho);
+        free(pk_tot_fNLd2_ortho);
+        free(pk_tot_fNLG2_ortho);
+
+
+        //GC: ORTHOGONAL -- finish
+
+
+        
+        //GC!
+        
+        
+        free(pk_tot_fNL_0_vv);
+        free(pk_tot_fNL_0_vd);
+        free(pk_tot_fNL_0_dd);
+
+        
+        free(pk_tot_fNL_2_vv);
+        free(pk_tot_fNL_2_vd);
+        free(pk_tot_fNL_2_dd);
+
+        
+        free(pk_tot_fNL_4_vv);
+        free(pk_tot_fNL_4_vd);
+        free(pk_tot_fNL_4_dd);
+        
+        
+        //GC: ORTHOGONAL -- start
+
+
+        free(pk_tot_fNL_0_vv_ortho);
+        free(pk_tot_fNL_0_vd_ortho);
+        free(pk_tot_fNL_0_dd_ortho);
+
+        
+        free(pk_tot_fNL_2_vv_ortho);
+        free(pk_tot_fNL_2_vd_ortho);
+        free(pk_tot_fNL_2_dd_ortho);
+
+        
+        free(pk_tot_fNL_4_vv_ortho);
+        free(pk_tot_fNL_4_vd_ortho);
+        free(pk_tot_fNL_4_dd_ortho);
+
+
+        //GC: ORTHOGONAL -- finish
+
+
+        
+        
+        //GC!
+        
+        free(pk_tot_fNL_0_b1b2);
+        free(pk_tot_fNL_0_b2);
+        free(pk_tot_fNL_0_b1bG2);
+        free(pk_tot_fNL_0_bG2);
+
+        free(pk_tot_fNL_2_b1b2);
+        free(pk_tot_fNL_2_b2);
+        free(pk_tot_fNL_2_b1bG2);
+        free(pk_tot_fNL_2_bG2);
+
+        
+        free(pk_tot_fNL_4_b1b2);
+        free(pk_tot_fNL_4_b2);
+        free(pk_tot_fNL_4_b1bG2);
+        free(pk_tot_fNL_4_bG2);
+        
+        
+        //GC: ORTHOGONAL -- start
+
+
+        free(pk_tot_fNL_0_b1b2_ortho);
+        free(pk_tot_fNL_0_b2_ortho);
+        free(pk_tot_fNL_0_b1bG2_ortho);
+        free(pk_tot_fNL_0_bG2_ortho);
+
+        free(pk_tot_fNL_2_b1b2_ortho);
+        free(pk_tot_fNL_2_b2_ortho);
+        free(pk_tot_fNL_2_b1bG2_ortho);
+        free(pk_tot_fNL_2_bG2_ortho);
+
+        
+        free(pk_tot_fNL_4_b1b2_ortho);
+        free(pk_tot_fNL_4_b2_ortho);
+        free(pk_tot_fNL_4_b1bG2_ortho);
+        free(pk_tot_fNL_4_bG2_ortho);
+        
+
+
+        //GC: ORTHOGONAL -- finish
+
+        
 
     }
     

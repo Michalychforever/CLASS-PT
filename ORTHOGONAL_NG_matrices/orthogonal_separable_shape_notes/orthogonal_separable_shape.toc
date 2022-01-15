@@ -1,0 +1,9 @@
+\babel@toc {american}{}
+\tocdepth@munge 
+\contentsline {section}{\numberline {}Contents}{1}{section*.1}%
+\tocdepth@restore 
+\contentsline {section}{\numberline {I}Integrals}{1}{section*.2}%
+\contentsline {section}{\numberline {II}Orthogonal shape}{2}{section*.3}%
+\contentsline {section}{\numberline {III}What this all means}{5}{section*.4}%
+\contentsline {section}{\numberline {IV}What we decided, and EFTI}{6}{section*.5}%
+\contentsline {section}{\numberline {V}Section 2 of paper}{9}{section*.6}%
