@@ -3447,6 +3447,8 @@ for (i_z=0; i_z<pnlpt->z_pk_num; i_z++) {
             
             if (print_warning == _FALSE_) {
 //int start=clock();
+
+   //GC: ORTHOGONAL -- start
           class_call(nonlinear_pt_loop(ppr,
                                      pba,
                                      ppm,
@@ -3560,10 +3562,9 @@ for (i_z=0; i_z<pnlpt->z_pk_num; i_z++) {
                                        pk12_l_4_b1bG2_ortho,
                                        pk12_l_4_bG2_ortho,
                                        //GC: ORTHOGONAL -- finish
-                                     ln_pk_l_at_z_req, //GC!!!
-                                       //pPRIMk_l_req, //pPRIMk_l, //GC!!!
+                                       lnk_l,
+                                       ln_pk_l_at_z_req, //GC!!!
                                        ln_pPRIMk_l_req //lnpPRIMk_l //GC!!!
-                                       //GC -> need to rearrange the order of variables in the call of the function with the function itself... Also need to add all my new terms...
                                   ),
                    pnlpt->error_message,
                    pnlpt->error_message);
