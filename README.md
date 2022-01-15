@@ -12,9 +12,50 @@ Read [these instructions](https://github.com/Michalychforever/CLASS-PT/blob/mast
 
 The installation instuctions for CLASS can be found on the official code [webpage](https://github.com/lesgourg/class_public).
 
-Once you are all set, check out this [jupyter notebook](https://github.com/Michalychforever/CLASS-PT/blob/master/notebooks/nonlinear_pt.ipynb) for the examples of working sessions.
+Once you are all set, check out this [jupyter notebook](https://github.com/Michalychforever/CLASS-PT/blob/master/notebooks/nonlinear_pt.ipynb) for the examples of working sessions. Here's a simple example of computing the galaxy power spectrum multipoles with CLASS-PT:
 
-Also you can check this exhaustive [google collab tutorial](https://colab.research.google.com/drive/12Cz6aSdf685hQALTBpcdTl9hs_CIvvML?usp=sharing) on the code and BOSS likelihoods.
+```python
+    # Import CLASS-PT
+    from classy import Class
+    import numpy as np
+    cosmo = Class()
+
+    # Set usual CLASS parameters
+    z_pk = 0.5
+    cosmo.set({'A_s':2.089e-9,
+            'n_s':0.9649,
+            'tau_reio':0.052,
+            'omega_b':0.02237,
+            'omega_cdm':0.12,
+            'h':0.6736,
+            'YHe':0.2425,
+            'N_ur':2.0328,
+            'N_ncdm':1,
+            'm_ncdm':0.06,
+            'z_pk':z_pk
+            })  
+    # Set additional CLASS-PT settings
+    cosmo.set({'output':'mPk',
+            'non linear':'PT',
+            'IR resummation':'Yes',
+            'Bias tracers':'Yes',
+            'cb':'Yes', # use CDM+baryon spectra
+            'RSD':'Yes',
+            'AP':'Yes', # Alcock-Paczynski effect
+            'Omfid':'0.31' # fiducial Omega_m
+            })
+    cosmo.compute()
+
+    # Define some wavenumbers and compute spectra
+    khvec = np.logspace(-3,np.log10(3),1000) # array of k in 1/Mpc
+    cosmo.initialize_output(khvec, z_pk, len(khvec))
+
+    # Define nuisance parameters and extract outputs
+    b1, b2, bG2, bGamma3, cs0, cs2, cs4, Pshot, b4 = 2., -1., 0.1, -0.1, 0., 30., 0., 3000., 100.
+    pk_g0 = cosmo.pk_gg_l0(b1, b2, bG2, bGamma3, cs0, Pshot, b4)
+    pk_g2 = cosmo.pk_gg_l2(b1, b2, bG2, bGamma3, cs2, b4)
+    pk_g4 = cosmo.pk_gg_l2(b1, b2, bG2, bGamma3, cs4, b4)
+```
 
 You can also use the Mathematica notebook *'read_tables.nb'* to read the code output.
 
