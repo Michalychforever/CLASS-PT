@@ -6143,13 +6143,6 @@ for (i_kdisc=0; i_kdisc< Nmax; i_kdisc++){
      class_alloc(P22,Nmax*sizeof(double),pnlpt->error_message);
      class_alloc(P_CTR,Nmax*sizeof(double),pnlpt->error_message);
 
-     int count=0;
-     //int start1=clock();
-     char uplo = 'L';
-     int inc = 1;
-     double complex alpha = 1.;
-     double complex beta = 0.;
-     
      double *P12_fNL; //GC!
      double complex *f12; //GC!
      class_alloc(P12_fNL,Nmax*sizeof(double),pnlpt->error_message);
