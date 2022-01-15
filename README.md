@@ -1,8 +1,8 @@
 # CLASS-PT: nonlinear perturbation theory extension of the Boltzmann code CLASS
 
-This is a modification of the CLASS code that computes the non-linear power spectra of dark matter and biased tracers in one-loop cosmological perturbation theory, including Gaussian and non-Gaussian initial conditions.
+This is a modification of the CLASS code that computes the non-linear power spectra of dark matter and biased tracers in one-loop cosmological perturbation theory.
  
-CLASS-PT can be interfaced with the MCMC sampler [MontePython](https://github.com/brinckmann/montepython_public) using the ***new and improved*** custom-built likelihoods found [here](https://github.com/oliverphilcox/full_shape_likelihoods).
+CLASS-PT can be interfaced with the MCMC sampler [MontePython](https://github.com/brinckmann/montepython_public) using the custom-built likelihoods found [here](https://github.com/oliverphilcox/full_shape_likelihoods).
  
 The code is compatible with both python2 and python3.
 
@@ -57,7 +57,7 @@ pk_g2 = cosmo.pk_gg_l2(b1, b2, bG2, bGamma3, cs2, b4)
 pk_g4 = cosmo.pk_gg_l2(b1, b2, bG2, bGamma3, cs4, b4)
 ```
 
-You can also use the Mathematica notebook *'read_tables.nb'* to read the code output.
+You can also use the Mathematica notebook *'read_tables.nb'* to read the code output. We also provide a technical summary of the fNL implementations [here](https://github.com/Michalychforever/CLASS-PT/blob/master/notebooks/summary_orthogonal_github.ipynb).
 
 # Using the code
 
