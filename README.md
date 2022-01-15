@@ -47,11 +47,11 @@ cosmo.set({'output':'mPk',
 cosmo.compute()
 
 # Define some wavenumbers and compute spectra
-khvec = np.logspace(-3,np.log10(3),1000) # array of k in 1/Mpc
+khvec = np.logspace(-3,np.log10(1),1000) # array of k in 1/Mpc
 cosmo.initialize_output(khvec, z_pk, len(khvec))
 
 # Define nuisance parameters and extract outputs
-b1, b2, bG2, bGamma3, cs0, cs2, cs4, Pshot, b4 = 2., -1., 0.1, -0.1, 0., 30., 0., 3000., 100.
+b1, b2, bG2, bGamma3, cs0, cs2, cs4, Pshot, b4 = 2., -1., 0.1, -0.1, 0., 30., 0., 3000., 10.
 pk_g0 = cosmo.pk_gg_l0(b1, b2, bG2, bGamma3, cs0, Pshot, b4)
 pk_g2 = cosmo.pk_gg_l2(b1, b2, bG2, bGamma3, cs2, b4)
 pk_g4 = cosmo.pk_gg_l2(b1, b2, bG2, bGamma3, cs4, b4)

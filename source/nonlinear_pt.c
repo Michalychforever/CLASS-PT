@@ -3225,7 +3225,7 @@ int nonlinear_pt_init(
                                              pk_nl_fNL_ortho, //GC!
                                              pk_fNLd2_ortho,  //GC!
                                              pk_fNLG2_ortho,  //GC!
-                                                              //GC: ORTHOGONAL -- finish
+                                             //GC: ORTHOGONAL -- finish
                                              pk_Id2d2,
                                              pk_Id2d2_2,
                                              pk_Id2d2_4,
@@ -4391,6 +4391,7 @@ int nonlinear_pt_pk_l(
             pk_l[index_k] = this_pk[0];
             lnpk[index_k] = log(this_pk[0]);
         }
+        fclose(fp);
     }
     // Compute linear power from CLASS as usual
     else
@@ -5546,6 +5547,18 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                     Pnw_ir,
                                                     ddPnw,
                                                     1,
+                                                    kdisc[index_kdisc],
+                                                    &last_index,
+                                                    &Pnwval2,
+                                                    1,
+                                                    pnlpt->error_message),
+                           pnlpt->error_message,
+                           pnlpt->error_message);
+                class_call(array_interpolate_spline(knw_ir,
+                                                    Nir,
+                                                    Pnw_ir,
+                                                    ddPnw,
+                                                    1,
                                                     pnlpt->alpha_rs * kdisc[index_kdisc],
                                                     &last_index,
                                                     &Pnwval_rescaled,
@@ -5709,12 +5722,6 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
     class_alloc(output_real_transfer, (Nmax) * sizeof(double), pnlpt->error_message);
     double *output_imag_transfer;
     class_alloc(output_imag_transfer, (Nmax) * sizeof(double), pnlpt->error_message);
-
-    //GC!
-    printf("\n");
-    printf("\n");
-    printf("\n");
-    //GC!!!
 
     int stepsize = 1;
 
