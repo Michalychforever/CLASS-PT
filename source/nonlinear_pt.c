@@ -4391,7 +4391,6 @@ int nonlinear_pt_pk_l(
             pk_l[index_k] = this_pk[0];
             lnpk[index_k] = log(this_pk[0]);
         }
-        fclose(fp);
     }
     // Compute linear power from CLASS as usual
     else
@@ -5581,7 +5580,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                 //nb: artificial no-wiggle not implemented for fNL with alpha_rs not equal to 1!
                 Pnw[index_kdisc] = Pnwval2;
-                Tnw[index_kdisc] = pow(Pnwval2 / PPRIMdisc[index_kdisc], 0.5) * (5. / 3.); //GC! Factors are grossly off, most likely... ONLY CORRECT IF THE PRIMORDIAL HERE IS P_\phi. THEN I REALLY GET M -> if it is \zeta, as is likely, off only of some 2/3 or whatever...
+                Tnw[index_kdisc] = pow(Pnwval2 / PPRIMdisc[index_kdisc], 0.5) * (5. / 3.);
                 Pw[index_kdisc] = Pwval_rescaled - Pnwval_rescaled;
                 Tw[index_kdisc] = Tnw[index_kdisc] * (Pw[index_kdisc] / Pnwval2 / 2. - Pw[index_kdisc] * Pw[index_kdisc] / Pnwval2 / Pnwval2 / 8. + Pw[index_kdisc] * Pw[index_kdisc] * Pw[index_kdisc] / Pnwval2 / Pnwval2 / Pnwval2 / 16.); //GC: MAKE PLOTS WITH EH TRANSFER FUNCTION TO BE SURE OF SMOOTHNESS... This risks to not work good... No, I checked that for \Omega_b crazy large, everything is fine. But actually it would be good to check for small \Omega_b as well. Indeed I care about the relative difference... But no, small \Omega_b will make the expansion of the square root converge faster, there is no doubt about it -> I actually checked this "by eye". Things become tricky for \Omega_b = 100 what it is now, but that is crazy... Notice that here I go twice beyond leading order... See notebook!!!
 
