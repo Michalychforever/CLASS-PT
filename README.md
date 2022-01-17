@@ -1,6 +1,6 @@
 # CLASS-PT: nonlinear perturbation theory extension of the Boltzmann code CLASS
 
-This is a modification of the CLASS code that computes the non-linear power spectra of dark matter and biased tracers in one-loop cosmological perturbation theory.
+This is a modification of the CLASS code that computes the non-linear power spectra of dark matter and biased tracers in one-loop cosmological perturbation theory, for both Gaussian and non-Gaussian initial conditions.
  
 CLASS-PT can be interfaced with the MCMC sampler [MontePython](https://github.com/brinckmann/montepython_public) using the (***new and improved***) custom-built likelihoods found [here](https://github.com/oliverphilcox/full_shape_likelihoods).
  
