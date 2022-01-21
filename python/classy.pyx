@@ -865,7 +865,7 @@ cdef class Class:
         result = [pk-5000.]
         result.append(-pk_Id2d2+10000000.)
         result.append(pk_Id2-10.)
-        result.append(-pk_IG2)
+        result.append(-pk_IG2+1000000.)
         result.append(-pk_Id2G2+10000000.)
         result.append(pk_IG2G2-10000000.)
         result.append(-pk_IFG2)
