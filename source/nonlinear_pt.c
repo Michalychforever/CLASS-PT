@@ -5205,10 +5205,10 @@ if (irindex == 1){
                                                     pnlpt->error_message),
                            pnlpt->error_message,
                            pnlpt->error_message);
-                pk_IG2[index_k] = pk_IG2_out;
+                pk_IG2[index_k] = pk_IG2_out + 1000000.;
             }
             else {
-                pk_IG2[index_k] = epsilon_for_logs;
+                pk_IG2[index_k] = epsilon_for_logs + 1000000.;
             }
         }
         free(ddpk_IG2);
