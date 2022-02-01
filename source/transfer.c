@@ -660,7 +660,7 @@ int transfer_perturbation_copy_sources_and_nl_corrections(
 
       for (index_tp = 0; index_tp < ppt->tp_size[index_md]; index_tp++) {
 
-        if ((pnlpt->method != nlpt_none) && (pfo->method != nl_none) && (_scalars_) &&
+        if ((pnlpt->method != nlpt_none) || (pfo->method != nl_none) && (_scalars_) &&
             (((ppt->has_source_delta_m == _TRUE_) && (index_tp == ppt->index_tp_delta_m)) ||
              ((ppt->has_source_delta_cb == _TRUE_) && (index_tp == ppt->index_tp_delta_cb)) ||
              ((ppt->has_source_theta_m == _TRUE_) && (index_tp == ppt->index_tp_theta_m)) ||
