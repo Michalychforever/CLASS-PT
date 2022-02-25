@@ -862,6 +862,9 @@ cdef class Class:
 
         #cdef double large_for_logs_fNL = 1000. #GC...
 
+        cdef double large_for_logs_matter = 50000.
+        cdef double large_for_logs = 50000.
+
         #GC: ORTHOGONAL -- start
         cdef double large_for_logs_fNL = 50000.
         #GC: ORTHOGONAL -- finish
