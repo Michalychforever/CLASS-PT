@@ -3476,6 +3476,8 @@ int nonlinear_pt_init(
             // double * pk_ctr_int;
 
             last_index = 0;
+            
+            double large_for_logs_matter = 5. * pow(10., 3.); //GC!
 
             if (ppt->has_cls == _TRUE_ && pnlpt->fast_output == _TRUE_)
             {
@@ -3587,7 +3589,7 @@ class_call(nonlinear_pt_pk_l(pba,ppt,ppm,pnlpt,index_tau,pk_l,lnk_l,lnpk_l,ddlnp
                 {
                     for (index_k = 0; index_k < ppt->k_size[pnlpt->index_md_scalars]; index_k++)
                         //pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = 1.;
-                        pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = sqrt(fabs((pk_Tree_int[index_k] + Dplus * Dplus * (pk_nl_int[index_k] - 5000.
+                        pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = sqrt(fabs((pk_Tree_int[index_k] + Dplus * Dplus * (pk_nl_int[index_k] - large_for_logs_matter
                                                                                                                                                                 // -pk_ctr_int[index_k]
                                                                                                                                                                 // -2.*pow(ppt->k[pnlpt->index_md_scalars][index_k],2.)*pk_Tree_int[index_k]/(1.+pow(ppt->k[pnlpt->index_md_scalars][index_k],2.))
                                                                                                                                                                 ) /
@@ -3597,7 +3599,7 @@ class_call(nonlinear_pt_pk_l(pba,ppt,ppm,pnlpt,index_tau,pk_l,lnk_l,lnpk_l,ddlnp
                 else
                 {
                     for (index_k = 0; index_k < ppt->k_size[pnlpt->index_md_scalars]; index_k++)
-                        pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = sqrt(fabs((pk_Tree[index_k] + Dplus * Dplus * (pk_nl[index_k] - 5000.
+                        pnlpt->nl_corr_density[index_tau * ppt->k_size[pnlpt->index_md_scalars] + index_k] = sqrt(fabs((pk_Tree[index_k] + Dplus * Dplus * (pk_nl[index_k] - large_for_logs_matter
                                                                                                                                                             // -pk_ctr_int[index_k]
                                                                                                                                                             // -2.*pow(ppt->k[pnlpt->index_md_scalars][index_k],2.)*pk_Tree_int[index_k]/(1.+pow(ppt->k[pnlpt->index_md_scalars][index_k],2.))
                                                                                                                                                             ) /
@@ -5837,6 +5839,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
     //GC: ORTHOGONAL -- start
     double large_for_logs_fNL = 5. * pow(10., 4.); //GC!!!
     //GC: ORTHOGONAL -- finish
+    
+    double large_for_logs_matter = 5. * pow(10., 3.); //GC!
+    
+    double large_for_logs_big = 1000000.; //GC!
+    double large_for_logs_small = 10.; //GC!
 
     double cutoff = 3. * pba->h; //GC -> what is this???
     double *P13;
@@ -6161,7 +6168,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                        pnlpt->error_message,
                        pnlpt->error_message);
 
-            pk_nl[index_k] = pk_nl_out + 5000.; //GC -> because log can become negative...
+            pk_nl[index_k] = pk_nl_out + large_for_logs_matter; //GC -> because log can become negative...
             //pk_nl_fNL[index_k] = pk_nl_fNL_out + 5000.; //GC -> because log can become negative... WILL NEED TO CHECK NUMBERS, if 5000 is enough!!! Would something change if I had chosen 50000? Would it have caused errors?
             pk_nl_fNL[index_k] = pk_nl_fNL_out + large_for_logs_fNL; //+ 1.*epsilon_for_logs_fNL;
 
@@ -6180,7 +6187,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             //pk_nl[index_k] = exp(lnpk_l[index_k]);
             if (pnlpt->k[index_k] < kmin)
             {
-                pk_nl[index_k] = 5000. - 61. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav / 105.;
+                pk_nl[index_k] = large_for_logs_matter - 61. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav / 105.;
                 //pk_nl_fNL[index_k] = 5000.;
                 pk_nl_fNL[index_k] = large_for_logs_fNL + 1. * epsilon_for_logs_fNL; //GC!
 
@@ -6192,7 +6199,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             }
             if (pnlpt->k[index_k] > kmax)
             {
-                pk_nl[index_k] = 5000.;
+                pk_nl[index_k] = large_for_logs_matter;
                 //pk_nl_fNL[index_k] = 5000.;
                 pk_nl_fNL[index_k] = large_for_logs_fNL + 1. * epsilon_for_logs_fNL; //GC!
 
@@ -9342,12 +9349,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                     pnlpt->error_message),
                            pnlpt->error_message,
                            pnlpt->error_message);
-                pk_l_0_vv[index_k] = pk_nl_out + 1.e7; //GC: notice that "l" here means LOOPS, not linear...
+                pk_l_0_vv[index_k] = pk_nl_out + large_for_logs_big; //GC: notice that "l" here means LOOPS, not linear...
             }
             else
             {
 
-                pk_l_0_vv[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (f * f * (441. + 566. * f + 175. * f * f) / 1225.) + 1.e7;
+                pk_l_0_vv[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (f * f * (441. + 566. * f + 175. * f * f) / 1225.) + large_for_logs_big;
                 //  pk_l_0_vv[index_k] = exp(lnpk_l[index_k])*(f*f/5.);
 
                 //GC: minus makes sense -> having large vv term (and velocity dispersion) prevents from clustering... Careful: kmaxnew is the one of FFTlog, so 100. Same for the min. See around line 2160... He could have extrapolated by putting zero on either side. But now he puts the low-k limit also at high k, which is not optimal. I will need to find the low-k limit also for me... ir4dd is extrapolation. AP ignored but Misha knows it. It is under control... What did I mean here? The issue is that for me the low-k limit will not be proportional to P? It happens for the contribution that is ir4dd: it is just the fact that in the low-k limit I have k^4 times \int P^2... I do not really know how to fix it yet... Whatever I do, I will neglect the AP effect. For now I will put the else to 1.e7...
@@ -9396,12 +9403,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                            pnlpt->error_message,
                            pnlpt->error_message);
 
-                pk_l_0_vd[index_k] = pk_nl_out + 1.e7;
+                pk_l_0_vd[index_k] = pk_nl_out + large_for_logs_big;
             }
             else
             {
                 //      pk_l_0_vd[index_k] = (f*2./3.)*exp(lnpk_l[index_k]);
-                pk_l_0_vd[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (2. * f * (625. + 558. * f + 315. * f * f) / 1575.) + 1.e7;
+                pk_l_0_vd[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (2. * f * (625. + 558. * f + 315. * f * f) / 1575.) + large_for_logs_big;
             }
             //         printf("%le %le\n",pnlpt->k[index_k]/pba->h,pk_l_0_vd[index_k]*pow(pba->h,3));
         }
@@ -9441,12 +9448,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                            pnlpt->error_message,
                            pnlpt->error_message);
 
-                pk_l_0_dd[index_k] = pk_nl_out + 1.e7;
+                pk_l_0_dd[index_k] = pk_nl_out + large_for_logs_big;
             }
             else
             {
                 //  pk_l_0_dd[index_k] = exp(lnpk_l[index_k]);
-                pk_l_0_dd[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * ((61. - 2. * f + 35. * f * f) / 105.) + 1.e7;
+                pk_l_0_dd[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * ((61. - 2. * f + 35. * f * f) / 105.) + large_for_logs_big;
             }
             //  -1.*Pbin[index_j] * kdisc[index_j]*kdisc[index_j]* sigmav*((61. -2.*f + 35.*f*f)/105.);
             //     printf("%le %le\n",pnlpt->k[index_k]/pba->h,pk_l_0_dd[index_k]*pow(pba->h,3));
@@ -9487,12 +9494,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                            pnlpt->error_message,
                            pnlpt->error_message);
 
-                pk_l_2_vv[index_k] = pk_nl_out + 1.e7;
+                pk_l_2_vv[index_k] = pk_nl_out + large_for_logs_big;
             }
 
             else
             {
-                pk_l_2_vv[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (2. * f * f * (54. + 74. * f + 25. * f * f) / 105.) + 1.e7;
+                pk_l_2_vv[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (2. * f * f * (54. + 74. * f + 25. * f * f) / 105.) + large_for_logs_big;
                 //pk_l_2_vv[index_k] = exp(lnpk_l[index_k])*(f*f*4./7.);
                 // -1.*Pbin[index_j] * kdisc[index_j]*kdisc[index_j]* sigmav*(2.*f*f*(54.+74.*f+25.*f*f)/105.);
             }
@@ -9533,12 +9540,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                            pnlpt->error_message,
                            pnlpt->error_message);
 
-                pk_l_2_vd[index_k] = pk_nl_out + 1.e7;
+                pk_l_2_vd[index_k] = pk_nl_out + large_for_logs_big;
             }
 
             else
             {
-                pk_l_2_vd[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * 4. * f * (175. + 180. * f + 126. * f * f) / 441. + 1.e7;
+                pk_l_2_vd[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * 4. * f * (175. + 180. * f + 126. * f * f) / 441. + large_for_logs_big;
             }
             //    -1.*Pbin[index_j] * kdisc[index_j]*kdisc[index_j]* sigmav*4.*f*(175.+180.*f+126.*f*f)/441.;
         }
@@ -9578,12 +9585,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                            pnlpt->error_message,
                            pnlpt->error_message);
 
-                pk_l_2_dd[index_k] = pk_nl_out + 1.e7;
+                pk_l_2_dd[index_k] = pk_nl_out + large_for_logs_big;
             }
 
             else
             {
-                pk_l_2_dd[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (2. * f * (35. * f - 2.) / 105.) + 1.e7;
+                pk_l_2_dd[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (2. * f * (35. * f - 2.) / 105.) + large_for_logs_big;
             }
 
             //    -1.*Pbin[index_j] * kdisc[index_j]*kdisc[index_j]* sigmav*(2.*f*(35.*f-2.)/105.);
@@ -9624,12 +9631,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                            pnlpt->error_message,
                            pnlpt->error_message);
 
-                pk_l_4_vv[index_k] = pk_nl_out + 1.e7;
+                pk_l_4_vv[index_k] = pk_nl_out + large_for_logs_big;
             }
 
             else
             {
-                pk_l_4_vv[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (24. * f * f * (33. + 58. * f + 25. * f * f) / 1925.) + 1.e7;
+                pk_l_4_vv[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (24. * f * f * (33. + 58. * f + 25. * f * f) / 1925.) + large_for_logs_big;
                 //-1.*Pbin[index_j] * kdisc[index_j]*kdisc[index_j]* sigmav*(24.*f*f*(33.+58.*f+25.*f*f)/1925.);
             }
         }
@@ -9669,12 +9676,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                            pnlpt->error_message,
                            pnlpt->error_message);
 
-                pk_l_4_vd[index_k] = pk_nl_out + 1.e7;
+                pk_l_4_vd[index_k] = pk_nl_out + large_for_logs_big;
             }
 
             else
             {
-                pk_l_4_vd[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * 16. * f * f * (22. + 35. * f) / 1225. + 1.e7;
+                pk_l_4_vd[index_k] = -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * 16. * f * f * (22. + 35. * f) / 1225. + large_for_logs_big;
             }
             //    -1.*Pbin[index_j] * kdisc[index_j]*kdisc[index_j]* sigmav*16.*f*f*(22.+35.*f)/1225.;
         }
@@ -9729,12 +9736,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                            pnlpt->error_message,
                            pnlpt->error_message);
 
-                pk_l_4_dd[index_k] = pk_nl_out * exp(-pow(pnlpt->k[index_k] / 3., 4.)) + 1.e7;
+                pk_l_4_dd[index_k] = pk_nl_out * exp(-pow(pnlpt->k[index_k] / 3., 4.)) + large_for_logs_big;
             }
 
             else
             {
-                pk_l_4_dd[index_k] = 1.e7 + ir4dd * pow((pnlpt->k[index_k] / kminnew), 4.) * exp(-pow(pnlpt->k[index_k] / 3., 4.));
+                pk_l_4_dd[index_k] = large_for_logs_big + ir4dd * pow((pnlpt->k[index_k] / kminnew), 4.) * exp(-pow(pnlpt->k[index_k] / 3., 4.));
             }
         }
 
@@ -11028,11 +11035,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
             {
                 class_call(array_interpolate_spline(kdisc, Nmax, Ptree_0_vv, ddpk_tree_0_vv, 1, pnlpt->k[index_k], &last_index, &pk_nl_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                pk_Tree_0_vv[index_k] = pk_nl_out + 1.e7;
+                pk_Tree_0_vv[index_k] = pk_nl_out + large_for_logs_big;
             }
             else
             {
-                pk_Tree_0_vv[index_k] = exp(lnpk_l[index_k]) * f * f / 5. + 1.e7;
+                pk_Tree_0_vv[index_k] = exp(lnpk_l[index_k]) * f * f / 5. + large_for_logs_big;
             }
         }
         free(ddpk_tree_0_vv);
@@ -11048,11 +11055,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
             {
                 class_call(array_interpolate_spline(kdisc, Nmax, Ptree_0_vd, ddpk_tree_0_vd, 1, pnlpt->k[index_k], &last_index, &pk_nl_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                pk_Tree_0_vd[index_k] = pk_nl_out + 1.e7;
+                pk_Tree_0_vd[index_k] = pk_nl_out + large_for_logs_big;
             }
             else
             {
-                pk_Tree_0_vd[index_k] = exp(lnpk_l[index_k]) * 2. * f / 3. + 1.e7;
+                pk_Tree_0_vd[index_k] = exp(lnpk_l[index_k]) * 2. * f / 3. + large_for_logs_big;
             }
         }
         free(ddpk_tree_0_vd);
@@ -11068,11 +11075,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
             {
                 class_call(array_interpolate_spline(kdisc, Nmax, Ptree_0_dd, ddpk_tree_0_dd, 1, pnlpt->k[index_k], &last_index, &pk_nl_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                pk_Tree_0_dd[index_k] = pk_nl_out + 1.e7;
+                pk_Tree_0_dd[index_k] = pk_nl_out + large_for_logs_big;
             }
             else
             {
-                pk_Tree_0_dd[index_k] = exp(lnpk_l[index_k]) + 1.e7;
+                pk_Tree_0_dd[index_k] = exp(lnpk_l[index_k]) + large_for_logs_big;
             }
         }
         free(ddpk_tree_0_dd);
@@ -11088,11 +11095,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
             {
                 class_call(array_interpolate_spline(kdisc, Nmax, Ptree_2_vv, ddpk_tree_2_vv, 1, pnlpt->k[index_k], &last_index, &pk_nl_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                pk_Tree_2_vv[index_k] = pk_nl_out + 1.e7;
+                pk_Tree_2_vv[index_k] = pk_nl_out + large_for_logs_big;
             }
             else
             {
-                pk_Tree_2_vv[index_k] = exp(lnpk_l[index_k]) * 4. * f * f / 7. + 1.e7;
+                pk_Tree_2_vv[index_k] = exp(lnpk_l[index_k]) * 4. * f * f / 7. + large_for_logs_big;
             }
         }
         free(ddpk_tree_2_vv);
@@ -11108,11 +11115,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
             {
                 class_call(array_interpolate_spline(kdisc, Nmax, Ptree_2_vd, ddpk_tree_2_vd, 1, pnlpt->k[index_k], &last_index, &pk_nl_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                pk_Tree_2_vd[index_k] = pk_nl_out + 1.e7;
+                pk_Tree_2_vd[index_k] = pk_nl_out + large_for_logs_big;
             }
             else
             {
-                pk_Tree_2_vd[index_k] = exp(lnpk_l[index_k]) * 4. * f / 3. + 1.e7;
+                pk_Tree_2_vd[index_k] = exp(lnpk_l[index_k]) * 4. * f / 3. + large_for_logs_big;
             }
         }
         free(ddpk_tree_2_vd);
@@ -11128,11 +11135,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
             {
                 class_call(array_interpolate_spline(kdisc, Nmax, Ptree_4_vv, ddpk_tree_4_vv, 1, pnlpt->k[index_k], &last_index, &pk_nl_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                pk_Tree_4_vv[index_k] = pk_nl_out + 1.e7;
+                pk_Tree_4_vv[index_k] = pk_nl_out + large_for_logs_big;
             }
             else
             {
-                pk_Tree_4_vv[index_k] = exp(lnpk_l[index_k]) * 8. * f * f / 35. + 1.e7;
+                pk_Tree_4_vv[index_k] = exp(lnpk_l[index_k]) * 8. * f * f / 35. + large_for_logs_big;
             }
         }
         free(ddpk_tree_4_vv);
@@ -11886,12 +11893,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                     pnlpt->error_message),
                            pnlpt->error_message,
                            pnlpt->error_message);
-                pk_Id2[index_k] = 10. + pk_Id2_out;
+                pk_Id2[index_k] = large_for_logs_small + pk_Id2_out;
             }
 
             else
             {
-                pk_Id2[index_k] = 10.;
+                pk_Id2[index_k] = large_for_logs_small;
             }
         }
         free(ddpk_PId2);
@@ -11929,11 +11936,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                     pnlpt->error_message),
                            pnlpt->error_message,
                            pnlpt->error_message);
-                pk_IG2[index_k] = pk_IG2_out;
+                pk_IG2[index_k] = pk_IG2_out + large_for_logs_small;
             }
             else
             {
-                pk_IG2[index_k] = epsilon_for_logs;
+                pk_IG2[index_k] = epsilon_for_logs + large_for_logs_small;
             }
         }
         free(ddpk_IG2);
@@ -12057,11 +12064,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                     pnlpt->error_message),
                            pnlpt->error_message,
                            pnlpt->error_message);
-                pk_IFG2[index_k] = pk_IFG2_out;
+                pk_IFG2[index_k] = pk_IFG2_out + large_for_logs_small;
             }
             else
             {
-                pk_IFG2[index_k] = epsilon_for_logs;
+                pk_IFG2[index_k] = epsilon_for_logs + large_for_logs_small;
             }
         }
 
@@ -14444,12 +14451,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
                 {
                     class_call(array_interpolate_spline(kdisc, Nmax, P_Id2d2_2, ddpk_PId2d2_2, 1, pnlpt->k[index_k], &last_index, &pk_Id2d2_2_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                    pk_Id2d2_2[index_k] = pk_Id2d2_2_out + 1.e7;
+                    pk_Id2d2_2[index_k] = pk_Id2d2_2_out + large_for_logs_big;
                     // printf("%lf\n",pk_Id2d2_2[index_k]);
                 }
                 else
                 {
-                    pk_Id2d2_2[index_k] = 1.e7;
+                    pk_Id2d2_2[index_k] = large_for_logs_big;
                 }
 
                 //printf("%.24e %.24e\n",pnlpt->k[index_k],pk_Id2d2_2[index_k]-1.e7); //GC!
@@ -14468,11 +14475,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
                 {
                     class_call(array_interpolate_spline(kdisc, Nmax, P_Id2d2_4, ddpk_PId2d2_4, 1, pnlpt->k[index_k], &last_index, &pk_Id2d2_4_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                    pk_Id2d2_4[index_k] = pk_Id2d2_4_out + 1.e7;
+                    pk_Id2d2_4[index_k] = pk_Id2d2_4_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_Id2d2_4[index_k] = 1.e7;
+                    pk_Id2d2_4[index_k] = large_for_logs_big;
                 }
             }
             free(ddpk_PId2d2_4);
@@ -14487,11 +14494,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
                 {
                     class_call(array_interpolate_spline(kdisc, Nmax, P_Id2G2_2, ddpk_PId2G2_2, 1, pnlpt->k[index_k], &last_index, &pk_Id2G2_2_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                    pk_Id2G2_2[index_k] = pk_Id2G2_2_out + 1.e7;
+                    pk_Id2G2_2[index_k] = pk_Id2G2_2_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_Id2G2_2[index_k] = 0. * epsilon_for_logs + 1.e7;
+                    pk_Id2G2_2[index_k] = 0. * epsilon_for_logs + large_for_logs_big;
                 }
             }
             free(ddpk_PId2G2_2);
@@ -14506,11 +14513,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
                 {
                     class_call(array_interpolate_spline(kdisc, Nmax, P_Id2G2_4, ddpk_PId2G2_4, 1, pnlpt->k[index_k], &last_index, &pk_Id2G2_4_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                    pk_Id2G2_4[index_k] = pk_Id2G2_4_out + 1.e7;
+                    pk_Id2G2_4[index_k] = pk_Id2G2_4_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_Id2G2_4[index_k] = 0. * epsilon_for_logs + 1.e7;
+                    pk_Id2G2_4[index_k] = 0. * epsilon_for_logs + large_for_logs_big;
                 }
             }
             free(ddpk_PId2G2_4);
@@ -14525,11 +14532,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
                 {
                     class_call(array_interpolate_spline(kdisc, Nmax, P_IG2G2_2, ddpk_PIG2G2_2, 1, pnlpt->k[index_k], &last_index, &pk_IG2G2_2_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                    pk_IG2G2_2[index_k] = pk_IG2G2_2_out + 1.e7;
+                    pk_IG2G2_2[index_k] = pk_IG2G2_2_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_IG2G2_2[index_k] = 0. * epsilon_for_logs + 1.e7;
+                    pk_IG2G2_2[index_k] = 0. * epsilon_for_logs + large_for_logs_big;
                 }
                 //        printf("%le %le %le\n", pk_Id2d2_2[index_k], pk_Id2G2_2[index_k],pk_IG2G2_2[index_k]);
             }
@@ -14545,11 +14552,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
                 {
                     class_call(array_interpolate_spline(kdisc, Nmax, P_IG2G2_4, ddpk_PIG2G2_4, 1, pnlpt->k[index_k], &last_index, &pk_IG2G2_4_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                    pk_IG2G2_4[index_k] = pk_IG2G2_4_out + 1.e7;
+                    pk_IG2G2_4[index_k] = pk_IG2G2_4_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_IG2G2_4[index_k] = 0. * epsilon_for_logs + 1.e7;
+                    pk_IG2G2_4[index_k] = 0. * epsilon_for_logs + large_for_logs_big;
                 }
                 //       printf("%lf\n",pk_IG2G2_4[index_k]);
                 //       printf("%le %le %le\n", pk_Id2d2_4[index_k], pk_Id2G2_4[index_k],pk_IG2G2_4[index_k]);
@@ -14566,11 +14573,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
                 {
                     class_call(array_interpolate_spline(kdisc, Nmax, P_0_b1b2, ddpk_0_b1b2, 1, pnlpt->k[index_k], &last_index, &pk_0_b1b2_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                    pk_l_0_b1b2[index_k] = pk_0_b1b2_out + 1.e7;
+                    pk_l_0_b1b2[index_k] = pk_0_b1b2_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_l_0_b1b2[index_k] = epsilon_for_logs + 1.e7;
+                    pk_l_0_b1b2[index_k] = epsilon_for_logs + large_for_logs_big;
                 }
                 //      printf("%lf\n", pk_l_0_b1b2[index_k]);
             }
@@ -14609,11 +14616,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                         pnlpt->error_message),
                                pnlpt->error_message,
                                pnlpt->error_message);
-                    pk_l_0_b2[index_k] = pk_0_b2_out + 1.e7;
+                    pk_l_0_b2[index_k] = pk_0_b2_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_l_0_b2[index_k] = epsilon_for_logs + 1.e7;
+                    pk_l_0_b2[index_k] = epsilon_for_logs + large_for_logs_big;
                 }
             }
             free(ddpk_0_b2);
@@ -14651,11 +14658,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                         pnlpt->error_message),
                                pnlpt->error_message,
                                pnlpt->error_message);
-                    pk_l_0_b1bG2[index_k] = pk_0_b1bG2_out + 1.e7;
+                    pk_l_0_b1bG2[index_k] = pk_0_b1bG2_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_l_0_b1bG2[index_k] = epsilon_for_logs + 1.e7;
+                    pk_l_0_b1bG2[index_k] = epsilon_for_logs + large_for_logs_big;
                 }
             }
             free(ddpk_0_b1bG2);
@@ -14693,11 +14700,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                         pnlpt->error_message),
                                pnlpt->error_message,
                                pnlpt->error_message);
-                    pk_l_2_b1b2[index_k] = pk_2_b1b2_out + 1.e7;
+                    pk_l_2_b1b2[index_k] = pk_2_b1b2_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_l_2_b1b2[index_k] = epsilon_for_logs + 1.e7;
+                    pk_l_2_b1b2[index_k] = epsilon_for_logs + large_for_logs_big;
                 }
             }
             free(ddpk_2_b1b2);
@@ -14714,11 +14721,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
                 {
                     class_call(array_interpolate_spline(kdisc, Nmax, P_4_b1b2, ddpk_4_b1b2, 1, pnlpt->k[index_k], &last_index, &pk_4_b1b2_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                    pk_l_4_b1b2[index_k] = pk_4_b1b2_out + 1.e7;
+                    pk_l_4_b1b2[index_k] = pk_4_b1b2_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_l_4_b1b2[index_k] = epsilon_for_logs + 1.e7;
+                    pk_l_4_b1b2[index_k] = epsilon_for_logs + large_for_logs_big;
                 }
             }
             free(ddpk_4_b1b2);
@@ -14754,11 +14761,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                         pnlpt->error_message),
                                pnlpt->error_message,
                                pnlpt->error_message);
-                    pk_l_0_bG2[index_k] = pk_0_bG2_out + 1.e7;
+                    pk_l_0_bG2[index_k] = pk_0_bG2_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_l_0_bG2[index_k] = epsilon_for_logs + 1.e7;
+                    pk_l_0_bG2[index_k] = epsilon_for_logs + large_for_logs_big;
                 }
             }
             free(ddpk_0_bG2);
@@ -14796,11 +14803,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                         pnlpt->error_message),
                                pnlpt->error_message,
                                pnlpt->error_message);
-                    pk_l_2_b2[index_k] = pk_2_b2_out + 1.e7;
+                    pk_l_2_b2[index_k] = pk_2_b2_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_l_2_b2[index_k] = epsilon_for_logs + 1.e7;
+                    pk_l_2_b2[index_k] = epsilon_for_logs + large_for_logs_big;
                 }
             }
             free(ddpk_2_b2);
@@ -14837,11 +14844,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                         pnlpt->error_message),
                                pnlpt->error_message,
                                pnlpt->error_message);
-                    pk_l_2_b1bG2[index_k] = pk_2_b1bG2_out + 1.e7;
+                    pk_l_2_b1bG2[index_k] = pk_2_b1bG2_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_l_2_b1bG2[index_k] = epsilon_for_logs + 1.e7;
+                    pk_l_2_b1bG2[index_k] = epsilon_for_logs + large_for_logs_big;
                 }
             }
             free(ddpk_2_b1bG2);
@@ -14858,11 +14865,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
                 {
                     class_call(array_interpolate_spline(kdisc, Nmax, P_4_b1bG2, ddpk_4_b1bG2, 1, pnlpt->k[index_k], &last_index, &pk_4_b1bG2_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                    pk_l_4_b1bG2[index_k] = pk_4_b1bG2_out + 1.e7;
+                    pk_l_4_b1bG2[index_k] = pk_4_b1bG2_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_l_4_b1bG2[index_k] = epsilon_for_logs + 1.e7;
+                    pk_l_4_b1bG2[index_k] = epsilon_for_logs + large_for_logs_big;
                 }
                 //      printf("%le %le\n", pk_l_4_b1b2[index_k],pk_l_4_b1bG2[index_k]);
             }
@@ -14898,11 +14905,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                         pnlpt->error_message),
                                pnlpt->error_message,
                                pnlpt->error_message);
-                    pk_l_2_bG2[index_k] = pk_2_bG2_out + 1.e7;
+                    pk_l_2_bG2[index_k] = pk_2_bG2_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_l_2_bG2[index_k] = epsilon_for_logs + 1.e7;
+                    pk_l_2_bG2[index_k] = epsilon_for_logs + large_for_logs_big;
                 }
             }
             free(ddpk_2_bG2);
@@ -14939,11 +14946,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                         pnlpt->error_message),
                                pnlpt->error_message,
                                pnlpt->error_message);
-                    pk_l_4_b2[index_k] = pk_4_b2_out + 1.e7;
+                    pk_l_4_b2[index_k] = pk_4_b2_out + large_for_logs_big;
                 }
                 else
                 {
-                    pk_l_4_b2[index_k] = epsilon_for_logs + 1.e7;
+                    pk_l_4_b2[index_k] = epsilon_for_logs + large_for_logs_big;
                 }
             }
             free(ddpk_4_b2);
@@ -14980,12 +14987,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                         pnlpt->error_message),
                                pnlpt->error_message,
                                pnlpt->error_message);
-                    pk_l_4_bG2[index_k] = pk_4_bG2_out + 1.e7; //GC -> ORIGINAL!!!
+                    pk_l_4_bG2[index_k] = pk_4_bG2_out + large_for_logs_big; //GC -> ORIGINAL!!!
                     //pk_l_4_bG2[index_k] = pk_4_bG2_out; //GC!
                 }
                 else
                 {
-                    pk_l_4_bG2[index_k] = epsilon_for_logs + 1.e7; //GC -> ORIGINAL!!!
+                    pk_l_4_bG2[index_k] = epsilon_for_logs + large_for_logs_big; //GC -> ORIGINAL!!!
                     //pk_l_4_bG2[index_k] = epsilon_for_logs; //GC!
                 }
 
@@ -15005,12 +15012,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
                 {
                     class_call(array_interpolate_spline(kdisc, Nmax, P_IFG2_0b1_x, ddpk_IFG2_0b1_mmm, 1, pnlpt->k[index_k], &last_index_2, &fg2_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                    pk_IFG2_0b1[index_k] = fg2_out + 1.e7;
+                    pk_IFG2_0b1[index_k] = fg2_out + large_for_logs_big;
                     //    printf("%lf\n", fg2_out);
                 }
                 else
                 {
-                    pk_IFG2_0b1[index_k] = exp(lnpk_l[index_k]) * 0. + 1.e7;
+                    pk_IFG2_0b1[index_k] = exp(lnpk_l[index_k]) * 0. + large_for_logs_big;
                 }
                 //   printf("%lf\n",pk_Id2d2_2[index_k]);
                 //        printf("%le %le %le\n", pk_IFG2_0b1[index_k], pk_Id2d2_2[index_k],pk_Id2d2_4[index_k]);
@@ -15028,11 +15035,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 if (pnlpt->k[index_k] <= kmaxnew && pnlpt->k[index_k] >= kminnew)
                 {
                     class_call(array_interpolate_spline(kdisc, Nmax, P_IFG2_0, ddpk_IFG2_0, 1, pnlpt->k[index_k], &last_index, &fg2_out_2, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
-                    pk_IFG2_0[index_k] = fg2_out_2 + 1.e7;
+                    pk_IFG2_0[index_k] = fg2_out_2 + large_for_logs_big;
                 }
                 else
                 {
-                    pk_IFG2_0[index_k] = exp(lnpk_l[index_k]) * f / 3. * 0. + 1.e7;
+                    pk_IFG2_0[index_k] = exp(lnpk_l[index_k]) * f / 3. * 0. + large_for_logs_big;
                 }
                 //      printf("%lf\n", pk_IFG2_0[index_k]);
             }
@@ -15068,11 +15075,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                pnlpt->error_message,
                                pnlpt->error_message);
                     //          printf("%lf\n", fg2_out_3);
-                    pk_IFG2_2[index_k] = fg2_out_3 + 1.e7;
+                    pk_IFG2_2[index_k] = fg2_out_3 + large_for_logs_big;
                 }
                 else
                 {
-                    pk_IFG2_2[index_k] = exp(lnpk_l[index_k]) * 2 * f / 3. * 0. + 1.e7;
+                    pk_IFG2_2[index_k] = exp(lnpk_l[index_k]) * 2 * f / 3. * 0. + large_for_logs_big;
                 }
                 //     printf("%le %le %le\n", pk_IFG2_0b1[index_k], pk_IFG2_0[index_k],pk_IFG2_2[index_k]);
             }
@@ -15130,11 +15137,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                     pnlpt->error_message),
                            pnlpt->error_message,
                            pnlpt->error_message);
-                pk_Id2d2[index_k] = pk_Id2d2_out + 1.e7;
+                pk_Id2d2[index_k] = pk_Id2d2_out + large_for_logs_big;
             }
             else
             {
-                pk_Id2d2[index_k] = epsilon_for_logs + 1.e7;
+                pk_Id2d2[index_k] = epsilon_for_logs + large_for_logs_big;
             }
         }
         free(ddpk_PId2d2);
@@ -15172,12 +15179,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                     pnlpt->error_message),
                            pnlpt->error_message,
                            pnlpt->error_message);
-                pk_Id2G2[index_k] = pk_Id2G2_out + 1.e7;
+                pk_Id2G2[index_k] = pk_Id2G2_out + large_for_logs_big;
             }
 
             else
             {
-                pk_Id2G2[index_k] = epsilon_for_logs + 1.e7;
+                pk_Id2G2[index_k] = epsilon_for_logs + large_for_logs_big;
             }
 
             //printf("%.24e %.24e\n",pnlpt->k[index_k],pk_Id2G2[index_k]-1.e7); //GC!
@@ -15219,11 +15226,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                     pnlpt->error_message),
                            pnlpt->error_message,
                            pnlpt->error_message);
-                pk_IG2G2[index_k] = pk_IG2G2_out + 1.e7;
+                pk_IG2G2[index_k] = pk_IG2G2_out + large_for_logs_big;
             }
             else
             {
-                pk_IG2G2[index_k] = epsilon_for_logs + 1.e7;
+                pk_IG2G2[index_k] = epsilon_for_logs + large_for_logs_big;
             }
         }
         free(ddpk_IG2G2);
