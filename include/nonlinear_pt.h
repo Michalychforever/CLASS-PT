@@ -21,6 +21,7 @@ enum non_linear_rsd_pt {rsd_yes,rsd_no};
 // enum non_linear_cb_pt {cb_yes,cb_no};
 // enum non_linear_fftlogn {fftlog_fast,fftlog_norm};
 enum non_linear_AP_effect_pt {AP_effect_yes,AP_effect_no};
+enum non_linear_fNL_equil_ortho {fNL_equil_ortho_yes,fNL_equil_ortho_no};
 
 //enum halofit_integral_type {halofit_integral_one, halofit_integral_two, halofit_integral_three};
 //enum halofit_statement {ok, too_small};
@@ -49,6 +50,7 @@ enum non_linear_rsd_pt rsd;
 // enum non_linear_cb_pt cb;
 // enum non_linear_fftlogn norm;
 enum non_linear_AP_effect_pt AP_effect;
+enum non_linear_fNL_equil_ortho fNL_equil_ortho_switch;
 
   //@}
 

@@ -2478,6 +2478,7 @@ int input_read_parameters(
           pnlpt->method = nlpt_spt;
           pnl->method = nl_none;
           ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
+          pnlpt->fNL_equil_ortho_switch = fNL_equil_ortho_no; //GC - SWITCH...
           pnlpt->irres = irres_yes;
           pnlpt->bias = bias_yes;
           pnlpt->rsd = rsd_no;
@@ -2494,6 +2495,8 @@ int input_read_parameters(
 
 
 
+    //GC -> here you see the source of the issues for the AP... For some reason the fiducial is asked in a different way than how the actual AP switch is used (which is below...) -> you can fix it even if you do not require RSDs...
+    
     /** Fiducial Om for AP */
     class_call(parser_read_double(pfc,"Omfid",&param1,&flag1,errmsg),
                errmsg,
@@ -2599,6 +2602,37 @@ int input_read_parameters(
       }
 
 
+    //GC -> here we include fNL...
+    
+    if (pnlpt->method == nlpt_spt) {
+        
+        //pnlpt->fNL_equil_ortho_switch = fNL_equil_ortho_no; //GC - SWITCH ~> maybe there is a better way...
+
+    class_call(parser_read_string(pfc,
+                                  "PNG",
+                                  &(string1),
+                                  &(flag1),
+                                  errmsg),
+               errmsg,
+               errmsg);
+        
+        if (flag1 == _TRUE_){
+
+        if ((strstr(string1,"YES") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"Y") != NULL)) {
+            pnlpt->fNL_equil_ortho_switch = fNL_equil_ortho_yes;
+        }
+
+        else {
+            pnlpt->fNL_equil_ortho_switch = fNL_equil_ortho_no;
+        }
+    }
+        
+        else {
+            pnlpt->fNL_equil_ortho_switch = fNL_equil_ortho_no;
+        }
+        
+    }
+    
 
     // Here we include IR resummation
 
@@ -3375,6 +3409,8 @@ int input_default_params(
     
   pnlpt->fast_output = _FALSE_;
   pnlpt->cb = _TRUE_;
+    
+    pnlpt->fNL_equil_ortho_switch = fNL_equil_ortho_no; //GC - SWITCH...
 
   /** - all verbose parameters */
 

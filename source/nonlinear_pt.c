@@ -784,6 +784,23 @@ int nonlinear_pt_init(
         //int startmatrix=clock();
 
         //GC -> no need to store in RAM. They are just a bunch of arrays. Write them in a structure and have this code read those... Essentially, instead of e.g. "fscanf(myFile22, "%lf", &pnlpt->M22_oneline[index_M22]);", there would be a command that says pnlpt->M22_oneline[index_M22] is equal to the other array... Actually, this is stupid. It does not make any sense to have a separate file, except for readability... One could literally write the matrices below here... However, I do not know how to do it so this point is moot so far... You can have struct matrices *mtrx or something, and then write pnlpt->M22_oneline[index_M22] = mtrx->something[index_M22] + _Complex_I * whatever... One could look at input.c for how it is done... But for now, I think I will just import the matrices -> since we fix cosmology (but not biases) the loss of time is likely not too tragic, since we need to explore a smaller parameter space... Also, we only need the AP with IR-resummation in redshift space, so not all matrices need to be imported... I need to import the non-IR-resummed multipoles just to check the numerics...
+        
+        //GC - SWITCH HERE!
+        //GC: the quickest way is to remove the opening of the files first... I think also to just keep allocating. Only now they will have junk inside...
+        
+        //GC -> define a master variable "switch" here, as a string, to then run tests...
+        
+        int SWITCH_index = 0;
+        
+        if (pnlpt->fNL_equil_ortho_switch == fNL_equil_ortho_yes)
+            
+        {
+            
+            SWITCH_index = 1;
+            
+        }
+        
+        //printf("%d\n",SWITCH_index); //GC - SWITCH!
 
         if (ppr->nmax_nlpt == 128)
         {
@@ -792,6 +809,15 @@ int nonlinear_pt_init(
             sprintf(file2openM22basic, "%s/pt_matrices/M22basiconeline_N128.dat", __CLASSDIR__);
             sprintf(file2openM13basic, "%s/pt_matrices/IFG2oneline_N128.dat", __CLASSDIR__);
             //sprintf(file2openM12,"%s/pt_matrices/M12oneline_N128.dat",__CLASSDIR__);    //GC!
+            
+            //GC: SWITCH HERE!!!
+            
+            if (SWITCH_index == 1)
+                
+            {
+                
+                //printf("%d\n",SWITCH_index); //GC - SWITCH!
+            
             /*-----------------------------------------------*/
             sprintf(file2openM12_matter, "%s/pt_matrices/compute_matrices_python/M12oneline_N128-matter.dat", __CLASSDIR__);
             //GC: ORTHOGONAL -- start
@@ -860,6 +886,8 @@ int nonlinear_pt_init(
             sprintf(file2openM12_bias_multipoles_bG2_vv0_f1_ortho, "%s/ORTHOGONAL_NG_matrices/computation_of_matrices/bias_multipoles/M12oneline_N128-bias_multipoles-bG2_vv0_f1.txt-orthogonal.dat", __CLASSDIR__);
             //GC: ORTHOGONAL -- finish
             /*-----------------------------------------------*/
+                
+            }
         }
         else if (ppr->nmax_nlpt == 512)
         {
@@ -868,6 +896,13 @@ int nonlinear_pt_init(
             sprintf(file2openM22basic, "%s/pt_matrices/M22basiconeline_N512.dat", __CLASSDIR__);
             sprintf(file2openM13basic, "%s/pt_matrices/IFG2oneline_N512.dat", __CLASSDIR__);
             //sprintf(file2openM12,"%s/pt_matrices/M12oneline_N512.dat",__CLASSDIR__);    //GC!
+            
+            if (SWITCH_index == 1)
+                
+            {
+                
+                //printf("%d\n",SWITCH_index); //GC - SWITCH!
+            
             /*-----------------------------------------------*/
             sprintf(file2openM12_matter, "%s/pt_matrices/compute_matrices_python/M12oneline_N512-matter.dat", __CLASSDIR__);
             //GC: ORTHOGONAL -- start
@@ -936,6 +971,9 @@ int nonlinear_pt_init(
             sprintf(file2openM12_bias_multipoles_bG2_vv0_f1_ortho, "%s/ORTHOGONAL_NG_matrices/computation_of_matrices/bias_multipoles/M12oneline_N512-bias_multipoles-bG2_vv0_f1.txt-orthogonal.dat", __CLASSDIR__);
             //GC: ORTHOGONAL -- finish
             /*-----------------------------------------------*/
+            
+            }
+                
         }
         else
         {
@@ -944,6 +982,13 @@ int nonlinear_pt_init(
             sprintf(file2openM22basic, "%s/pt_matrices/M22basiconeline_N256_packed.dat", __CLASSDIR__);
             sprintf(file2openM13basic, "%s/pt_matrices/IFG2oneline_N256.dat", __CLASSDIR__);
             //sprintf(file2openM12,"%s/pt_matrices/M12oneline_N256.dat",__CLASSDIR__);    //GC!
+            
+            if (SWITCH_index == 1)
+                
+            {
+                
+                //printf("%d\n",SWITCH_index); //GC - SWITCH!
+            
             /*-----------------------------------------------*/
             sprintf(file2openM12_matter, "%s/pt_matrices/compute_matrices_python/M12oneline_N256-matter.dat", __CLASSDIR__);
             //GC: ORTHOGONAL -- start
@@ -1012,6 +1057,8 @@ int nonlinear_pt_init(
             sprintf(file2openM12_bias_multipoles_bG2_vv0_f1_ortho, "%s/ORTHOGONAL_NG_matrices/computation_of_matrices/bias_multipoles/M12oneline_N256-bias_multipoles-bG2_vv0_f1.txt-orthogonal.dat", __CLASSDIR__);
             //GC: ORTHOGONAL -- finish
             /*-----------------------------------------------*/
+                
+            }
         }
 
         int index_M22 = 0;
@@ -1097,6 +1144,13 @@ int nonlinear_pt_init(
         }
 
         fclose(myFile_IFG2);
+        
+        
+        if (SWITCH_index == 1)
+            
+            //GC - SWITCH -> now the issue is that if I do like this I also do not allocate these matrices... E.g. I do not allocate M12_oneline and so on. This is bad because later I deallocate it... And these objects are in the .h -> the quickest way is to do an else if, and in the else just call the class_alloc... The not opening and scanning the files is the bulk of the issues...
+            
+        {
 
         //GC!
 
@@ -2053,6 +2107,67 @@ int nonlinear_pt_init(
         //GC!
 
         //GC -> before I had it in the middle of the Gauss stuff... Now it is in a position that makes sense...
+            
+        }
+        
+        else //GC - SWITCH -> CHECK SYNTAX...
+            
+            
+        {
+            
+          
+        
+        class_alloc(pnlpt->M12_oneline, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vv0_f2, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vv0_f3, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vd0_f1, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vd0_f2, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_dd0_f0, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_dd0_f1, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vv2_f3, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vd2_f2, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vv4_f3, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vd4_f2, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vv0_f2_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vv0_f3_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vd0_f1_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vd0_f2_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_dd0_f0_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_dd0_f1_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vv2_f3_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vd2_f2_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vv4_f3_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_multipoles_vd4_f2_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+
+        class_alloc(pnlpt->M12_oneline_matter_mu_powers_vd2_f1, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_mu_powers_vd2_f1_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_mu_powers_vd2_f2, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_mu_powers_vd2_f2_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_mu_powers_dd2_f1, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_mu_powers_dd2_f1_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_mu_powers_vv4_f2, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_mu_powers_vv4_f2_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_mu_powers_vd4_f2, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_mu_powers_vd4_f2_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_mu_powers_vv6_f3, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_matter_mu_powers_vv6_f3_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+
+        class_alloc(pnlpt->M12_oneline_bias_real_space_b2, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_bias_real_space_bG2, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_bias_real_space_b2_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_bias_real_space_bG2_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_bias_multipoles_b2_vv0_f1, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_bias_multipoles_b2_vv0_f1_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_bias_multipoles_bG2_vv0_f1, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+        class_alloc(pnlpt->M12_oneline_bias_multipoles_bG2_vv0_f1_ortho, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2)) * sizeof(double), pnlpt->error_message);
+            
+            
+        }
+            
+            
 
         char file2openGauss[256];
         sprintf(file2openGauss, "%s/pt_matrices/gauss_tab.dat", __CLASSDIR__);
@@ -2086,7 +2201,7 @@ int nonlinear_pt_init(
             //  printf("%lf %lf\n",gauss_x[index_gauss],gauss_w[index_gauss]);
         }
 
-        // This is a place for future optimization !
+        //GC -> this is a place for future optimization! Also Misha wrote this indeed, before my modifications... I keep allocating, since the bulk is importing the files and actually computing stuff...
 
         class_alloc(pnlpt->M22_oneline_complex, ((ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2) / 2) * sizeof(complex double), pnlpt->error_message);
         class_alloc(pnlpt->M13_oneline_complex, (ppr->nmax_nlpt + 1) * sizeof(complex double), pnlpt->error_message);
@@ -2289,7 +2404,7 @@ int nonlinear_pt_init(
         //GC: ORTHOGONAL -- finish
 
         //GC -> my allocations end here...
-
+        
         int count = 0;
 
         for (count = 0; count < (ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2) / 2; count++)
@@ -2316,6 +2431,14 @@ int nonlinear_pt_init(
         }
 
         //GC!
+        
+        //GC - SWITCH HERE!
+        //GC -> here my idea is to switch this completely off... Indeed, I do **not** care if these matrices are not filled with garbage... Whatever they are filled with, they should never generate segmentation faults? The blas routines should be able to handle without completely crashing, if I feed them garbage matrices...
+        
+        if (SWITCH_index == 1)
+            
+        {
+
 
         for (count = 0; count < (ppr->nmax_nlpt + 1) * (ppr->nmax_nlpt + 2) / 2; count++)
         {
@@ -2564,6 +2687,9 @@ int nonlinear_pt_init(
         }
 
         //GC: ORTHOGONAL -- finish
+            
+            
+        }
 
         /*-----------------------------------------------*/
 
@@ -2707,6 +2833,8 @@ int nonlinear_pt_init(
         //GC: ORTHOGONAL -- finish
 
         //GC!
+        
+        //GC - SWITCH -> here I keep... Everything that allocates stuff I keep...
 
         int index_md;
         index_md = pnlpt->index_md_scalars;
@@ -5882,6 +6010,19 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
     int inc = 1;
     double complex alpha = 1.;
     double complex beta = 0.;
+    
+    //GC - SWITCH -> later the switch index will come from outside so this will be commented...
+    
+    int SWITCH_index = 0;
+    
+    if (pnlpt->fNL_equil_ortho_switch == fNL_equil_ortho_yes)
+        
+    {
+        
+        SWITCH_index = 1;
+        
+    }
+
 
     double complex *x;
     double complex *x_w;
@@ -5943,7 +6084,16 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
         for (count = 0; count < Nmax + 1; count++)
         {
             x[count] = cmsym[count] * cpow(kdisc[index_j], etam[count]);
+            
+            //GC - SWITCH ~> put switch here...
+            
+            if (SWITCH_index == 1) {
+            
             x_transfer[count] = cmsym_transfer[count] * cpow(kdisc[index_j], etam_transfer[count]); //GC!
+                
+                //printf("%d\n",SWITCH_index); //GC - SWITCH!
+                
+            }
         }
 
         zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_complex, x, &inc, &beta, y, &inc);
@@ -5954,7 +6104,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
         //        P_CTR[index_j] = kdisc[index_j] * kdisc[index_j] * Pbin[index_j];
         //         printf("%le %le\n",kdisc[j],P22[j]);
 
+        if (SWITCH_index == 1) {
+
+            //GC - SWITCH ~> put switch also here...
+
         zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_complex, x_transfer, &inc, &beta, y_transfer, &inc);
+
         f12[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);
         P12_fNL[index_j] = Tbin[index_j] * //[FACTOR] *
                            creal(cpow(kdisc[index_j], 3.) * f12[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
@@ -5981,7 +6136,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
         //printf("%.16e %.16e %.16e",kdisc[index_j],Tbin[index_j],P12_fNL_ortho[index_j]);
         //printf("\n");
+        
+        //GC - SWITCH ~> put switch up to here...
 
+        }
+            
         //GC: ORTHOGONAL -- finish
     }
     //} //End of RSD only condition
@@ -6007,7 +6166,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
     class_alloc(ddpk_CTR, sizeof(double) * Nmax, pnlpt->error_message);
     double *ddpk_Tree;
     class_alloc(ddpk_Tree, sizeof(double) * Nmax, pnlpt->error_message);
-
+    
     class_call(array_spline_table_columns(kdisc,
                                           Nmax,
                                           P1loop,
@@ -6017,6 +6176,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                           pnlpt->error_message),
                pnlpt->error_message,
                pnlpt->error_message);
+
+    
+    //GC - SWITCH ~> put switch here... This indeed could be a problem. Now this function wants to eat P12_fNL. But this is utter garbage in general... How am I sure that it does not give segmentation faults? Will first do a run with matter only...
+    
+    //GC: seems to work (no segmentation fault) -> now I am feeding junk, and I print as a check below...
+
 
     class_call(array_spline_table_columns(kdisc,
                                           Nmax,
@@ -6172,10 +6337,18 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             //pk_nl_fNL[index_k] = pk_nl_fNL_out + 5000.; //GC -> because log can become negative... WILL NEED TO CHECK NUMBERS, if 5000 is enough!!! Would something change if I had chosen 50000? Would it have caused errors?
             pk_nl_fNL[index_k] = pk_nl_fNL_out + large_for_logs_fNL; //+ 1.*epsilon_for_logs_fNL;
 
+            //printf("%.16e %.16e\n",pnlpt->k[index_k],pk_nl_fNL[index_k]-1.*large_for_logs_fNL); //GC! TEST!!!
+            
+            //GC - SWITCH -> SEEMS TO WORK FINE!
+            
             //GC: ORTHOGONAL -- start
 
             pk_nl_fNL_ortho[index_k] = pk_nl_fNL_out_ortho + large_for_logs_fNL; //+ 1.*epsilon_for_logs_fNL;
 
+            //printf("%.16e %.16e\n",pnlpt->k[index_k],pk_nl_fNL_ortho[index_k]-1.*large_for_logs_fNL); //GC! TEST!!!
+            
+            //GC - SWITCH -> SEEMS TO WORK FINE -> indeed it prints random numbers, that before I removed the large_for_logs_fNL were overshadowed by it -> -1.4036503372991333e-02, 6.6630490593878808e-02, -1.2951487905045988e-08, 5.1819733362425955e-20, etc. Notice that even if I get a number larger than large_for_logs_fNL, I KNOW that it does not give segmentation fault. It just gives some NaNs from spline stuff, as we know...
+            
             //GC: ORTHOGONAL -- finish
 
             pk_CTR[index_k] = pk_CTR_out;
@@ -6475,6 +6648,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     //           printf("%d %d %.16f",index_i,index_l,-0.5*etam[index_i]*_Complex_I); //GC -> good, it is because they are complex...
                     //            printf("\n");
 
+                    if (SWITCH_index == 1) {
+                        
+                    //GC - SWITCH!
+
+                    
                     nu1 = -0.5 * etam_transfer[index_i];
                     nu2 = -0.5 * etam_transfer[index_l]; //GC!
 
@@ -6574,6 +6752,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                     //log23=clog((60. - 129.*nu2 + 448.*nu1*nu1*nu1*nu1*(-1. + nu2)*nu2 + 180.*nu2*nu2 - 84.*nu2*nu2*nu2 + 4.*nu1*nu1*nu1*(-21. + 338.*nu2 - 520.*nu2*nu2 + 224.*nu2*nu2*nu2) + nu1*(-129. + 480.*nu2 - 1264.*nu2*nu2 + 1352.*nu2*nu2*nu2 - 448.*nu2*nu2*nu2*nu2) + 4.*nu1*nu1*(45. - 316.*nu2 + 676.*nu2*nu2 - 520.*nu2*nu2*nu2 + 112.*nu2*nu2*nu2*nu2))*help3);
 
+                    
                     pnlpt->M12_oneline_0_vv_complex[count] = f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2[count]) + f * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv0_f3[count]);
 
                     //GC -> 2 of 14...
@@ -6606,6 +6785,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     //GC -> ANY OPERATION I CAN TRY WOULD LOSE ACCURACY, MOST LIKELY... GO BACK TO PYTHON...
 
                     //} //GC!
+                        
+                    }
 
                     count++;
                 }
@@ -6659,10 +6840,18 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 for (count = 0; count < Nmax + 1; count++)
                 {
                     x[count] = cmsym[count] * cpow(kdisc[index_j], etam[count]);
+                    
+                    if (SWITCH_index == 1) {
+
                     x_transfer[count] = cmsym_transfer[count] * cpow(kdisc[index_j], etam_transfer[count]); //GC!
                     //printf("%.16f",x_transfer[count]); //GC!
+                        
+                    }
                 }
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_0_vv_complex, x, &inc, &beta, y, &inc);
+                
+                if (SWITCH_index == 1) {
+
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_0_vv_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC -> again, y is not used??? No, see above. I could get away by overwriting stuff but whatever. It is better to avoid problems...
                 //zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_0_vv_complex, x_transfer, &inc, &beta, y_transfer, &inc);
                 //GC -> ok, the issue is the matrix...
@@ -6675,17 +6864,34 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 //    printf("%.16f",y_transfer[count]);
                 //}
                 //printf("***********************************************************\n");
+                    
+                }
+                
                 f22_0_vv[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                
+                if (SWITCH_index == 1) {
+
                 f12_0_vv[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC -> here I will have y_transfer...
+                    
+                }
+                
                 P22_0_vv[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_0_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                
+                if (SWITCH_index == 1) {
+                
                 P12_0_vv[index_j] = Tbin[index_j] *                                                                               //[FACTOR] *
                                     creal(cpow(kdisc[index_j], 3.) * f12_0_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC! RECHECK THE CALCULATION BY HAND THAT ALSO IN REDSHIFT SPACE I HAVE THIS Tbin OVERALL!!!
-
+                }
+                
                 //GC: ORTHOGONAL -- start
 
+                if (SWITCH_index == 1) { //GC -> I put a switch here... This could have been written more compactly...
+                
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_0_vv_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);
                 f12_0_vv[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);
                 P12_0_vv_ortho[index_j] = Tbin[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_0_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                    
+                }
 
                 //GC: do I print here? No, see below...
 
@@ -6720,11 +6926,15 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     nu2 = -0.5 * etam[index_l];
                     pnlpt->M22_oneline_0_vd_complex[count] = pnlpt->M22_oneline_complex[count] * 196. / ((nu1 * nu2 * (98. * nu12 * nu12 - 14. * nu12 + 36.) - 91. * nu12 * nu12 + 3. * nu12 + 58.)) * (f * (21. * f * f * (6. + 3. * nu2 - 10. * nu2 * nu2 + 2. * nu2 * nu2 * nu2 + 2. * nu1 * nu1 * nu1 * (1. + 5. * nu2) + 2 * nu1 * nu1 * (-5. - 2. * nu2 + 10. * nu2 * nu2) + nu1 * (3. - 24. * nu2 - 4. * nu2 * nu2 + 10. * nu2 * nu2 * nu2)) + 14. * f * (18. + 11. * nu2 + 42. * nu1 * nu1 * nu1 * nu2 - 31. * nu2 * nu2 + nu1 * nu1 * (-31. - 22. * nu2 + 84. * nu2 * nu2) + nu1 * (11. - 74. * nu2 - 22. * nu2 * nu2 + 42. * nu2 * nu2 * nu2)) + 5. * (46. + 13. * nu2 + 98. * nu1 * nu1 * nu1 * nu2 - 63. * nu2 * nu2 + 7. * nu1 * nu1 * (-9. - 10. * nu2 + 28. * nu2 * nu2) + nu1 * (13. - 138. * nu2 - 70. * nu2 * nu2 + 98. * nu2 * nu2 * nu2)))) / 1470.;
 
+                    
+                    if (SWITCH_index == 1) {
+
                     nu1 = -0.5 * etam_transfer[index_i];
                     nu2 = -0.5 * etam_transfer[index_l]; //GC!
 
                     //pnlpt->M12_oneline_0_vd_complex[count] = pnlpt->M12_oneline_complex[count]*(2.*f*((-30.*(15. + 7.*f) + (885. + 595.*f)*nu2 + 448.*(5. + 3.*f)*nu1*nu1*nu1*nu1*(-1. + nu2)*nu2 + 4.*(845. + 371.*f)*nu2*nu2 - 4.*(2045. + 1099.*f)*nu2*nu2*nu2 + 64.*(85. + 49.*f)*nu2*nu2*nu2*nu2 - 224.*(5. + 3.*f)*nu2*nu2*nu2*nu2*nu2 + 4.*nu1*nu1*nu1*(21.*(5. + 3.*f) + 2.*(935. + 497.*f)*nu2 - 16.*(235. + 133.*f)*nu2*nu2 + 336.*(5. + 3.*f)*nu2*nu2*nu2) + 4.*nu1*nu1*(-3.*(95. + 49.*f) - 20.*(89. + 35.*f)*nu2 + 28.*(235. + 117.*f)*nu2*nu2 - 8.*(765. + 427.*f)*nu2*nu2*nu2 + 336.*(5. + 3.*f)*nu2*nu2*nu2*nu2) + nu1*(1125. + 483.*f + 8.*(205. + 7.*f)*nu2 - 40.*(417. + 175.*f)*nu2*nu2 + 8.*(3035. + 1533.*f)*nu2*nu2*nu2 - 512.*(25. + 14.*f)*nu2*nu2*nu2*nu2 + 448.*(5. + 3.*f)*nu2*nu2*nu2*nu2*nu2))*csin(2.*nu1*M_PI) + (224.*(5. + 3.*f)*nu1*nu1*nu1*nu1*nu1*(-1. + 2.*nu2) + 64.*nu1*nu1*nu1*nu1*(85. + 49.*f - 8.*(25. + 14.*f)*nu2 + 21.*(5. + 3.*f)*nu2*nu2) + 3.*(-10.*(15. + 7.*f) + (375. + 161.*f)*nu2 - 4.*(95. + 49.*f)*nu2*nu2 + 28.*(5. + 3.*f)*nu2*nu2*nu2) + 4.*nu1*nu1*nu1*(-2045. - 1099.*f + (6070. + 3066.*f)*nu2 - 8.*(765. + 427.*f)*nu2*nu2 + 336.*(5. + 3.*f)*nu2*nu2*nu2) + nu1*(885. + 595.*f + 8.*(205. + 7.*f)*nu2 - 80.*(89. + 35.*f)*nu2*nu2 + 8.*(935. + 497.*f)*nu2*nu2*nu2 - 448.*(5. + 3.*f)*nu2*nu2*nu2*nu2) + 4.*nu1*nu1*(845. + 371.*f - 10.*(417. + 175.*f)*nu2 + 28.*(235. + 117.*f)*nu2*nu2 - 16.*(235. + 133.*f)*nu2*nu2*nu2 + 112.*(5. + 3.*f)*nu2*nu2*nu2*nu2))*csin(2.*nu2*M_PI) + (448.*(5. + 3.*f)*nu1*nu1*nu1*nu1*(-1. + nu2)*nu2 - 3.*(-10.*(15. + 7.*f) + (375. + 161.*f)*nu2 - 4.*(95. + 49.*f)*nu2*nu2 + 28.*(5. + 3.*f)*nu2*nu2*nu2) + 4.*nu1*nu1*nu1*(-21.*(5. + 3.*f) + 2.*(1005. + 539.*f)*nu2 - 8.*(365. + 203.*f)*nu2*nu2 + 224.*(5. + 3.*f)*nu2*nu2*nu2) + 4.*nu1*nu1*(3.*(95. + 49.*f) - 4.*(645. + 287.*f)*nu2 + 4.*(1145. + 567.*f)*nu2*nu2 - 8.*(365. + 203.*f)*nu2*nu2*nu2 + 112.*(5. + 3.*f)*nu2*nu2*nu2*nu2) - 1.*nu1*(1125. + 483.*f - 16.*(365. + 133.*f)*nu2 + 16.*(645. + 287.*f)*nu2*nu2 - 8.*(1005. + 539.*f)*nu2*nu2*nu2 + 448.*(5. + 3.*f)*nu2*nu2*nu2*nu2))*csin(2.*(nu1 + nu2)*M_PI)))/(15.*((-60. + 209.*nu2 + 448.*nu1*nu1*nu1*nu1*(-1. + nu2)*nu2 + 404.*nu2*nu2 - 1380.*nu2*nu2*nu2 + 1024.*nu2*nu2*nu2*nu2 - 224.*nu2*nu2*nu2*nu2*nu2 + 4.*nu1*nu1*nu1*(21. + 310.*nu2 - 688.*nu2*nu2 + 336.*nu2*nu2*nu2) + 4.*nu1*nu1*(-45. - 172.*nu2 + 980.*nu2*nu2 - 1096.*nu2*nu2*nu2 + 336.*nu2*nu2*nu2*nu2) + nu1*(129. - 136.*nu2 - 1832.*nu2*nu2 + 3704.*nu2*nu2*nu2 - 2304.*nu2*nu2*nu2*nu2 + 448.*nu2*nu2*nu2*nu2*nu2))*csin(2.*nu1*M_PI) + (224.*nu1*nu1*nu1*nu1*nu1*(-1. + 2.*nu2) + 64.*nu1*nu1*nu1*nu1*(16. - 36.*nu2 + 21.*nu2*nu2) + 3.*(-20. + 43.*nu2 - 60.*nu2*nu2 + 28.*nu2*nu2*nu2) + 4.*nu1*nu1*nu1*(-345. + 926.*nu2 - 1096.*nu2*nu2 + 336.*nu2*nu2*nu2) + nu1*(209. - 136.*nu2 - 688.*nu2*nu2 + 1240.*nu2*nu2*nu2 - 448.*nu2*nu2*nu2*nu2) + 4.*nu1*nu1*(101. - 458.*nu2 + 980.*nu2*nu2 - 688.*nu2*nu2*nu2 + 112.*nu2*nu2*nu2*nu2))*csin(2.*nu2*M_PI) + (60. - 129.*nu2 + 448.*nu1*nu1*nu1*nu1*(-1. + nu2)*nu2 + 180.*nu2*nu2 - 84.*nu2*nu2*nu2 + 4.*nu1*nu1*nu1*(-21. + 338.*nu2 - 520.*nu2*nu2 + 224.*nu2*nu2*nu2) + nu1*(-129. + 480.*nu2 - 1264.*nu2*nu2 + 1352.*nu2*nu2*nu2 - 448.*nu2*nu2*nu2*nu2) + 4.*nu1*nu1*(45. - 316.*nu2 + 676.*nu2*nu2 - 520.*nu2*nu2*nu2 + 112.*nu2*nu2*nu2*nu2))*csin(2.*(nu1 + nu2)*M_PI)));
 
+                    
                     pnlpt->M12_oneline_0_vd_complex[count] = f * (pnlpt->M12_oneline_complex_matter_multipoles_vd0_f1[count]) + f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vd0_f2[count]);
 
                     //GC -> 4 of 14...
@@ -6734,7 +6944,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     pnlpt->M12_oneline_0_vd_complex_ortho[count] = f * (pnlpt->M12_oneline_complex_matter_multipoles_vd0_f1_ortho[count]) + f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vd0_f2_ortho[count]);
 
                     //GC: ORTHOGONAL -- finish
-
+                    }
                     //GC!
 
                     count++;
@@ -6775,15 +6985,38 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 for (count = 0; count < Nmax + 1; count++)
                 {
                     x[count] = cmsym[count] * cpow(kdisc[index_j], etam[count]);
+                    
+                    if (SWITCH_index == 1) {
+
                     x_transfer[count] = cmsym_transfer[count] * cpow(kdisc[index_j], etam_transfer[count]); //GC!
+                        
+                    }
                 }
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_0_vd_complex, x, &inc, &beta, y, &inc);
+                
+                if (SWITCH_index == 1) {
+
+                
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_0_vd_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                    
+                }
+                
                 f22_0_vd[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                
+                if (SWITCH_index == 1) {
+
                 f12_0_vd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                    
+                }
+                
                 P22_0_vd[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_0_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                
+                if (SWITCH_index == 1) {
+
                 P12_0_vd[index_j] = Tbin[index_j] *                                                                               //[FACTOR] *
                                     creal(cpow(kdisc[index_j], 3.) * f12_0_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
+                }
+                    
                 P1loop_0_vd[index_j] = Pbin[index_j] * (f * 2. / 3.) * 0. + (P13_0_vd[index_j] + P22_0_vd[index_j]);
                 Ptree_0_vd[index_j] = Pbin[index_j] * (f * 2. / 3.);
 
@@ -6792,10 +7025,14 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                 //GC: ORTHOGONAL -- start
 
+                if (SWITCH_index == 1) {
+                
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_0_vd_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);                        //GC!
                 f12_0_vd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                                 //GC!
                 P12_0_vd_ortho[index_j] = Tbin[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_0_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
 
+                }
+                    
                 //GC: ORTHOGONAL -- finish
 
                 //printf("%.20f %.20f %.20f",kdisc[index_j],Tbin[index_j],P12_0_vd_ortho[index_j]);
@@ -6815,11 +7052,14 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     nu2 = -0.5 * etam[index_l];
                     pnlpt->M22_oneline_0_dd_complex[count] = pnlpt->M22_oneline_complex[count] * 196. / ((nu1 * nu2 * (98. * nu12 * nu12 - 14. * nu12 + 36.) - 91. * nu12 * nu12 + 3. * nu12 + 58.)) * (98. * f * f * (4. - 2. * nu2 - 5. * nu2 * nu2 + nu2 * nu2 * nu2 + nu1 * nu1 * nu1 * (1. + 3. * nu2) + nu1 * nu1 * (-5. + 2. * nu2 + 6. * nu2 * nu2) + nu1 * (-2. - 4. * nu2 + 2. * nu2 * nu2 + 3. * nu2 * nu2 * nu2)) + 70. * f * (10. - nu2 + 14. * nu1 * nu1 * nu1 * nu2 - 17. * nu2 * nu2 + nu1 * nu1 * (-17. + 6. * nu2 + 28. * nu2 * nu2) + nu1 * (-1. - 22. * nu2 + 6. * nu2 * nu2 + 14. * nu2 * nu2 * nu2)) + 15. * (58. + 3. * nu2 + 98. * nu1 * nu1 * nu1 * nu2 - 91. * nu2 * nu2 + 7. * nu1 * nu1 * (-13. - 2. * nu2 + 28. * nu2 * nu2) + nu1 * (3. - 146. * nu2 - 14. * nu2 * nu2 + 98. * nu2 * nu2 * nu2))) / 2940.;
 
+                    if (SWITCH_index == 1) {
+
                     nu1 = -0.5 * etam_transfer[index_i];
                     nu2 = -0.5 * etam_transfer[index_l]; //GC!
 
                     //pnlpt->M12_oneline_0_dd_complex[count] = pnlpt->M12_oneline_complex[count]*((-180. + 3.*(209. + 91.*f)*nu2 + 448.*(3. + f)*nu1*nu1*nu1*nu1*(-1. + nu2)*nu2 - 4.*(-303. + 35.*f)*nu2*nu2 - 4.*(1035. + 217.*f)*nu2*nu2*nu2 + 128.*(24. + 7.*f)*nu2*nu2*nu2*nu2 - 224.*(3. + f)*nu2*nu2*nu2*nu2*nu2 + 4.*nu1*nu1*nu1*(21.*(3. + f) + 2.*(465. + 91.*f)*nu2 - 16.*(129. + 35.*f)*nu2*nu2 + 336.*(3. + f)*nu2*nu2*nu2) + 4.*nu1*nu1*(-3.*(45. + 7.*f) + 4.*(-129. + 49.*f)*nu2 + 28.*(105. + 11.*f)*nu2*nu2 - 24.*(137. + 35.*f)*nu2*nu2*nu2 + 336.*(3. + f)*nu2*nu2*nu2*nu2) + nu1*(387. - 63.*f - 8.*(51. + 133.*f)*nu2 + 24.*(-229. + 49.*f)*nu2*nu2 + 8.*(1389. + 175.*f)*nu2*nu2*nu2 - 256.*(27. + 7.*f)*nu2*nu2*nu2*nu2 + 448.*(3. + f)*nu2*nu2*nu2*nu2*nu2))*csin(2.*nu1*M_PI) + (224.*(3. + f)*nu1*nu1*nu1*nu1*nu1*(-1. + 2.*nu2) + 64.*nu1*nu1*nu1*nu1*(48. + 14.*f - 4.*(27. + 7.*f)*nu2 + 21.*(3. + f)*nu2*nu2) + 3.*(-60. - 3.*(-43. + 7.*f)*nu2 - 4.*(45. + 7.*f)*nu2*nu2 + 28.*(3. + f)*nu2*nu2*nu2) + 4.*nu1*nu1*nu1*(-1035. - 217.*f + (2778. + 350.*f)*nu2 - 24.*(137. + 35.*f)*nu2*nu2 + 336.*(3. + f)*nu2*nu2*nu2) + nu1*(627. + 273.*f - 8.*(51. + 133.*f)*nu2 + 16.*(-129. + 49.*f)*nu2*nu2 + 8.*(465. + 91.*f)*nu2*nu2*nu2 - 448.*(3. + f)*nu2*nu2*nu2*nu2) + 4.*nu1*nu1*(303. - 35.*f + 6.*(-229. + 49.*f)*nu2 + 28.*(105. + 11.*f)*nu2*nu2 - 16.*(129. + 35.*f)*nu2*nu2*nu2 + 112.*(3. + f)*nu2*nu2*nu2*nu2))*csin(2.*nu2*M_PI) + (180. + 9.*(-43. + 7.*f)*nu2 + 448.*(3. + f)*nu1*nu1*nu1*nu1*(-1. + nu2)*nu2 + 12.*(45. + 7.*f)*nu2*nu2 - 84.*(3. + f)*nu2*nu2*nu2 + 4.*nu1*nu1*nu1*(-21.*(3. + f) + 6.*(169. + 35.*f)*nu2 - 8.*(195. + 49.*f)*nu2*nu2 + 224.*(3. + f)*nu2*nu2*nu2) + nu1*(9.*(-43. + 7.*f) - 32.*(-45. + 28.*f)*nu2 + 48.*(-79. + 7.*f)*nu2*nu2 + 24.*(169. + 35.*f)*nu2*nu2*nu2 - 448.*(3. + f)*nu2*nu2*nu2*nu2) + 4.*nu1*nu1*(3.*(45. + 7.*f) + 12.*(-79. + 7.*f)*nu2 + 4.*(507. + 49.*f)*nu2*nu2 - 8.*(195. + 49.*f)*nu2*nu2*nu2 + 112.*(3. + f)*nu2*nu2*nu2*nu2))*csin(2.*(nu1 + nu2)*M_PI))/(3.*((-60. + 209.*nu2 + 448.*nu1*nu1*nu1*nu1*(-1. + nu2)*nu2 + 404.*nu2*nu2 - 1380.*nu2*nu2*nu2 + 1024.*nu2*nu2*nu2*nu2 - 224.*nu2*nu2*nu2*nu2*nu2 + 4.*nu1*nu1*nu1*(21. + 310.*nu2 - 688.*nu2*nu2 + 336.*nu2*nu2*nu2) + 4.*nu1*nu1*(-45. - 172.*nu2 + 980.*nu2*nu2 - 1096.*nu2*nu2*nu2 + 336.*nu2*nu2*nu2*nu2) + nu1*(129. - 136.*nu2 - 1832.*nu2*nu2 + 3704.*nu2*nu2*nu2 - 2304.*nu2*nu2*nu2*nu2 + 448.*nu2*nu2*nu2*nu2*nu2))*csin(2.*nu1*M_PI) + (224.*nu1*nu1*nu1*nu1*nu1*(-1. + 2.*nu2) + 64.*nu1*nu1*nu1*nu1*(16. - 36.*nu2 + 21.*nu2*nu2) + 3.*(-20. + 43.*nu2 - 60.*nu2*nu2 + 28.*nu2*nu2*nu2) + 4.*nu1*nu1*nu1*(-345. + 926.*nu2 - 1096.*nu2*nu2 + 336.*nu2*nu2*nu2) + nu1*(209. - 136.*nu2 - 688.*nu2*nu2 + 1240.*nu2*nu2*nu2 - 448.*nu2*nu2*nu2*nu2) + 4.*nu1*nu1*(101. - 458.*nu2 + 980.*nu2*nu2 - 688.*nu2*nu2*nu2 + 112.*nu2*nu2*nu2*nu2))*csin(2.*nu2*M_PI) + (60. - 129.*nu2 + 448.*nu1*nu1*nu1*nu1*(-1. + nu2)*nu2 + 180.*nu2*nu2 - 84.*nu2*nu2*nu2 + 4.*nu1*nu1*nu1*(-21. + 338.*nu2 - 520.*nu2*nu2 + 224.*nu2*nu2*nu2) + nu1*(-129. + 480.*nu2 - 1264.*nu2*nu2 + 1352.*nu2*nu2*nu2 - 448.*nu2*nu2*nu2*nu2) + 4.*nu1*nu1*(45. - 316.*nu2 + 676.*nu2*nu2 - 520.*nu2*nu2*nu2 + 112.*nu2*nu2*nu2*nu2))*csin(2.*(nu1 + nu2)*M_PI))); //GC!
 
+                    
                     pnlpt->M12_oneline_0_dd_complex[count] = (pnlpt->M12_oneline_complex_matter_multipoles_dd0_f0[count]) + f * (pnlpt->M12_oneline_complex_matter_multipoles_dd0_f1[count]);
 
                     //GC -> 6 of 14...
@@ -6829,6 +7069,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     pnlpt->M12_oneline_0_dd_complex_ortho[count] = (pnlpt->M12_oneline_complex_matter_multipoles_dd0_f0_ortho[count]) + f * (pnlpt->M12_oneline_complex_matter_multipoles_dd0_f1_ortho[count]);
 
                     //GC: ORTHOGONAL -- finish
+                        
+                    }
 
                     count++;
                 }
@@ -6864,21 +7106,30 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 for (count = 0; count < Nmax + 1; count++)
                 {
                     x[count] = cmsym[count] * cpow(kdisc[index_j], etam[count]);
+                    
+                    if (SWITCH_index == 1) {
                     x_transfer[count] = cmsym_transfer[count] * cpow(kdisc[index_j], etam_transfer[count]); //GC!
+                    }
                 }
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_0_dd_complex, x, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_0_dd_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_0_dd[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_0_dd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_0_dd[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_0_dd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_0_dd[index_j] = Tbin[index_j] *                                                                               //[FACTOR] *
                                     creal(cpow(kdisc[index_j], 3.) * f12_0_dd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
+                }
                 P1loop_0_dd[index_j] = Pbin[index_j] * 0. + (P13_0_dd[index_j] + P22_0_dd[index_j]);
                 Ptree_0_dd[index_j] = Pbin[index_j];
 
                 //printf("%.24f %.24f %.24f",kdisc[index_j],Tbin[index_j],P12_0_dd[index_j]);
                 //printf("\n"); //GC!
-
+                if (SWITCH_index == 1) {
                 //GC: ORTHOGONAL -- start
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_0_dd_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);                        //GC!
@@ -6886,7 +7137,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 P12_0_dd_ortho[index_j] = Tbin[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_0_dd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
 
                 //GC: ORTHOGONAL -- finish
-
+                }
                 //        printf("%.20f %.20f %.20f",kdisc[index_j],Tbin[index_j],P12_0_dd_ortho[index_j]);
                 //        printf("\n"); //GC!
             }
@@ -6905,7 +7156,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     nu12 = nu1 + nu2;
 
                     pnlpt->M22_oneline_2_vv_complex[count] = (pnlpt->M22_oneline_complex[count] * 196. / (98. * nu1 * nu2 * nu12 * nu12 - 91. * nu12 * nu12 + 36. * nu1 * nu2 - 14. * nu1 * nu2 * nu12 + 3. * nu12 + 58.)) * (f * f * (396. * (50. - 9. * nu2 + 98. * nu1 * nu1 * nu1 * nu2 - 35. * nu2 * nu2 + 7. * nu1 * nu1 * (-5. - 18. * nu2 + 28. * nu2 * nu2) + nu1 * (-9. - 66. * nu2 - 126. * nu2 * nu2 + 98. * nu2 * nu2 * nu2)) + 231. * f * (142. - 21. * nu2 + 280. * nu1 * nu1 * nu1 * nu2 - 106. * nu2 * nu2 + 2. * nu1 * nu1 * (-53. - 174. * nu2 + 280. * nu2 * nu2) + nu1 * (-21. - 204. * nu2 - 348. * nu2 * nu2 + 280. * nu2 * nu2 * nu2)) + 49. * f * f * (336. - 62. * nu2 - 255. * nu2 * nu2 + 50. * nu2 * nu2 * nu2 + 10. * nu1 * nu1 * nu1 * (5. + 56. * nu2) + 5. * nu1 * nu1 * (-51. - 142. * nu2 + 224. * nu2 * nu2) + nu1 * (-62. - 486. * nu2 - 710. * nu2 * nu2 + 560. * nu2 * nu2 * nu2)))) / 135828.;
-
+                
+                    if (SWITCH_index == 1) {
                     nu1 = -0.5 * etam_transfer[index_i];
                     nu2 = -0.5 * etam_transfer[index_l]; //GC!
 
@@ -6918,9 +7170,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     //GC: ORTHOGONAL -- start
 
                     pnlpt->M12_oneline_2_vv_complex_ortho[count] = 20. / 7. * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2_ortho[count]) + f * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv2_f3_ortho[count]);
+                        
+                        //printf("%d\n",SWITCH_index); //GC - SWITCH!
+
 
                     //GC: ORTHOGONAL -- finish
-
+                    }
                     //GC!
 
                     count++;
@@ -6961,15 +7216,24 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 for (count = 0; count < Nmax + 1; count++)
                 {
                     x[count] = cmsym[count] * cpow(kdisc[index_j], etam[count]);
+                    if (SWITCH_index == 1) {
+                        
                     x_transfer[count] = cmsym_transfer[count] * cpow(kdisc[index_j], etam_transfer[count]); //GC!
+                    }
                 }
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_2_vv_complex, x, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_2_vv_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_2_vv[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_2_vv[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_2_vv[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_2_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_2_vv[index_j] = Tbin[index_j] *                                                                               //[FACTOR] *
                                     creal(cpow(kdisc[index_j], 3.) * f12_2_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
+                }
                 P1loop_2_vv[index_j] = Pbin[index_j] * (f * f * 4. / 7.) * 0. + (P13_2_vv[index_j] + P22_2_vv[index_j]);
                 P_CTR_2[index_j] = kdisc[index_j] * kdisc[index_j] * Pbin[index_j] * f * 2. / 3.;
                 Ptree_2_vv[index_j] = Pbin[index_j] * (f * f * 4. / 7.);
@@ -6980,10 +7244,14 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                 //GC: ORTHOGONAL -- start
 
+                if (SWITCH_index == 1) {
+
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_2_vv_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);                        //GC!
                 f12_2_vv[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                                 //GC!
                 P12_2_vv_ortho[index_j] = Tbin[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_2_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
 
+                }
+                    
                 //GC: ORTHOGONAL -- finish
 
                 //        printf("%.20f %.20f %.20f",kdisc[index_j],Tbin[index_j],P12_2_vv_ortho[index_j]);
@@ -7005,6 +7273,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                     pnlpt->M22_oneline_2_vd_complex[count] = (pnlpt->M22_oneline_complex[count] * 196. / (98. * nu1 * nu2 * nu12 * nu12 - 91. * nu12 * nu12 + 36. * nu1 * nu2 - 14. * nu1 * nu2 * nu12 + 3. * nu12 + 58.)) * (f * (7. * f * f * (22. + 11. * nu2 - 40. * nu2 * nu2 + 4. * nu2 * nu2 * nu2 + nu1 * nu1 * nu1 * (4. + 40. * nu2) + 8. * nu1 * nu1 * (-5. - nu2 + 10. * nu2 * nu2) + nu1 * (11. - 88. * nu2 - 8. * nu2 * nu2 + 40. * nu2 * nu2 * nu2)) + 4. * (46. + 13. * nu2 + 98. * nu1 * nu1 * nu1 * nu2 - 63. * nu2 * nu2 + 7. * nu1 * nu1 * (-9. - 10. * nu2 + 28. * nu2 * nu2) + nu1 * (13. - 138. * nu2 - 70. * nu2 * nu2 + 98. * nu2 * nu2 * nu2)) + f * (306. + 161. * nu2 + 672. * nu1 * nu1 * nu1 * nu2 - 538. * nu2 * nu2 + 2. * nu1 * nu1 * (-269. - 134. * nu2 + 672. * nu2 * nu2) + nu1 * (161. - 1196. * nu2 - 268. * nu2 * nu2 + 672. * nu2 * nu2 * nu2)))) / 588.;
 
+                    if (SWITCH_index == 1) {
+
                     nu1 = -0.5 * etam_transfer[index_i];
                     nu2 = -0.5 * etam_transfer[index_l]; //GC!
 
@@ -7017,7 +7287,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     //GC: ORTHOGONAL -- start
 
                     pnlpt->M12_oneline_2_vd_complex_ortho[count] = 2. * f * (pnlpt->M12_oneline_complex_matter_multipoles_vd0_f1_ortho[count]) + f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vd2_f2_ortho[count]);
-
+                    }
                     //GC: ORTHOGONAL -- finish
 
                     //GC!
@@ -7058,15 +7328,35 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 for (count = 0; count < Nmax + 1; count++)
                 {
                     x[count] = cmsym[count] * cpow(kdisc[index_j], etam[count]);
+                    
+                    if (SWITCH_index == 1) {
+
                     x_transfer[count] = cmsym_transfer[count] * cpow(kdisc[index_j], etam_transfer[count]); //GC!
+                        
+                    }
+                    
                 }
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_2_vd_complex, x, &inc, &beta, y, &inc);
+                
+                if (SWITCH_index == 1) {
+
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_2_vd_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                    
+                }
                 f22_2_vd[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                
+                if (SWITCH_index == 1) {
+
                 f12_2_vd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                    
+                }
                 P22_2_vd[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_2_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                
+                if (SWITCH_index == 1) {
+
                 P12_2_vd[index_j] = Tbin[index_j] *                                                                               //[FACTOR] *
                                     creal(cpow(kdisc[index_j], 3.) * f12_2_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
+                }
                 P1loop_2_vd[index_j] = Pbin[index_j] * (f * 4. / 3.) * 0. + (P13_2_vd[index_j] + P22_2_vd[index_j]);
                 Ptree_2_vd[index_j] = Pbin[index_j] * (f * 4. / 3.);
                 //    P_CTR[index_j] = kdisc[index_j] * kdisc[index_j] * Pbin[index_j];
@@ -7076,11 +7366,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 //printf("\n"); //GC!
 
                 //GC: ORTHOGONAL -- start
+                if (SWITCH_index == 1) {
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_2_vd_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);                        //GC!
                 f12_2_vd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                                 //GC!
                 P12_2_vd_ortho[index_j] = Tbin[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_2_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //GC: ORTHOGONAL -- finish
 
                 //printf("%.20f %.20f %.20f",kdisc[index_j],Tbin[index_j],P12_2_vd_ortho[index_j]);
@@ -7102,6 +7393,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                     pnlpt->M22_oneline_2_dd_complex[count] = (pnlpt->M22_oneline_complex[count] * 196. / (98. * nu1 * nu2 * nu12 * nu12 - 91. * nu12 * nu12 + 36. * nu1 * nu2 - 14. * nu1 * nu2 * nu12 + 3. * nu12 + 58.)) * f * (4. * (10. - nu2 + 14. * nu1 * nu1 * nu1 * nu2 - 17. * nu2 * nu2 + nu1 * nu1 * (-17. + 6. * nu2 + 28. * nu2 * nu2) + nu1 * (-1. - 22. * nu2 + 6. * nu2 * nu2 + 14. * nu2 * nu2 * nu2)) + f * (26. - 13. * nu2 - 37. * nu2 * nu2 + 2. * nu2 * nu2 * nu2 + nu1 * nu1 * nu1 * (2. + 24. * nu2) + nu1 * nu1 * (-37. + 22. * nu2 + 48. * nu2 * nu2) + nu1 * (-13. - 26. * nu2 + 22. * nu2 * nu2 + 24. * nu2 * nu2 * nu2))) / 84.;
 
+                    if (SWITCH_index == 1) {
+
                     nu1 = -0.5 * etam_transfer[index_i];
                     nu2 = -0.5 * etam_transfer[index_l]; //GC!
 
@@ -7118,7 +7411,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     //GC: ORTHOGONAL -- finish
 
                     //GC!
-
+                    }
                     count++;
                 }
             }
@@ -7155,15 +7448,27 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 for (count = 0; count < Nmax + 1; count++)
                 {
                     x[count] = cmsym[count] * cpow(kdisc[index_j], etam[count]);
+                    if (SWITCH_index == 1) {
+
                     x_transfer[count] = cmsym_transfer[count] * cpow(kdisc[index_j], etam_transfer[count]); //GC!
+                    }
                 }
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_2_dd_complex, x, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
+
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_2_dd_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_2_dd[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
+
                 f12_2_dd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_2_dd[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_2_dd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
+
                 P12_2_dd[index_j] = Tbin[index_j] *                                                                               //[FACTOR] *
                                     creal(cpow(kdisc[index_j], 3.) * f12_2_dd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
+                }
                 P1loop_2_dd[index_j] = P13_2_dd[index_j] + P22_2_dd[index_j];
                 //    P_CTR[index_j] = kdisc[index_j] * kdisc[index_j] * Pbin[index_j];
                 //    printf("%le %le\n",kdisc[j],P22[j]);
@@ -7172,11 +7477,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 //printf("\n"); //GC!
 
                 //GC: ORTHOGONAL -- start
+                if (SWITCH_index == 1) {
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_2_dd_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);                        //GC!
                 f12_2_dd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                                 //GC!
                 P12_2_dd_ortho[index_j] = Tbin[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_2_dd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //GC: ORTHOGONAL -- finish
 
                 //printf("%.20f %.20f %.20f",kdisc[index_j],Tbin[index_j],P12_2_dd_ortho[index_j]);
@@ -7198,6 +7504,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                     pnlpt->M22_oneline_4_vv_complex[count] = (pnlpt->M22_oneline_complex[count] * 196. / (98. * nu1 * nu2 * nu12 * nu12 - 91. * nu12 * nu12 + 36. * nu1 * nu2 - 14. * nu1 * nu2 * nu12 + 3. * nu12 + 58.)) * (f * f * (1144. * (50. + 98. * nu1 * nu1 * nu1 * nu2 - nu2 * (9. + 35. * nu2) + 7. * nu1 * nu1 * (-5. + 2. * nu2 * (-9. + 14. * nu2)) + nu1 * (-9. + 2. * nu2 * (-33. + 7. * nu2 * (-9. + 7. * nu2)))) + 147. * f * f * (483. + 40. * nu1 * nu1 * nu1 * (-1. + 28. * nu2) - 2. * nu2 * (-57. + 10. * nu2 * (29. + 2. * nu2)) + 20. * nu1 * nu1 * (-29. + 2. * nu2 * (-25. + 56. * nu2)) + 2. * nu1 * (57. + 2. * nu2 * (-327. + 10. * nu2 * (-25. + 28. * nu2)))) + 728. * f * (206. + 420. * nu1 * nu1 * nu1 * nu2 + (7. - 208. * nu2) * nu2 + 8. * nu1 * nu1 * (-26. + nu2 * (-53. + 105. * nu2)) + nu1 * (7. + 4. * nu2 * (-108. + nu2 * (-106. + 105. * nu2)))))) / 980980.;
 
+                    if (SWITCH_index == 1) {
+
                     nu1 = -0.5 * etam_transfer[index_i];
                     nu2 = -0.5 * etam_transfer[index_l]; //GC!
 
@@ -7212,7 +7520,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     pnlpt->M12_oneline_4_vv_complex_ortho[count] = 8. / 7. * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2_ortho[count]) + f * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv4_f3_ortho[count]);
 
                     //GC: ORTHOGONAL -- finish
-
+                    }
                     count++;
                 }
             }
@@ -7251,15 +7559,27 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 for (count = 0; count < Nmax + 1; count++)
                 {
                     x[count] = cmsym[count] * cpow(kdisc[index_j], etam[count]);
+                    if (SWITCH_index == 1) {
+
                     x_transfer[count] = cmsym_transfer[count] * cpow(kdisc[index_j], etam_transfer[count]); //GC!
+                    }
                 }
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_4_vv_complex, x, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
+
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_4_vv_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_4_vv[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
+
                 f12_4_vv[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_4_vv[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_4_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
+
                 P12_4_vv[index_j] = Tbin[index_j] *                                                                               //[FACTOR] *
                                     creal(cpow(kdisc[index_j], 3.) * f12_4_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
+                }
                 P1loop_4_vv[index_j] = Pbin[index_j] * (f * f * 8. / 35.) * 0. + (P13_4_vv[index_j] + P22_4_vv[index_j]);
                 P_CTR_4[index_j] = kdisc[index_j] * kdisc[index_j] * Pbin[index_j] * (f * f * 8. / 35.);
                 Ptree_4_vv[index_j] = Pbin[index_j] * (f * f * 8. / 35.);
@@ -7269,11 +7589,12 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 //printf("\n"); //GC!
 
                 //GC: ORTHOGONAL -- start
+                if (SWITCH_index == 1) {
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_4_vv_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);                        //GC!
                 f12_4_vv[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                                 //GC!
                 P12_4_vv_ortho[index_j] = Tbin[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_4_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //GC: ORTHOGONAL -- finish
 
                 //        printf("%.20f %.20f %.20f",kdisc[index_j],Tbin[index_j],P12_4_vv_ortho[index_j]);
@@ -7295,6 +7616,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                     pnlpt->M22_oneline_4_vd_complex[count] = (pnlpt->M22_oneline_complex[count] * 196. / (98. * nu1 * nu2 * nu12 * nu12 - 91. * nu12 * nu12 + 36. * nu1 * nu2 - 14. * nu1 * nu2 * nu12 + 3. * nu12 + 58.)) * f * f * (14. * f * (26. + 13. * nu2 - 60. * nu2 * nu2 - 8. * nu2 * nu2 * nu2 + nu1 * nu1 * nu1 * (-8. + 60. * nu2) + 4. * nu1 * nu1 * (-15. + 4. * nu2 + 30. * nu2 * nu2) + nu1 * (13. - 104. * nu2 + 16. * nu2 * nu2 + 60. * nu2 * nu2 * nu2)) + 11. * (58. + 21. * nu2 + 112. * nu1 * nu1 * nu1 * nu2 - 106. * nu2 * nu2 + 2. * nu1 * nu1 * (-53. - 6. * nu2 + 112. * nu2 * nu2) + nu1 * (21. - 204. * nu2 - 12. * nu2 * nu2 + 112. * nu2 * nu2 * nu2))) / 2695.;
 
+                    if (SWITCH_index == 1) {
+
                     nu1 = -0.5 * etam_transfer[index_i];
                     nu2 = -0.5 * etam_transfer[index_l]; //GC!
 
@@ -7307,7 +7630,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     //GC: ORTHOGONAL -- start
 
                     pnlpt->M12_oneline_4_vd_complex_ortho[count] = f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vd4_f2_ortho[count]);
-
+                    }
                     //GC: ORTHOGONAL -- finish
 
                     //GC!
@@ -7349,15 +7672,33 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 for (count = 0; count < Nmax + 1; count++)
                 {
                     x[count] = cmsym[count] * cpow(kdisc[index_j], etam[count]);
+                    
+                    if (SWITCH_index == 1) {
+
                     x_transfer[count] = cmsym_transfer[count] * cpow(kdisc[index_j], etam_transfer[count]); //GC!
+                    }
                 }
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_4_vd_complex, x, &inc, &beta, y, &inc);
+
+                if (SWITCH_index == 1) {
+
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_4_vd_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_4_vd[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                
+                if (SWITCH_index == 1) {
+
                 f12_4_vd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_4_vd[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_4_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                
+                if (SWITCH_index == 1) {
+
                 P12_4_vd[index_j] = Tbin[index_j] *                                                                               //[FACTOR] *
                                     creal(cpow(kdisc[index_j], 3.) * f12_4_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC! Careful to not forget "Tbin[index_j] * [FACTOR]" here...
+                    
+                }
+                
                 P1loop_4_vd[index_j] = (P13_4_vd[index_j] + P22_4_vd[index_j]);
                 //    P_CTR[index_j] = kdisc[index_j] * kdisc[index_j] * Pbin[index_j];
                 //printf("%le %le\n",kdisc[j],P22[j]);
@@ -7367,10 +7708,13 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                 //GC: ORTHOGONAL -- start
 
+                
+                if (SWITCH_index == 1) {
+
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_4_vd_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);                        //GC!
                 f12_4_vd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                                 //GC!
                 P12_4_vd_ortho[index_j] = Tbin[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_4_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC! Careful to not forget
-
+                }
                 //GC: ORTHOGONAL -- finish
 
                 //printf("%.20f %.20f %.20f",kdisc[index_j],Tbin[index_j],P12_4_vd_ortho[index_j]);
@@ -7434,6 +7778,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             free(f22_4_vv);
 
             //GC! Notice that some of these are not generated so I do not need to allocate them or deallocate them...
+            
+            //GC - SWITCH ~> I allocated these, so it is ok to deallocate them! Notice that likely it would have been enough to allogate one f for everything... But the original code was written in this way...
 
             free(f12_0_vv);
             free(f12_0_vd);
@@ -7595,6 +7941,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             //GC!
 
             //GC -> will need to do the same...
+            
+            //GC - SWITCH -> also here I keep the decomposition above, I just switch off the costly calculations...
 
             // Matrix multiplication
 
@@ -7725,6 +8073,9 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                     //GC!
 
+                    
+                    if (SWITCH_index == 1) {
+                    
                     nu1 = -0.5 * etam_transfer[index_i];
                     nu2 = -0.5 * etam_transfer[index_l]; //GC!
 
@@ -7785,9 +8136,14 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     //GC: ORTHOGONAL -- start
 
                     pnlpt->M12_oneline_mu6_vv_complex_ortho[count] = f * f * f * (pnlpt->M12_oneline_complex_matter_mu_powers_vv6_f3_ortho[count]);
+                        
+                        //printf("%d\n",SWITCH_index); //GC - SWITCH!
+
 
                     //GC: ORTHOGONAL -- finish
 
+                    }
+                        
                     count++;
                 }
             }
@@ -7887,116 +8243,146 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 for (count = 0; count < Nmax + 1; count++)
                 {
                     x[count] = cmsym_nw[count] * cpow(kdisc[index_j], etam[count]);
+                    
+                    if (SWITCH_index == 1) {
                     x_transfer[count] = cmsym_nw_transfer[count] * cpow(kdisc[index_j], etam_transfer[count]); //GC -> need to be careful to use etam_transfer when computing the matrices!!!
+                    }
                 }
 
                 //GC! Why doesn't he use a single loop also above? He uses zspmv_ many many times... Ah no, also here... The issue is that y get overwritten every time...
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_complex, x, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_mu0_dd[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_mu0_dd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_mu0_dd[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu0_dd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_mu0_dd[index_j] = Tnw[index_j] *                                                                                  //[FACTOR]*
                                       creal(cpow(kdisc[index_j], 3.) * f12_mu0_dd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC! This is the NON-WIGGLY part...
-
+                }
                 //        printf("%.16e %.16e %.16e",kdisc[index_j],Tnw[index_j],P12_mu0_dd[index_j]);
                 //        printf("\n"); //GC!
 
                 //GC: ORTHOGONAL -- start
 
+                if (SWITCH_index == 1) {
+                
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);                                //GC!
                 f12_mu0_dd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                                  //GC!
                 P12_mu0_dd_ortho[index_j] = Tnw[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_mu0_dd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC! This is the NON-WIGGLY part...
-
+                }
                 //printf("%.16e %.16e %.16e",kdisc[index_j],Tnw[index_j],P12_mu0_dd_ortho[index_j]);
                 //printf("\n"); //GC!
 
                 //GC: ORTHOGONAL -- finish
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_mu2_vd_complex, x, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu2_vd_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_mu2_vd[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_mu2_vd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_mu2_vd[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu2_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_mu2_vd[index_j] = Tnw[index_j] *                                                                                  //[FACTOR]*
                                       creal(cpow(kdisc[index_j], 3.) * f12_mu2_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //        printf("%.16e %.16e %.16e",kdisc[index_j],Tnw[index_j],P12_mu2_vd[index_j]);
                 //        printf("\n"); //GC!
 
                 //GC: ORTHOGONAL -- start
-
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu2_vd_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);                         //GC!
                 f12_mu2_vd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                                  //GC!
                 P12_mu2_vd_ortho[index_j] = Tnw[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_mu2_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //printf("%.16e %.16e %.16e",kdisc[index_j],Tnw[index_j],P12_mu2_vd_ortho[index_j]);
                 //printf("\n"); //GC!
 
                 //GC: ORTHOGONAL -- finish
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_mu2_dd_complex, x, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu2_dd_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_mu2_dd[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_mu2_dd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC -> as I said, I will need y_transfer here...
+                }
                 P22_mu2_dd[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu2_dd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_mu2_dd[index_j] = Tnw[index_j] *                                                                                  //[FACTOR]*
                                       creal(cpow(kdisc[index_j], 3.) * f12_mu2_dd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //        printf("%.16e %.16e %.16e",kdisc[index_j],Tnw[index_j],P12_mu2_dd[index_j]);
                 //        printf("\n"); //GC!
 
                 //GC: ORTHOGONAL -- start
-
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu2_dd_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);                         //GC!
                 f12_mu2_dd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                                  //GC -> as I said, I will need y_transfer here...
                 P12_mu2_dd_ortho[index_j] = Tnw[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_mu2_dd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //printf("%.16e %.16e %.16e",kdisc[index_j],Tnw[index_j],P12_mu2_dd_ortho[index_j]);
                 //printf("\n"); //GC!
 
                 //GC: ORTHOGONAL -- finish
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_mu4_vv_complex, x, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu4_vv_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_mu4_vv[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_mu4_vv[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_mu4_vv[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu4_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_mu4_vv[index_j] = Tnw[index_j] *                                                                                  //[FACTOR]*
                                       creal(cpow(kdisc[index_j], 3.) * f12_mu4_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //        printf("%.16e %.16e %.16e",kdisc[index_j],Tnw[index_j],P12_mu4_vv[index_j]);
                 //        printf("\n"); //GC!
 
                 //GC: ORTHOGONAL -- start
-
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu4_vv_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);                         //GC!
                 f12_mu4_vv[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                                  //GC!
                 P12_mu4_vv_ortho[index_j] = Tnw[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_mu4_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //printf("%.16e %.16e %.16e",kdisc[index_j],Tnw[index_j],P12_mu4_vv_ortho[index_j]);
                 //printf("\n"); //GC!
 
                 //GC: ORTHOGONAL -- finish
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_mu4_vd_complex, x, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu4_vd_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_mu4_vd[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_mu4_vd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_mu4_vd[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu4_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_mu4_vd[index_j] = Tnw[index_j] *                                                                                  //[FACTOR]*
                                       creal(cpow(kdisc[index_j], 3.) * f12_mu4_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //        printf("%.16e %.16e %.16e",kdisc[index_j],Tnw[index_j],P12_mu4_vd[index_j]);
                 //        printf("\n"); //GC!
 
                 //GC: ORTHOGONAL -- start
-
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu4_vd_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);                         //GC!
                 f12_mu4_vd[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                                  //GC!
                 P12_mu4_vd_ortho[index_j] = Tnw[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_mu4_vd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //printf("%.16e %.16e %.16e",kdisc[index_j],Tnw[index_j],P12_mu4_vd_ortho[index_j]);
                 //printf("\n"); //GC!
 
@@ -8007,22 +8393,27 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 P22_mu4_dd[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu4_dd[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_mu6_vv_complex, x, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu6_vv_complex, x_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_mu6_vv[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_mu6_vv[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_mu6_vv[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu6_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_mu6_vv[index_j] = Tnw[index_j] *                                                                                  //[FACTOR]*
                                       creal(cpow(kdisc[index_j], 3.) * f12_mu6_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //        printf("%.16e %.16e %.16e",kdisc[index_j],Tnw[index_j],P12_mu6_vv[index_j]);
                 //        printf("\n"); //GC!
 
                 //GC: ORTHOGONAL -- start
-
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu6_vv_complex_ortho, x_transfer, &inc, &beta, y_transfer, &inc);                         //GC!
                 f12_mu6_vv[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                                  //GC!
                 P12_mu6_vv_ortho[index_j] = Tnw[index_j] * creal(cpow(kdisc[index_j], 3.) * f12_mu6_vv[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //printf("%.16e %.16e %.16e",kdisc[index_j],Tnw[index_j],P12_mu6_vv_ortho[index_j]);
                 //printf("\n"); //GC!
 
@@ -8192,18 +8583,24 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 {
                     x[count] = cmsym_nw[count] * cpow(kdisc[index_j], etam[count]);
                     x_w[count] = 2. * cmsym_w[count] * cpow(kdisc[index_j], etam[count]);
+                    if (SWITCH_index == 1) {
                     x_transfer[count] = cmsym_nw_transfer[count] * cpow(kdisc[index_j], etam_transfer[count]);
                     x_w_transfer[count] = 2. * cmsym_w_transfer[count] * cpow(kdisc[index_j], etam_transfer[count]);
-
+                    }
                     //GC -> recall that I still need to allocate and define this x_w_transfer (while y_transfer, that is not yet used here, doesn't need a y_w_transfer counterpart)... For now I just use it... Notice the factor of 2 => it is because of the functional expansion of a "P22-like" P_{1-loop}[Pnw+Pw]... I have to do the same. For the fact that I have to use etam_transfer also in other points above, see comments! There are many things that need to be fixed...
                 }
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_complex, x_w, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_complex, x_w_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 //GC -> here the matrix does not have any names like M12_oneline_mu2_vd_complex because in the file matrix_summary-mu_powers-with_respect_to_matter.c you see that dd0 has ratio = 1! So it is JUST the matrix that I would use for 2F2, which is the PURE MATTER TERM IN REAL SPACE (here REAL means before redshift space)...
                 f22_mu0_dd_w[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_mu0_dd_w[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC! NOT x_w_transfer here!!! It is like a P22. Notice that I will need y_transfer!!! It becomes like a P13 later after I multiply by the "ratio" 1+w/nw or whatever, see below... Will need to add some formulas to this code... The point here is that the wiggles OUTSIDE ONLY are damped by a \mu-dependent part... This is the reason for all this thing...
+                }
                 P22_mu0_dd_w[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu0_dd_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_mu0_dd_w[index_j] = Tnw[index_j] *                                                                                    //[FACTOR]*
                                         creal(cpow(kdisc[index_j], 3.) * f12_mu0_dd_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
 
@@ -8216,14 +8613,22 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 f12_mu0_dd_w[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                     //GC! NOT x_w_transfer here!!! It is like a P22. Notice that I will need y_transfer!!! It becomes like a P13 later after I multiply by the "ratio" 1+w/nw or whatever, see below... Will need to add some formulas to this code... The point here is that the wiggles OUTSIDE ONLY are damped by a \mu-dependent part... This is the reason for all this thing...
                 P12_mu0_dd_w_ortho[index_j] = Tnw[index_j] *                                                                                    //[FACTOR]*
                                               creal(cpow(kdisc[index_j], 3.) * f12_mu0_dd_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                    
+                    //printf("%.16e\n",P12_mu0_dd_w_ortho[index_j]); //GC!
+                    
+                }
                 //GC: ORTHOGONAL -- finish
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_mu2_vd_complex, x_w, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu2_vd_complex, x_w_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_mu2_vd_w[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_mu2_vd_w[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_mu2_vd_w[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu2_vd_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_mu2_vd_w[index_j] = Tnw[index_j] *                                                                                    //[FACTOR]*
                                         creal(cpow(kdisc[index_j], 3.) * f12_mu2_vd_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
 
@@ -8233,14 +8638,19 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 f12_mu2_vd_w[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                     //GC!
                 P12_mu2_vd_w_ortho[index_j] = Tnw[index_j] *                                                                                    //[FACTOR]*
                                               creal(cpow(kdisc[index_j], 3.) * f12_mu2_vd_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //GC: ORTHOGONAL -- finish
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_mu2_dd_complex, x_w, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu2_dd_complex, x_w_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_mu2_dd_w[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_mu2_dd_w[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_mu2_dd_w[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu2_dd_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_mu2_dd_w[index_j] = Tnw[index_j] *                                                                                    //[FACTOR]*
                                         creal(cpow(kdisc[index_j], 3.) * f12_mu2_dd_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
 
@@ -8250,14 +8660,19 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 f12_mu2_dd_w[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                     //GC!
                 P12_mu2_dd_w_ortho[index_j] = Tnw[index_j] *                                                                                    //[FACTOR]*
                                               creal(cpow(kdisc[index_j], 3.) * f12_mu2_dd_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //GC: ORTHOGONAL -- finish
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_mu4_vv_complex, x_w, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu4_vv_complex, x_w_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_mu4_vv_w[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_mu4_vv_w[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_mu4_vv_w[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu4_vv_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_mu4_vv_w[index_j] = Tnw[index_j] *                                                                                    //[FACTOR]*
                                         creal(cpow(kdisc[index_j], 3.) * f12_mu4_vv_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
 
@@ -8267,14 +8682,19 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 f12_mu4_vv_w[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                     //GC!
                 P12_mu4_vv_w_ortho[index_j] = Tnw[index_j] *                                                                                    //[FACTOR]*
                                               creal(cpow(kdisc[index_j], 3.) * f12_mu4_vv_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //GC: ORTHOGONAL -- finish
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_mu4_vd_complex, x_w, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu4_vd_complex, x_w_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_mu4_vd_w[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_mu4_vd_w[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_mu4_vd_w[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu4_vd_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_mu4_vd_w[index_j] = Tnw[index_j] *                                                                                    //[FACTOR]*
                                         creal(cpow(kdisc[index_j], 3.) * f12_mu4_vd_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
 
@@ -8284,7 +8704,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 f12_mu4_vd_w[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                     //GC!
                 P12_mu4_vd_w_ortho[index_j] = Tnw[index_j] *                                                                                    //[FACTOR]*
                                               creal(cpow(kdisc[index_j], 3.) * f12_mu4_vd_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //GC: ORTHOGONAL -- finish
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_mu4_dd_complex, x_w, &inc, &beta, y, &inc);
@@ -8292,10 +8712,15 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 P22_mu4_dd_w[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu4_dd_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_mu6_vv_complex, x_w, &inc, &beta, y, &inc);
+                if (SWITCH_index == 1) {
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M12_oneline_mu6_vv_complex, x_w_transfer, &inc, &beta, y_transfer, &inc); //GC!
+                }
                 f22_mu6_vv_w[index_j] = zdotu_(&Nmaxf, x, &inc, y, &inc);
+                if (SWITCH_index == 1) {
                 f12_mu6_vv_w[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc); //GC!
+                }
                 P22_mu6_vv_w[index_j] = creal(cpow(kdisc[index_j], 3.) * f22_mu6_vv_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.)));
+                if (SWITCH_index == 1) {
                 P12_mu6_vv_w[index_j] = Tnw[index_j] *                                                                                    //[FACTOR]*
                                         creal(cpow(kdisc[index_j], 3.) * f12_mu6_vv_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
 
@@ -8305,7 +8730,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 f12_mu6_vv_w[index_j] = zdotu_(&Nmaxf, x_transfer, &inc, y_transfer, &inc);                                                     //GC!
                 P12_mu6_vv_w_ortho[index_j] = Tnw[index_j] *                                                                                    //[FACTOR]*
                                               creal(cpow(kdisc[index_j], 3.) * f12_mu6_vv_w[index_j] * exp(-pow(kdisc[index_j] / cutoff, 6.))); //GC!
-
+                }
                 //GC: ORTHOGONAL -- finish
 
                 zspmv_(&uplo, &Nmaxf, &alpha, pnlpt->M22_oneline_mu6_vd_complex, x_w, &inc, &beta, y, &inc);
@@ -8657,6 +9082,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
     */
 
             //GC -> I cannot get them to 1 easily via the .ini???
+            
+            //GC - SWITCH ~> I keep these manipulations here. There is no segmentation fault, and they are not matrix manipulations. The brunt of the time losses was not at all here... Well, actually let me remove some calls...
 
             //    printf("Dratio=%lf\n",Dratio);
             //    printf("hratio=%lf\n",hratio);
@@ -8833,12 +9260,16 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     class_call(array_interpolate_spline(kdisc, Nmax, Pnw, dd_Pnw, 1, ktrue, &last_index, &Pnw_ap_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
                     class_call(array_interpolate_spline(kdisc, Nmax, Pw, dd_Pw, 1, ktrue, &last_index, &Pw_ap_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
 
+                    if (SWITCH_index == 1) {
+                    
                     //GC!
 
                     class_call(array_interpolate_spline(kdisc, Nmax, Tnw, dd_Tnw, 1, ktrue, &last_index, &Tnw_ap_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
                     class_call(array_interpolate_spline(kdisc, Nmax, Tw, dd_Tw, 1, ktrue, &last_index, &Tw_ap_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
 
                     //GC!
+                        
+                    }
 
                     class_call(array_interpolate_spline(kdisc, Nmax, P22_mu4_vv, dd_P22_mu4_vv, 1, ktrue, &last_index, &P22_mu4_vv_ap_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
                     class_call(array_interpolate_spline(kdisc, Nmax, P13_mu4_vv, dd_P13_mu4_vv, 1, ktrue, &last_index, &P13_mu4_vv_ap_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
@@ -8881,6 +9312,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     class_call(array_interpolate_spline(kdisc, Nmax, P22_mu6_vd_w, dd_P22_mu6_vd_w, 1, ktrue, &last_index, &P22_mu6_vd_w_ap_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
                     class_call(array_interpolate_spline(kdisc, Nmax, P22_mu6_vd_w, dd_P22_mu6_vd_w, 1, ktrue, &last_index, &P22_mu6_vd_w_ap_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
 
+                    if (SWITCH_index == 1) {
+                    
                     //GC -> again in strange order...
 
                     class_call(array_interpolate_spline(kdisc, Nmax, P12_mu0_dd, dd_P12_mu0_dd, 1, ktrue, &last_index, &P12_mu0_dd_ap_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
@@ -8941,6 +9374,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                     //GC: ORTHOGONAL -- finish
 
+                    }
+                        
                     //GC!
 
                     LegendreP2 = (3. * pow(mu, 2.) - 1.) / 2.;
@@ -8953,7 +9388,11 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                     P13ratio = 1. + (Pw_ap_out / Pnw_ap_out) * Exp;
 
+                    if (SWITCH_index == 1) {
+                    
                     P12ratio = 1. + (Tw_ap_out / Tnw_ap_out) * Exp; //GC!
+                        
+                    }
 
                     //GC: ORTHOGONAL -> this can remain unchanged...
 
@@ -8976,6 +9415,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                     P1loopvv = (p_tree * 0. + (P13_mu4_vv_ap_out * P13ratio + P22_mu4_vv_ap_out + (P22_mu4_vv_w_ap_out + P13_mu4_vv_w_ap_out) * Exp) * pow(mutrue, 4.) + (P13_mu6_ap_out * P13ratio + P22_mu6_vv_ap_out + (P22_mu6_vv_w_ap_out + P13_mu6_w_ap_out) * Exp) * pow(mutrue, 6.) + (P22_mu8_ap_out + P22_mu8_w_ap_out * Exp) * pow(mutrue, 8.)) * pnlpt->gauss_w[index_gauss2] * hratio / Dratio / Dratio; //GC: Misha doesn't make a "vv", "vd", "dd" distinction for P13_mu6_ap_out, since it seems it doesn't appear beyond vv and \mu^6? I always make a distinction...
 
+                    if (SWITCH_index == 1) {
+                    
                     P12vv = ((P12_mu4_vv_ap_out * P12ratio + P12_mu4_vv_w_ap_out * Exp) * pow(mutrue, 4.) + (P12_mu6_vv_ap_out * P12ratio + P12_mu6_vv_w_ap_out * Exp) * pow(mutrue, 6.)) * pnlpt->gauss_w[index_gauss2] * hratio / Dratio / Dratio; //GC! ORIGINAL!!!
 
                     /*
@@ -8991,9 +9432,14 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     P12vv_ortho = ((P12_mu4_vv_ap_out_ortho * P12ratio + P12_mu4_vv_w_ap_out_ortho * Exp) * pow(mutrue, 4.) + (P12_mu6_vv_ap_out_ortho * P12ratio + P12_mu6_vv_w_ap_out_ortho * Exp) * pow(mutrue, 6.)) * pnlpt->gauss_w[index_gauss2] * hratio / Dratio / Dratio; //GC! ORIGINAL!!!
 
                     //GC: ORTHOGONAL -- finish
+                        
+                    }
 
                     P1loopdd = ((p_tree * 0. + P22_mu0_dd_ap_out + P13_mu0_dd_ap_out * P13ratio + (P13_mu0_dd_w_ap_out + P22_mu0_dd_w_ap_out) * Exp) + (P22_mu2_dd_ap_out + P13_mu2_dd_ap_out * P13ratio + (P22_mu2_dd_w_ap_out + P13_mu2_dd_w_ap_out) * Exp) * pow(mutrue, 2.) + (P22_mu4_dd_ap_out + P22_mu4_dd_w_ap_out * Exp) * pow(mutrue, 4.)) * pnlpt->gauss_w[index_gauss2] * hratio / Dratio / Dratio;
 
+                
+                    if (SWITCH_index == 1) {
+                        
                     P12dd = ((P12_mu0_dd_ap_out * P12ratio + P12_mu0_dd_w_ap_out * Exp) + (P12_mu2_dd_ap_out * P12ratio + P12_mu2_dd_w_ap_out * Exp) * pow(mutrue, 2.)) * pnlpt->gauss_w[index_gauss2] * hratio / Dratio / Dratio; //GC!
 
                     //GC: ORTHOGONAL -- start
@@ -9001,11 +9447,15 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     P12dd_ortho = ((P12_mu0_dd_ap_out_ortho * P12ratio + P12_mu0_dd_w_ap_out_ortho * Exp) + (P12_mu2_dd_ap_out_ortho * P12ratio + P12_mu2_dd_w_ap_out_ortho * Exp) * pow(mutrue, 2.)) * pnlpt->gauss_w[index_gauss2] * hratio / Dratio / Dratio; //GC!
 
                     //GC: ORTHOGONAL -- finish
+                        
+                    }
 
                     //GC -> WHY IN THIS ORDER??? Come on...
 
                     P1loopvd = ((p_tree * 2. * f * 0. + P13_mu2_vd_ap_out * P13ratio + P22_mu2_vd_ap_out + (P22_mu2_vd_w_ap_out + P13_mu2_vd_w_ap_out) * Exp) * pow(mutrue, 2.) + (P13_mu4_vd_ap_out * P13ratio + P22_mu4_vd_ap_out + (P22_mu4_vd_w_ap_out + P13_mu4_vd_w_ap_out) * Exp) * pow(mutrue, 4.) + (P22_mu6_vd_ap_out + P22_mu6_vd_w_ap_out * Exp) * pow(mutrue, 6.)) * pnlpt->gauss_w[index_gauss2] * hratio / Dratio / Dratio;
 
+                    if (SWITCH_index == 1) {
+                    
                     P12vd = ((P12_mu2_vd_ap_out * P12ratio + P12_mu2_vd_w_ap_out * Exp) * pow(mutrue, 2.) + (P12_mu4_vd_ap_out * P12ratio + P12_mu4_vd_w_ap_out * Exp) * pow(mutrue, 4.)) * pnlpt->gauss_w[index_gauss2] * hratio / Dratio / Dratio; //GC!
 
                     //GC: ORTHOGONAL -- start
@@ -9013,6 +9463,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     P12vd_ortho = ((P12_mu2_vd_ap_out_ortho * P12ratio + P12_mu2_vd_w_ap_out_ortho * Exp) * pow(mutrue, 2.) + (P12_mu4_vd_ap_out_ortho * P12ratio + P12_mu4_vd_w_ap_out_ortho * Exp) * pow(mutrue, 4.)) * pnlpt->gauss_w[index_gauss2] * hratio / Dratio / Dratio; //GC!
 
                     //GC: ORTHOGONAL -- finish
+                        
+                    }
 
                     P1loopdd_ap_ir = ((p_tree + P22_mu0_dd_ap_out + P13_mu0_dd_ap_out * P13ratio + (P13_mu0_dd_w_ap_out + P22_mu0_dd_w_ap_out) * Exp) + (P22_mu2_dd_ap_out + P13_mu2_dd_ap_out * P13ratio + (P22_mu2_dd_w_ap_out + P13_mu2_dd_w_ap_out) * Exp) * pow(mutrue, 2.) + (P22_mu4_dd_ap_out + P22_mu4_dd_w_ap_out * Exp) * pow(mutrue, 4.)) * pnlpt->gauss_w[index_gauss2] * hratio / Dratio / Dratio;
 
@@ -9032,6 +9484,10 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     P1loop_2_vd[index_j] += P1loopvd * LegendreP2 * 2.5;
                     P1loop_4_vd[index_j] += P1loopvd_ap_ir * LegendreP4 * 4.5;
 
+                    
+                    if (SWITCH_index == 1) {
+                        
+                        
                     //GC!
 
                     P12_0_vv[index_j] += P12vv * LegendreP0 / 2.;
@@ -9065,6 +9521,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     //GC: ORTHOGONAL -- finish
 
                     //GC!
+                        
+                    }
 
                     /* this was used before the breakdown into tree and one-loop
         P1loop_0_vv[index_j] +=  P1loopvv*LegendreP0/2.;
@@ -9319,6 +9777,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
         //printf("\n"); //GC!
 
         // Constructing the final output spectra
+        
+        //GC - SWITCH ~> THIS REMAINS, as it does for the matter-only part above... It just exports junk but no segmentation fault...
 
         double *ddpk_nl_0_vv;
         class_alloc(ddpk_nl_0_vv, sizeof(double) * Nmax, pnlpt->error_message);
@@ -9995,6 +10455,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
             //printf("%.20f %.20f\n",pnlpt->k[index_k],pk_l_fNL_0_vd_ortho[index_k]-1.*large_for_logs_fNL); //GC!
             //printf("%.20e %.20e\n",pnlpt->k[index_k],pk_l_fNL_0_vd_ortho[index_k]-1.*large_for_logs_fNL); //GC!
+            
+            //printf("%.16e %.16e\n",pnlpt->k[index_k],pk_l_fNL_0_vd[index_k]-1.*large_for_logs_fNL); //GC!
 
             //GC: could have been that the oscillation at extremely low k when printing the interpolation was due to using f instead of e and losing some precision? Whatever... I already investigated this enough, and it was a non-issue...
         }
@@ -11362,6 +11824,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
         FFT(input_real_bias, input_imag_bias, output_real_bias, output_imag_bias, Nmax, stepsize);
         FFT(input_real_transfer2, input_imag_transfer2, output_real_transfer2, output_imag_transfer2, Nmax, stepsize); //GC!
 
+        //GC - SWITCH ~> as discussed before, these are kept...
+        
         double complex *cmsym2;
         class_alloc(cmsym2, (Nmax + 1) * sizeof(complex double), pnlpt->error_message);
 
@@ -11456,6 +11920,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                 pnlpt->M_IG2[count2] = pnlpt->M22basic_oneline_complex[count2] * (-1. * (3. + etam2[index_i] + etam2[index_l]) * (1. + etam2[index_i] + etam2[index_l]) * (6. - 3.5 * (etam2[index_i] + etam2[index_l])) / (28. * (1. - 0.5 * etam2[index_i]) * (1. - 0.5 * etam2[index_l]) * (-0.5 * etam2[index_i]) * (-0.5 * etam2[index_l])));
 
+                if (SWITCH_index == 1) {
+                
                 nu1 = -0.5 * etam2_transfer[index_i];
                 nu2 = -0.5 * etam2_transfer[index_l]; //GC! IMPORTANT TO USE THE CORRECT \eta, one has one bias and one another... I use the fact that the second also has -0.8, as the matter ones...
 
@@ -11483,6 +11949,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 //GC: ORTHOGONAL -- finish
 
                 //GC!
+                    
+                }
 
                 count2++;
             }
@@ -11512,6 +11980,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
         index_j = 0;
         count = 0;
+        
+        if (SWITCH_index == 1) {
 
         for (index_j = 0; index_j < Nmax; index_j++)
         {
@@ -11541,6 +12011,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             //printf("%.24f %.24f %.24f",kdisc[index_j],Tbin[index_j],P_fNLd2_ortho[index_j]); //GC!
             //printf("\n"); //GC!
         }
+            
+        }
 
         //GC: contribution from G^2...
 
@@ -11563,6 +12035,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
         index_j = 0;
         count = 0;
 
+        if (SWITCH_index == 1) {
+        
         for (index_j = 0; index_j < Nmax; index_j++)
         {
 
@@ -11590,6 +12064,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
             //printf("%.24f %.24f %.24f",kdisc[index_j],Tbin[index_j],P_fNLG2_ortho[index_j]); //GC!
             //printf("\n"); //GC!
+        }
+            
         }
 
         //NOTHING ELSE TO DO HERE!!!
@@ -11656,6 +12132,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             P_IG2[index_j] = fabs(creal(cpow(kdisc[index_j], 3) * f22_IG2[index_j]));
             //printf("%le %le\n",kdisc[j],P_Id2[j]);
         }
+        
+        //GC - SWITCH ~> as discussed, these are kept...
 
         double *ddpk_PfNLd2;
         double pk_PfNLd2_out = 0.;
@@ -12096,6 +12574,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             index_l = 0;
             index_j = 0;
 
+            if (SWITCH_index == 1) {
+            
             for (index_l = 0; index_l < Nmax + 1; index_l++)
             {
                 for (index_i = index_l; index_i < Nmax + 1; index_i++)
@@ -12144,6 +12624,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 //printf("%.24e %.24e %.24e",kdisc[index_j],Tbin[index_j],P12_0_b1b2_ortho[index_j]); //GC!
                 //printf("\n"); //GC!
             }
+                
+            }
 
             //GC!
 
@@ -12165,6 +12647,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             index_i = 0;
             index_l = 0;
             index_j = 0;
+            
+            if (SWITCH_index == 1) {
 
             for (index_l = 0; index_l < Nmax + 1; index_l++)
             {
@@ -12216,6 +12700,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 //printf("%.24e %.24e %.24e",kdisc[index_j],Tbin[index_j],P12_0_b2_ortho[index_j]); //GC!
                 //printf("\n"); //GC!
             }
+                
+            }
 
             //GC: switch to G2, again monopole... Start from vd piece...
 
@@ -12235,6 +12721,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             index_i = 0;
             index_l = 0;
             index_j = 0;
+            
+            if (SWITCH_index == 1) {
 
             for (index_l = 0; index_l < Nmax + 1; index_l++)
             {
@@ -12282,6 +12770,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 //printf("%.24e %.24e %.24e",kdisc[index_j],Tbin[index_j],P12_0_b1bG2_ortho[index_j]); //GC!
                 //printf("\n"); //GC!
             }
+                
+            }
 
             //GC: vv piece...
 
@@ -12301,6 +12791,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             index_i = 0;
             index_l = 0;
             index_j = 0;
+            
+            if (SWITCH_index == 1) {
 
             for (index_l = 0; index_l < Nmax + 1; index_l++)
             {
@@ -12347,6 +12839,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                 //printf("%.24e %.24e %.24e",kdisc[index_j],Tbin[index_j],P12_0_bG2_ortho[index_j]); //GC!
                 //printf("\n"); //GC!
+            }
+                
             }
 
             /* Computing Pb1b2 correction in RSD */
@@ -12534,6 +13028,9 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             index_i = 0;
             index_l = 0;
             index_j = 0;
+            
+            
+            if (SWITCH_index == 1) {
 
             for (index_l = 0; index_l < Nmax + 1; index_l++)
             {
@@ -12581,6 +13078,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                 //printf("%.24e %.24e %.24e",kdisc[index_j],Tbin[index_j],P12_2_b2_ortho[index_j]); //GC!
                 //printf("\n"); //GC!
             }
+                
+            }
 
             //GC: go to bG2. Also here, only vv...
 
@@ -12597,6 +13096,9 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             //GC: ORTHOGONAL -- finish
 
             count2 = 0;
+            
+            if (SWITCH_index == 1) {
+            
             for (index_l = 0; index_l < Nmax + 1; index_l++)
             {
                 for (index_i = index_l; index_i < Nmax + 1; index_i++)
@@ -12642,6 +13144,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
                 //printf("%.24e %.24e %.24e",kdisc[index_j],Tbin[index_j],P12_2_bG2_ortho[index_j]); //GC!
                 //printf("\n"); //GC!
+            }
+                
             }
 
             /* Computing Pb1b2 correction for the Quadrupole */
@@ -13451,6 +13955,9 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     class_call(array_interpolate_spline(kdisc, Nmax, Pnw, dd_Pnw, 1, ktrue, &last_index, &Pnw_ap_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
                     class_call(array_interpolate_spline(kdisc, Nmax, Pw, dd_Pw, 1, ktrue, &last_index, &Pw_ap_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
                     class_call(array_interpolate_spline(kdisc, Nmax, Pbin, dd_Pbin, 1, ktrue, &last_index, &Pbin_ap_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
+                    
+                    
+                    if (SWITCH_index == 1) {
 
                     //GC...
                     class_call(array_interpolate_spline(kdisc, Nmax, Tnw, dd_Tnw, 1, ktrue, &last_index, &Tnw_ap_out, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
@@ -13489,6 +13996,9 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     class_call(array_interpolate_spline(kdisc, Nmax, P12_2_bG2_new_ortho, dd_P12_2_bG2_ortho, 1, ktrue, &last_index, &P12_2_bG2_ap_out_ortho, 1, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
 
                     //GC: ORTHOGONAL -- finish
+                        
+                    }
+                    
 
                     //GC!
 
@@ -13533,6 +14043,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     PbG2_in = (P_0_bG2_ap_out + LegendreP2true * P_2_bG2_ap_out + LegendreP4true * P_4_bG2_ap_out) * pnlpt->gauss_w[index_gauss2] * hratio / Dratio / Dratio;
 
                     //GC!
+                    
+                    if (SWITCH_index == 1) {
 
                     t_lo = (Tnw_ap_out + Tw_ap_out * Exp) / Tbin_ap_out;
 
@@ -13553,6 +14065,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     //GC: ORTHOGONAL -- finish
 
                     //GC!
+                        
+                    }
 
                     /*
             P1loopdd = ((p_tree + P22_mu0_dd_ap_out + P13_mu0_dd_ap_out*P13ratio + (P13_mu0_dd_w_ap_out+P22_mu0_dd_w_ap_out)*Exp)+(P22_mu2_dd_ap_out + P13_mu2_dd_ap_out*P13ratio + (P22_mu2_dd_w_ap_out+P13_mu2_dd_w_ap_out)*Exp)*pow(mutrue,2.)+(P22_mu4_dd_ap_out+P22_mu4_dd_w_ap_out*Exp)*pow(mutrue,4.))*pnlpt->gauss_w[index_gauss2]*hratio/Dratio/Dratio;
@@ -13585,6 +14099,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     P_4_b1bG2[index_j] += Pb1bG2_in * LegendreP4 * 4.5; //; //GC: why two ;;???
 
                     //GC!
+                    
+                    if (SWITCH_index == 1) {
 
                     P12_0_b2[index_j] += P12b2_in * LegendreP0 / 2.;
                     P12_2_b2[index_j] += P12b2_in * LegendreP2 * 2.5;
@@ -13619,6 +14135,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                     P12_0_b1bG2_ortho[index_j] += P12b1bG2_in_ortho * LegendreP0 / 2.;
                     P12_2_b1bG2_ortho[index_j] += P12b1bG2_in_ortho * LegendreP2 * 2.5;
                     P12_4_b1bG2_ortho[index_j] += P12b1bG2_in_ortho * LegendreP4 * 4.5;
+                        
+                    }
 
                     //GC: ORTHOGONAL -- finish
 
@@ -13660,6 +14178,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             free(dd_Pbin);
 
             //GC!
+            
+            //GC - SWITCH ~> here as I said many times I leave the freeing... One could be smarter but for now we just remove the biggest part, which is the import of matrices and calculation of the contributions...
 
             free(dd_Tbin);
 
@@ -13708,6 +14228,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             //GC -> now he starts interpolating the result. Notice that he starts from the multipoles that ARE NOT PRESENT before the AP, which would be the ones that didn't need to be "newed"... I start from the ones I already have...
 
             //GC: was newed...
+            
+            //GC - SWITCH -> this remains, as before...
 
             double pk12_0_b1b2_out = 0;
             double *ddpk12_0_b1b2;
@@ -15248,6 +15770,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
         free(x2);
 
         //GC -> now I need to free my stuff...
+        
+        //GC -> SWITCH -> all allocations remained, so they must be freed...
 
         free(etam2_transfer);
         free(cmsym2_transfer);
@@ -15282,6 +15806,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
 
     //if (pnlpt->nonlinear_pt_verbose > 0)
     //printf("All matrices are calculated in %d mus\n",end1-start1);
+    
+    //GC -> SWITCH -> all allocations remained, so they must be freed...
 
     free(js);
     free(kdisc);
