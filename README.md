@@ -42,7 +42,8 @@ cosmo.set({'output':'mPk',
            'cb':'Yes', # use CDM+baryon spectra
            'RSD':'Yes',
            'AP':'Yes', # Alcock-Paczynski effect
-           'Omfid':'0.31' # fiducial Omega_m
+           'Omfid':'0.31', # fiducial Omega_m
+           'PNG':'No' # single-field inflation PNG
          })
 cosmo.compute()
 
