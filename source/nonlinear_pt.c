@@ -11410,6 +11410,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                            pnlpt->error_message,
                            pnlpt->error_message);
 
+                if (pk_nl_out<=0) pk_nl_out = 1e-16;
                 pk_CTR_0[index_k] = pk_nl_out;
             }
             else
@@ -11448,6 +11449,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                     pnlpt->error_message),
                            pnlpt->error_message,
                            pnlpt->error_message);
+                if (pk_nl_out<=0) pk_nl_out = 1e-16;
                 pk_CTR_2[index_k] = pk_nl_out;
             }
             else
@@ -11478,6 +11480,7 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
                                                     pnlpt->error_message),
                            pnlpt->error_message,
                            pnlpt->error_message);
+                if (pk_nl_out<=0) pk_nl_out = 1e-16;
                 pk_CTR_4[index_k] = pk_nl_out;
             }
 
