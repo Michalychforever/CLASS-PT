@@ -6350,7 +6350,8 @@ class_alloc(pk_12,pnlpt->k_size * sizeof(double),pnlpt->error_message);*/
             //GC - SWITCH -> SEEMS TO WORK FINE -> indeed it prints random numbers, that before I removed the large_for_logs_fNL were overshadowed by it -> -1.4036503372991333e-02, 6.6630490593878808e-02, -1.2951487905045988e-08, 5.1819733362425955e-20, etc. Notice that even if I get a number larger than large_for_logs_fNL, I KNOW that it does not give segmentation fault. It just gives some NaNs from spline stuff, as we know...
             
             //GC: ORTHOGONAL -- finish
-
+	    if(pk_CTR_out<=0) pk_CTR_out=1e-16;
+	    if(pk_Tree_out<=0) pk_Tree_out=1e-16;
             pk_CTR[index_k] = pk_CTR_out;
             pk_Tree[index_k] = pk_Tree_out;
         }
