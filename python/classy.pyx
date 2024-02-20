@@ -86,9 +86,9 @@ cdef class Class:
     cdef lensing le
     cdef file_content fc
 
-    cpdef int ready # Flag
-    cpdef object _pars # Dictionary of the parameters
-    cpdef object ncp   # Keeps track of the structures initialized, in view of cleaning.
+    cdef int ready # Flag
+    cdef object _pars # Dictionary of the parameters
+    cdef object ncp   # Keeps track of the structures initialized, in view of cleaning.
 
     cdef np.ndarray pk_mult
     cdef np.ndarray kh
@@ -121,7 +121,7 @@ cdef class Class:
         self.set(**_pars)
 
     def __cinit__(self, default=False):
-        cpdef char* dumc
+        cdef char* dumc
         self.ready = False
         self.output_init = False
         self._pars = {}
