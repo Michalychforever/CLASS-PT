@@ -60,6 +60,11 @@ pk_g4 = cosmo.pk_gg_l4(b1, b2, bG2, bGamma3, cs4, b4)
 
 You can also use the Mathematica notebook *'read_tables.nb'* to read the code output. We also provide a technical summary of the fNL implementations [here](https://github.com/Michalychforever/CLASS-PT/blob/master/notebooks/summary_orthogonal_github.ipynb).
 
+# Tutorial
+
+check out this google colab page 
+https://colab.research.google.com/drive/12Cz6aSdf685hQALTBpcdTl9hs_CIvvML#scrollTo=Q8Iie5BzHhRf
+
 # Using the code
 
 You can use CLASS-PT freely, provided that in your publications you cite at least the code paper [arXiv:2004.10607](https://arxiv.org/abs/2004.10607). Feel free to cite the other companion papers devoted to new large-scale structure analysis methodologies! 
