@@ -5089,8 +5089,6 @@ int input_read_parameters_spectra(struct file_content * pfc,
       ppt->k_max_for_pk = param2;
     }
 
-    /* Force k_max = 100 h/Mpc when PT is active, since the FFTLog grid
-       extends to this value and needs the linear P(k) over the full range */
     if (pnlpt->method == nlpt_spt) {
       ppt->k_max_for_pk = 100. * pba->h;
     }

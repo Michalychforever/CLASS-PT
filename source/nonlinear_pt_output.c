@@ -3107,8 +3107,8 @@ for (i_z=0; i_z<pnlpt->z_pk_num; i_z++) {
     free(spectrum_fNL_at_z);  //free(spectrum_at_z_...);
     free(spline_fNL);  //free(spline_...);
 
-    
-    
+
+
     class_call(array_spline_table_lines(pnlpt->ln_k,
                                         pnlpt->ln_k_size,
                                         spectrum_fNLd2_at_z, //spectrum_at_z_...,
