@@ -20,6 +20,11 @@ MVEC_STRING = sbp.Popen(
 if b"mvec" not in MVEC_STRING:
     liblist += ["mvec","m"]
 
+# OpenBLAS (needed for PT module)
+OPENBLAS_PATH = os.environ.get("OPENBLAS_PATH", "/share/software/user/open/openblas/0.3.28/lib")
+openblas_lib_dirs = [OPENBLAS_PATH] if os.path.isdir(OPENBLAS_PATH) else []
+liblist += ["openblas", "pthread"]
+
 # define absolute paths
 root_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 include_folder = os.path.join(root_folder, "include")
@@ -42,10 +47,11 @@ with open(os.path.join(include_folder, 'common.h'), 'r') as v_file:
 classy_ext = Extension("classy", [os.path.join(classy_folder, "classy.pyx")],
                            include_dirs=[nm.get_include(), include_folder, heat_folder, recfast_folder, hyrec_folder, hmcode_folder, halofit_folder],
                            libraries=liblist,
-                           library_dirs=[root_folder, GCCPATH],
+                           library_dirs=[root_folder, GCCPATH] + openblas_lib_dirs,
                            #extra_link_args=['-lgomp'],
                            language="c++",
-                           extra_compile_args=["-std=c++11"]
+                           extra_compile_args=["-std=c++11",
+                                              '-D__CLASSDIR__=\'"%s"\'' % os.path.normpath(root_folder)]
                        )
 import sys
 classy_ext.cython_directives = {'language_level': "3" if sys.version_info.major>=3 else "2"}

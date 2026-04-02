@@ -31,7 +31,7 @@ GCCPATH_STRING = sbp.Popen(
     stdout=sbp.PIPE).communicate()[0]
 GCCPATH = os.path.normpath(os.path.dirname(GCCPATH_STRING)).decode()
 
-liblist = ["class"]
+liblist = ["class", "openblas"]
 MVEC_STRING = sbp.Popen(
     ['gcc', '-lmvec'],
     stderr=sbp.PIPE).communicate()[1]
@@ -54,12 +54,14 @@ with open(os.path.join(include_folder, 'common.h'), 'r') as v_file:
             break
 
 # Define cython extension and fix Python version
+openblas_dir = "/share/software/user/open/openblas/0.3.28/lib"
 classy_ext = Extension("classy._classy", [os.path.join("python", "classy.pyx")],
                        include_dirs=[np.get_include(), include_folder, heat_folder, recfast_folder, hyrec_folder],
                        libraries=liblist,
-                       library_dirs=[root_folder, GCCPATH],
+                       library_dirs=[root_folder, GCCPATH, openblas_dir],
                        language="c++",
                        extra_compile_args=["-std=c++11"],
+                       extra_link_args=['-Wl,--no-as-needed','-lgomp','-lm','-L'+openblas_dir,'-lopenblas','-Wl,-rpath,'+openblas_dir],
                        depends=["libclass.a","python/cclassy.pxd"]
                        )
 

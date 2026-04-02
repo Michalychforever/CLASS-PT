@@ -406,6 +406,17 @@ cdef extern from "class.h":
         int l_unlensed_max
         ErrorMsg error_message
 
+    cdef enum non_linear_method_pt:
+        nlpt_none
+        nlpt_spt
+
+    cdef struct nonlinear_pt:
+        int method
+        int no_wiggle
+        int wiggle_only
+        double alpha_rs
+        ErrorMsg error_message
+
     cdef struct fourier:
         short is_allocated
         short has_pk_matter
@@ -449,6 +460,7 @@ cdef extern from "class.h":
     void thermodynamics_free(void*)
     void background_free(void*)
     void fourier_free(void*)
+    void nonlinear_pt_free(void*)
     void distortions_free(void*)
 
     cdef int _FAILURE_
@@ -461,13 +473,14 @@ cdef extern from "class.h":
     cdef double _eV_
 
     int input_read_from_file(void*, void*, void*, void*, void*, void*, void*, void*, void*,
-        void*, void*, void*, char*)
+        void*, void*, void*, void*, char*)
     int background_init(void*,void*)
     int thermodynamics_init(void*,void*,void*)
     int perturbations_init(void*,void*,void*,void*)
     int primordial_init(void*,void*,void*)
     int fourier_init(void*,void*,void*,void*,void*,void*)
-    int transfer_init(void*,void*,void*,void*,void*,void*)
+    int nonlinear_pt_init(void*,void*,void*,void*,void*,void*)
+    int transfer_init(void*,void*,void*,void*,void*,void*,void*)
     int harmonic_init(void*,void*,void*,void*,void*,void*,void*)
     int lensing_init(void*,void*,void*,void*,void*)
     int distortions_init(void*,void*,void*,void*,void*,void*)
@@ -600,3 +613,207 @@ cdef extern from "class.h":
                   double * pk_tot_out,
                   double * pk_cb_tot_out,
                   int nonlinear)
+
+    int nonlinear_pt_pk_at_k_and_z(
+        void * pnlpt,
+        double k,
+        double z,
+        double * pk_tot,
+        double * pk_tot_Id2d2,
+        double * pk_tot_Id2,
+        double * pk_tot_IG2,
+        double * pk_tot_Id2G2,
+        double * pk_tot_IG2G2,
+        double * pk_tot_IFG2,
+        double * pk_tot_IFG2_0b1,
+        double * pk_tot_IFG2_0,
+        double * pk_tot_IFG2_2,
+        double * pk_tot_CTR,
+        double * pk_tot_CTR_0,
+        double * pk_tot_CTR_2,
+        double * pk_tot_CTR_4,
+        double * pk_tot_Tree,
+        double * pk_tot_Tree_0_vv,
+        double * pk_tot_Tree_0_vd,
+        double * pk_tot_Tree_0_dd,
+        double * pk_tot_Tree_2_vv,
+        double * pk_tot_Tree_2_vd,
+        double * pk_tot_Tree_4_vv,
+        double * pk_tot_0_vv,
+        double * pk_tot_0_vd,
+        double * pk_tot_0_dd,
+        double * pk_tot_2_vv,
+        double * pk_tot_2_vd,
+        double * pk_tot_2_dd,
+        double * pk_tot_4_vv,
+        double * pk_tot_4_vd,
+        double * pk_tot_4_dd,
+        double * pk_tot_0_b1b2,
+        double * pk_tot_0_b2,
+        double * pk_tot_0_b1bG2,
+        double * pk_tot_0_bG2,
+        double * pk_tot_2_b1b2,
+        double * pk_tot_2_b2,
+        double * pk_tot_2_b1bG2,
+        double * pk_tot_2_bG2,
+        double * pk_tot_4_b2,
+        double * pk_tot_4_bG2,
+        double * pk_tot_4_b1b2,
+        double * pk_tot_4_b1bG2,
+        double * pk_tot_2_b2b2,
+        double * pk_tot_2_b2bG2,
+        double * pk_tot_2_bG2bG2,
+        double * pk_tot_4_b2b2,
+        double * pk_tot_4_b2bG2,
+        double * pk_tot_4_bG2bG2,
+        double * pk_tot_fNL,
+        double * pk_tot_fNLd2,
+        double * pk_tot_fNLG2,
+        double * pk_tot_fNL_0_vv,
+        double * pk_tot_fNL_0_vd,
+        double * pk_tot_fNL_0_dd,
+        double * pk_tot_fNL_2_vv,
+        double * pk_tot_fNL_2_vd,
+        double * pk_tot_fNL_2_dd,
+        double * pk_tot_fNL_4_vv,
+        double * pk_tot_fNL_4_vd,
+        double * pk_tot_fNL_4_dd,
+        double * pk_tot_fNL_0_b1b2,
+        double * pk_tot_fNL_0_b2,
+        double * pk_tot_fNL_0_b1bG2,
+        double * pk_tot_fNL_0_bG2,
+        double * pk_tot_fNL_2_b1b2,
+        double * pk_tot_fNL_2_b2,
+        double * pk_tot_fNL_2_b1bG2,
+        double * pk_tot_fNL_2_bG2,
+        double * pk_tot_fNL_4_b1b2,
+        double * pk_tot_fNL_4_b2,
+        double * pk_tot_fNL_4_b1bG2,
+        double * pk_tot_fNL_4_bG2,
+        double * pk_tot_fNL_ortho,
+        double * pk_tot_fNLd2_ortho,
+        double * pk_tot_fNLG2_ortho,
+        double * pk_tot_fNL_0_vv_ortho,
+        double * pk_tot_fNL_0_vd_ortho,
+        double * pk_tot_fNL_0_dd_ortho,
+        double * pk_tot_fNL_2_vv_ortho,
+        double * pk_tot_fNL_2_vd_ortho,
+        double * pk_tot_fNL_2_dd_ortho,
+        double * pk_tot_fNL_4_vv_ortho,
+        double * pk_tot_fNL_4_vd_ortho,
+        double * pk_tot_fNL_4_dd_ortho,
+        double * pk_tot_fNL_0_b1b2_ortho,
+        double * pk_tot_fNL_0_b2_ortho,
+        double * pk_tot_fNL_0_b1bG2_ortho,
+        double * pk_tot_fNL_0_bG2_ortho,
+        double * pk_tot_fNL_2_b1b2_ortho,
+        double * pk_tot_fNL_2_b2_ortho,
+        double * pk_tot_fNL_2_b1bG2_ortho,
+        double * pk_tot_fNL_2_bG2_ortho,
+        double * pk_tot_fNL_4_b1b2_ortho,
+        double * pk_tot_fNL_4_b2_ortho,
+        double * pk_tot_fNL_4_b1bG2_ortho,
+        double * pk_tot_fNL_4_bG2_ortho
+        )
+
+    int nonlinear_pt_bias_at_z_i(
+        void * pnlpt,
+        int mode,
+        int i_z,
+        double * output_tot,
+        double * output_tot_Id2d2,
+        double * output_tot_Id2,
+        double * output_tot_IG2,
+        double * output_tot_Id2G2,
+        double * output_tot_IG2G2,
+        double * output_tot_IFG2,
+        double * output_tot_IFG2_0b1,
+        double * output_tot_IFG2_0,
+        double * output_tot_IFG2_2,
+        double * output_tot_CTR,
+        double * output_tot_CTR_0,
+        double * output_tot_CTR_2,
+        double * output_tot_CTR_4,
+        double * output_tot_Tree,
+        double * output_tot_Tree_0_vv,
+        double * output_tot_Tree_0_vd,
+        double * output_tot_Tree_0_dd,
+        double * output_tot_Tree_2_vv,
+        double * output_tot_Tree_2_vd,
+        double * output_tot_Tree_4_vv,
+        double * output_tot_0_vv,
+        double * output_tot_0_vd,
+        double * output_tot_0_dd,
+        double * output_tot_2_vv,
+        double * output_tot_2_vd,
+        double * output_tot_2_dd,
+        double * output_tot_4_vv,
+        double * output_tot_4_vd,
+        double * output_tot_4_dd,
+        double * output_tot_0_b1b2,
+        double * output_tot_0_b2,
+        double * output_tot_0_b1bG2,
+        double * output_tot_0_bG2,
+        double * output_tot_2_b1b2,
+        double * output_tot_2_b2,
+        double * output_tot_2_b1bG2,
+        double * output_tot_2_bG2,
+        double * output_tot_4_b2,
+        double * output_tot_4_bG2,
+        double * output_tot_4_b1b2,
+        double * output_tot_4_b1bG2,
+        double * output_tot_2_b2b2,
+        double * output_tot_2_b2bG2,
+        double * output_tot_2_bG2bG2,
+        double * output_tot_4_b2b2,
+        double * output_tot_4_b2bG2,
+        double * output_tot_4_bG2bG2,
+        double * output_tot_pk_nl_fNL,
+        double * output_tot_pk_fNLd2,
+        double * output_tot_pk_fNLG2,
+        double * output_tot_pk_l_fNL_0_vv,
+        double * output_tot_pk_l_fNL_0_vd,
+        double * output_tot_pk_l_fNL_0_dd,
+        double * output_tot_pk_l_fNL_2_vv,
+        double * output_tot_pk_l_fNL_2_vd,
+        double * output_tot_pk_l_fNL_2_dd,
+        double * output_tot_pk_l_fNL_4_vv,
+        double * output_tot_pk_l_fNL_4_vd,
+        double * output_tot_pk_l_fNL_4_dd,
+        double * output_tot_pk12_l_0_b1b2,
+        double * output_tot_pk12_l_0_b2,
+        double * output_tot_pk12_l_0_b1bG2,
+        double * output_tot_pk12_l_0_bG2,
+        double * output_tot_pk12_l_2_b1b2,
+        double * output_tot_pk12_l_2_b2,
+        double * output_tot_pk12_l_2_b1bG2,
+        double * output_tot_pk12_l_2_bG2,
+        double * output_tot_pk12_l_4_b1b2,
+        double * output_tot_pk12_l_4_b2,
+        double * output_tot_pk12_l_4_b1bG2,
+        double * output_tot_pk12_l_4_bG2,
+        double * output_tot_pk_nl_fNL_ortho,
+        double * output_tot_pk_fNLd2_ortho,
+        double * output_tot_pk_fNLG2_ortho,
+        double * output_tot_pk_l_fNL_0_vv_ortho,
+        double * output_tot_pk_l_fNL_0_vd_ortho,
+        double * output_tot_pk_l_fNL_0_dd_ortho,
+        double * output_tot_pk_l_fNL_2_vv_ortho,
+        double * output_tot_pk_l_fNL_2_vd_ortho,
+        double * output_tot_pk_l_fNL_2_dd_ortho,
+        double * output_tot_pk_l_fNL_4_vv_ortho,
+        double * output_tot_pk_l_fNL_4_vd_ortho,
+        double * output_tot_pk_l_fNL_4_dd_ortho,
+        double * output_tot_pk12_l_0_b1b2_ortho,
+        double * output_tot_pk12_l_0_b2_ortho,
+        double * output_tot_pk12_l_0_b1bG2_ortho,
+        double * output_tot_pk12_l_0_bG2_ortho,
+        double * output_tot_pk12_l_2_b1b2_ortho,
+        double * output_tot_pk12_l_2_b2_ortho,
+        double * output_tot_pk12_l_2_b1bG2_ortho,
+        double * output_tot_pk12_l_2_bG2_ortho,
+        double * output_tot_pk12_l_4_b1b2_ortho,
+        double * output_tot_pk12_l_4_b2_ortho,
+        double * output_tot_pk12_l_4_b1bG2_ortho,
+        double * output_tot_pk12_l_4_bG2_ortho
+        )
