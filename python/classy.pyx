@@ -23,6 +23,7 @@ cimport cython
 from scipy.interpolate import CubicSpline
 from scipy.interpolate import UnivariateSpline
 from scipy.interpolate import interp1d
+from scipy.integrate import simpson
 
 # Nils : Added for python 3.x and python 2.x compatibility
 import sys
@@ -4677,8 +4678,7 @@ cdef class Class:
         # Precompute constant Pd2d2 contribution: integral of P_lin^2(k) k^3 d(ln k) / pi^2
         h = self.ba.h
         Plin_hMpc3 = self.pk_mult[14] * h**3.
-        _trapz = np.trapezoid if hasattr(np, 'trapezoid') else np.trapz
-        self.Pd2d2_0 = _trapz(Plin_hMpc3**2. * self.kh**3., x=np.log(self.kh)) / (np.pi**2.)
+        self.Pd2d2_0 = simpson(Plin_hMpc3**2. * self.kh**3., x=np.log(self.kh)) / (np.pi**2.)
         self.output_init = True
 
     def pk_mm_real(self, cs):

@@ -461,8 +461,8 @@ class TestRedshiftSpaceMultipoles(_FullConfigMixin, unittest.TestCase):
         h, fz, m, kh = self.h, self.fz, self.pk_mult, self.khvec
         pk = self.M.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT_NBAR, A0_NBAR, A2_NBAR, B4)
         Plin_hMpc3 = m[14] * h**3.
-        _trapz = np.trapezoid if hasattr(np, 'trapezoid') else np.trapz
-        Pd2d2_0 = _trapz(Plin_hMpc3**2. * kh**3., x=np.log(kh)) / (np.pi**2.)
+        from scipy.integrate import simpson
+        Pd2d2_0 = simpson(Plin_hMpc3**2. * kh**3., x=np.log(kh)) / (np.pi**2.)
         pk_manual = (
             m[15]+m[21] + B1*m[16]+B1*m[22] + B1**2*m[17]+B1**2*m[23]
             + 0.25*B2**2*m[1] + B1*B2*m[30]+B2*m[31]
