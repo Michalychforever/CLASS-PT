@@ -3471,8 +3471,10 @@ int nonlinear_pt_loop(
     class_alloc(ddpk_Tree, Nmax * sizeof(double), pnlpt->error_message);
 
     SPLINE_SETUP(kdisc, Nmax, P1loop, ddpk_nl, _SPLINE_NATURAL_);
-    SPLINE_SETUP(kdisc, Nmax, P12_fNL, ddpk_nl_fNL, _SPLINE_NATURAL_);
-    SPLINE_SETUP(kdisc, Nmax, P12_fNL_ortho, ddpk_nl_fNL_ortho, _SPLINE_NATURAL_);
+    if (has_fNL) {
+        SPLINE_SETUP(kdisc, Nmax, P12_fNL, ddpk_nl_fNL, _SPLINE_NATURAL_);
+        SPLINE_SETUP(kdisc, Nmax, P12_fNL_ortho, ddpk_nl_fNL_ortho, _SPLINE_NATURAL_);
+    }
     SPLINE_SETUP(kdisc, Nmax, P_CTR, ddpk_CTR, _SPLINE_NATURAL_);
     SPLINE_SETUP(kdisc, Nmax, Ptree, ddpk_Tree, _SPLINE_NATURAL_);
 
@@ -3493,15 +3495,20 @@ int nonlinear_pt_loop(
     for (index_k = 0; index_k < pnlpt->k_size; index_k++) {
         if (pnlpt->k[index_k] >= kmin && pnlpt->k[index_k] <= kmax) {
             SPLINE_EVAL(kdisc, Nmax, P1loop, ddpk_nl, pnlpt->k[index_k], &last_index2, &pk_nl_out);
-            SPLINE_EVAL(kdisc, Nmax, P12_fNL, ddpk_nl_fNL, pnlpt->k[index_k], &last_index4, &pk_nl_fNL_out);
-            SPLINE_EVAL(kdisc, Nmax, P12_fNL_ortho, ddpk_nl_fNL_ortho, pnlpt->k[index_k], &last_index4_ortho, &pk_nl_fNL_out_ortho);
             SPLINE_EVAL(kdisc, Nmax, P_CTR, ddpk_CTR, pnlpt->k[index_k], &last_index, &pk_CTR_out);
             SPLINE_EVAL(kdisc, Nmax, Ptree, ddpk_Tree, pnlpt->k[index_k], &last_index3, &pk_Tree_out);
 
             pk_nl[index_k] = pk_nl_out + large_for_logs_matter;
-            pk_nl_fNL[index_k] = pk_nl_fNL_out + large_for_logs_fNL;
 
-            pk_nl_fNL_ortho[index_k] = pk_nl_fNL_out_ortho + large_for_logs_fNL;
+            if (has_fNL) {
+                SPLINE_EVAL(kdisc, Nmax, P12_fNL, ddpk_nl_fNL, pnlpt->k[index_k], &last_index4, &pk_nl_fNL_out);
+                SPLINE_EVAL(kdisc, Nmax, P12_fNL_ortho, ddpk_nl_fNL_ortho, pnlpt->k[index_k], &last_index4_ortho, &pk_nl_fNL_out_ortho);
+                pk_nl_fNL[index_k] = pk_nl_fNL_out + large_for_logs_fNL;
+                pk_nl_fNL_ortho[index_k] = pk_nl_fNL_out_ortho + large_for_logs_fNL;
+            } else {
+                pk_nl_fNL[index_k] = large_for_logs_fNL;
+                pk_nl_fNL_ortho[index_k] = large_for_logs_fNL;
+            }
 
             if (pk_CTR_out <= 0)
                 pk_CTR_out = 1e-16;
@@ -3512,16 +3519,12 @@ int nonlinear_pt_loop(
         } else {
             if (pnlpt->k[index_k] < kmin) {
                 pk_nl[index_k] = large_for_logs_matter - 61. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav / 105.;
-                pk_nl_fNL[index_k] = large_for_logs_fNL + epsilon_for_logs_fNL;
-
-                pk_nl_fNL_ortho[index_k] = large_for_logs_fNL + epsilon_for_logs_fNL;
             }
             if (pnlpt->k[index_k] > kmax) {
                 pk_nl[index_k] = large_for_logs_matter;
-                pk_nl_fNL[index_k] = large_for_logs_fNL + epsilon_for_logs_fNL;
-
-                pk_nl_fNL_ortho[index_k] = large_for_logs_fNL + epsilon_for_logs_fNL;
             }
+            pk_nl_fNL[index_k] = large_for_logs_fNL + epsilon_for_logs_fNL;
+            pk_nl_fNL_ortho[index_k] = large_for_logs_fNL + epsilon_for_logs_fNL;
             pk_CTR[index_k] = exp(lnpk_l[index_k] + 2. * lnk_l[index_k]);
             pk_Tree[index_k] = exp(lnpk_l[index_k]);
         }
@@ -5027,8 +5030,8 @@ int nonlinear_pt_loop(
         TIMER_ADD(m22fill);
 
         /* --- fNL contributions: P12 integrals for delta^2 bias --- */
-        double *P_fNLd2 = malloc(Nmax * sizeof(double));
-        double *P_fNLd2_ortho = malloc(Nmax * sizeof(double));
+        double *P_fNLd2 = calloc(Nmax, sizeof(double));
+        double *P_fNLd2_ortho = calloc(Nmax, sizeof(double));
 
         /* Build X matrix for transfer with eta2 basis */
         double *Xr2_transfer, *Xi2_transfer;
@@ -5048,8 +5051,8 @@ int nonlinear_pt_loop(
         }
 
         /* fNL contribution from G2 bias */
-        double *P_fNLG2 = malloc(Nmax * sizeof(double));
-        double *P_fNLG2_ortho = malloc(Nmax * sizeof(double));
+        double *P_fNLG2 = calloc(Nmax, sizeof(double));
+        double *P_fNLG2_ortho = calloc(Nmax, sizeof(double));
 
         if (has_fNL) {
             TIMER_START(blas);
@@ -5070,11 +5073,19 @@ int nonlinear_pt_loop(
         TIMER_ADD(blas);
 
         TIMER_START(spline_out);
-        { /* fNL bias contributions */
+        if (has_fNL) { /* fNL bias contributions */
             double *_fnl_in[] = {P_fNLd2, P_fNLd2_ortho, P_fNLG2, P_fNLG2_ortho};
             double *_fnl_out[] = {pk_fNLd2, pk_fNLd2_ortho, pk_fNLG2, pk_fNLG2_ortho};
             SPLINE_INTERP_BATCH(_fnl_in, _fnl_out, 4, kmin, kmax,
                 out_tmp_ + large_for_logs_fNL, large_for_logs_fNL + epsilon_for_logs_fNL, 1);
+        } else {
+            double *_fnl_in[] = {P_fNLd2, P_fNLd2_ortho, P_fNLG2, P_fNLG2_ortho};
+            double *_fnl_out[] = {pk_fNLd2, pk_fNLd2_ortho, pk_fNLG2, pk_fNLG2_ortho};
+            for (int fi_ = 0; fi_ < 4; fi_++) {
+                for (index_k = 0; index_k < pnlpt->k_size; index_k++)
+                    _fnl_out[fi_][index_k] = large_for_logs_fNL;
+                free(_fnl_in[fi_]);
+            }
         }
 
         SPLINE_INTERP_OUTPUT(P_Id2, pk_Id2, kmin, kmax,
@@ -5302,19 +5313,40 @@ int nonlinear_pt_loop(
             AP_SPLINE_SETUP_EX(P_4_bG2, P_4_bG2_new);
             AP_SPLINE_SETUP_EX(P_IFG2, P_IFG2_new);
             AP_SPLINE_SETUP(Pbin);
-            AP_SPLINE_SETUP_EX(P12_0_b2, P12_0_b2_new);
-            AP_SPLINE_SETUP_EX(P12_0_b2_ortho, P12_0_b2_new_ortho);
-            AP_SPLINE_SETUP_EX(P12_0_b1b2, P12_0_b1b2_new);
-            AP_SPLINE_SETUP_EX(P12_0_b1b2_ortho, P12_0_b1b2_new_ortho);
-            AP_SPLINE_SETUP_EX(P12_0_bG2, P12_0_bG2_new);
-            AP_SPLINE_SETUP_EX(P12_0_bG2_ortho, P12_0_bG2_new_ortho);
-            AP_SPLINE_SETUP_EX(P12_0_b1bG2, P12_0_b1bG2_new);
-            AP_SPLINE_SETUP_EX(P12_0_b1bG2_ortho, P12_0_b1bG2_new_ortho);
-            AP_SPLINE_SETUP_EX(P12_2_b2, P12_2_b2_new);
-            AP_SPLINE_SETUP_EX(P12_2_b2_ortho, P12_2_b2_new_ortho);
-            AP_SPLINE_SETUP_EX(P12_2_bG2, P12_2_bG2_new);
-            AP_SPLINE_SETUP_EX(P12_2_bG2_ortho, P12_2_bG2_new_ortho);
-            AP_SPLINE_SETUP(Tbin);
+            /* P12 bias AP splines + Tbin: only needed for fNL.
+             * We declare dd_ and _ap_out variables manually so they exist
+             * in function scope for the free block and AP_INTERP macros. */
+            double *dd_P12_0_b2 = NULL, *dd_P12_0_b2_ortho = NULL;
+            double *dd_P12_0_b1b2 = NULL, *dd_P12_0_b1b2_ortho = NULL;
+            double *dd_P12_0_bG2 = NULL, *dd_P12_0_bG2_ortho = NULL;
+            double *dd_P12_0_b1bG2 = NULL, *dd_P12_0_b1bG2_ortho = NULL;
+            double *dd_P12_2_b2 = NULL, *dd_P12_2_b2_ortho = NULL;
+            double *dd_P12_2_bG2 = NULL, *dd_P12_2_bG2_ortho = NULL;
+            double *dd_Tbin = NULL;
+            double P12_0_b2_ap_out = 0, P12_0_b2_ortho_ap_out = 0;
+            double P12_0_b1b2_ap_out = 0, P12_0_b1b2_ortho_ap_out = 0;
+            double P12_0_bG2_ap_out = 0, P12_0_bG2_ortho_ap_out = 0;
+            double P12_0_b1bG2_ap_out = 0, P12_0_b1bG2_ortho_ap_out = 0;
+            double P12_2_b2_ap_out = 0, P12_2_b2_ortho_ap_out = 0;
+            double P12_2_bG2_ap_out = 0, P12_2_bG2_ortho_ap_out = 0;
+            double Tbin_ap_out = 0;
+            if (has_fNL) {
+                /* Allocate and compute spline tables for P12 bias arrays */
+                double **_dd_p12[] = {
+                    &dd_P12_0_b2, &dd_P12_0_b2_ortho, &dd_P12_0_b1b2, &dd_P12_0_b1b2_ortho,
+                    &dd_P12_0_bG2, &dd_P12_0_bG2_ortho, &dd_P12_0_b1bG2, &dd_P12_0_b1bG2_ortho,
+                    &dd_P12_2_b2, &dd_P12_2_b2_ortho, &dd_P12_2_bG2, &dd_P12_2_bG2_ortho, &dd_Tbin};
+                double *_p12_data[] = {
+                    P12_0_b2_new, P12_0_b2_new_ortho, P12_0_b1b2_new, P12_0_b1b2_new_ortho,
+                    P12_0_bG2_new, P12_0_bG2_new_ortho, P12_0_b1bG2_new, P12_0_b1bG2_new_ortho,
+                    P12_2_b2_new, P12_2_b2_new_ortho, P12_2_bG2_new, P12_2_bG2_new_ortho, Tbin};
+                for (int si_ = 0; si_ < 13; si_++) {
+                    class_alloc(*_dd_p12[si_], sizeof(double) * Nmax, pnlpt->error_message);
+                    class_call(array_spline_table_columns(kdisc, Nmax, _p12_data[si_], 1, *_dd_p12[si_],
+                                                          _SPLINE_NATURAL_, pnlpt->error_message),
+                               pnlpt->error_message, pnlpt->error_message);
+                }
+            }
             TIMER_ADD(ap_spline);
 
             double Pd2d2_in = 0., Pd2G2_in = 0., PG2G2_in = 0.;
@@ -5492,7 +5524,7 @@ int nonlinear_pt_loop(
             for (int fi_ = 0; fi_ < 53; fi_++) free(_f[fi_]); }
 
             TIMER_START(spline_out);
-            { /* fNL P12 biased tracer multipoles */
+            if (has_fNL) { /* fNL P12 biased tracer multipoles */
                 double *_p12b_in[] = {
                     P12_0_b1b2, P12_0_b1b2_ortho, P12_0_b1bG2, P12_0_b1bG2_ortho,
                     P12_0_b2, P12_0_b2_ortho, P12_0_bG2, P12_0_bG2_ortho,
@@ -5509,6 +5541,26 @@ int nonlinear_pt_loop(
                     pk12_l_2_b1bG2, pk12_l_2_b1bG2_ortho, pk12_l_4_b1bG2, pk12_l_4_b1bG2_ortho};
                 SPLINE_INTERP_BATCH(_p12b_in, _p12b_out, 24, kminnew, kmaxnew,
                     out_tmp_ + large_for_logs_fNL, large_for_logs_fNL + epsilon_for_logs_fNL, 1);
+            } else { /* No fNL: fill with offset constant and free input arrays */
+                double *_p12b_in[] = {
+                    P12_0_b1b2, P12_0_b1b2_ortho, P12_0_b1bG2, P12_0_b1bG2_ortho,
+                    P12_0_b2, P12_0_b2_ortho, P12_0_bG2, P12_0_bG2_ortho,
+                    P12_2_b2, P12_2_b2_ortho, P12_2_bG2, P12_2_bG2_ortho,
+                    P12_4_b2, P12_4_b2_ortho, P12_4_bG2, P12_4_bG2_ortho,
+                    P12_2_b1b2, P12_2_b1b2_ortho, P12_4_b1b2, P12_4_b1b2_ortho,
+                    P12_2_b1bG2, P12_2_b1bG2_ortho, P12_4_b1bG2, P12_4_b1bG2_ortho};
+                double *_p12b_out[] = {
+                    pk12_l_0_b1b2, pk12_l_0_b1b2_ortho, pk12_l_0_b1bG2, pk12_l_0_b1bG2_ortho,
+                    pk12_l_0_b2, pk12_l_0_b2_ortho, pk12_l_0_bG2, pk12_l_0_bG2_ortho,
+                    pk12_l_2_b2, pk12_l_2_b2_ortho, pk12_l_2_bG2, pk12_l_2_bG2_ortho,
+                    pk12_l_4_b2, pk12_l_4_b2_ortho, pk12_l_4_bG2, pk12_l_4_bG2_ortho,
+                    pk12_l_2_b1b2, pk12_l_2_b1b2_ortho, pk12_l_4_b1b2, pk12_l_4_b1b2_ortho,
+                    pk12_l_2_b1bG2, pk12_l_2_b1bG2_ortho, pk12_l_4_b1bG2, pk12_l_4_b1bG2_ortho};
+                for (int fi_ = 0; fi_ < 24; fi_++) {
+                    for (index_k = 0; index_k < pnlpt->k_size; index_k++)
+                        _p12b_out[fi_][index_k] = large_for_logs_fNL;
+                    free(_p12b_in[fi_]); /* match do_free=1 behavior */
+                }
             }
             { /* Id2d2/Id2G2/IG2G2 higher multipoles */
                 double *_id_in[] = {P_Id2d2_2, P_Id2d2_4, P_Id2G2_2, P_Id2G2_4, P_IG2G2_2, P_IG2G2_4};
