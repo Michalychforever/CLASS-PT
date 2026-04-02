@@ -1,0 +1,96 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 12.3' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      2944,         88]
+NotebookOptionsPosition[      2206,         66]
+NotebookOutlinePosition[      2654,         84]
+CellTagsIndexPosition[      2611,         81]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"ClearAll", "[", 
+   RowBox[{"Evaluate", "[", 
+    RowBox[{
+     RowBox[{"Context", "[", "]"}], "<>", "\"\<*\>\""}], "]"}], "]"}], 
+  ";"}], "\n", 
+ RowBox[{
+  RowBox[{"ClearSystemCache", "[", "]"}], ";"}]}], "Code",
+ InitializationCell->False,
+ CellChangeTimes->{{3.757242697595481*^9, 3.757242699679309*^9}},
+ CellLabel->"In[1]:=",ExpressionUUID->"fdf0ca00-505c-4d60-829a-be8fb3774f93"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"m", "[", 
+    RowBox[{"n1_", ",", "n2_"}], "]"}], "=", 
+   RowBox[{"Import", "[", 
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", "\"\<F2_term.m\>\""}], 
+    "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.849730293446995*^9, 3.849730296621808*^9}, {
+  3.849730782082711*^9, 3.8497307860109577`*^9}},
+ CellLabel->"In[3]:=",ExpressionUUID->"db62d0a7-b047-4bc3-af38-5d04d9642faf"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Export", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"NotebookDirectory", "[", "]"}], "<>", "\"\<F2_term.txt\>\""}], 
+   ",", 
+   RowBox[{"m", "[", 
+    RowBox[{"nu1", ",", "nu2"}], "]"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.849730265624423*^9, 3.8497303141264687`*^9}, 
+   3.849730358521583*^9, {3.849730788984742*^9, 3.849730792695571*^9}},
+ CellLabel->"In[4]:=",ExpressionUUID->"f40ddf51-e5f2-4211-ab0f-51ffe971eb10"],
+
+Cell[BoxData["\<\"/Users/gcabass/Documents/work/CLASS-PT-master-fNL/\
+ORTHOGONAL_NG_matrices/computation_of_matrices/F2_term.txt\"\>"], "Output",
+ CellChangeTimes->{3.8497303688548613`*^9, 3.849730827676972*^9},
+ CellLabel->"Out[4]=",ExpressionUUID->"4b415fca-1047-4031-a3eb-4ec81223e3a8"]
+}, Open  ]]
+},
+WindowToolbars->"EditBar",
+WindowSize->{808, 747},
+WindowMargins->{{4, Automatic}, {Automatic, 4}},
+Magnification:>1.25 Inherited,
+FrontEndVersion->"12.3 for Mac OS X x86 (64-bit) (July 9, 2021)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"116c7caf-edb1-4c67-aeee-43983fcd3986"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 423, 11, 70, "Code",ExpressionUUID->"fdf0ca00-505c-4d60-829a-be8fb3774f93",
+ InitializationCell->False],
+Cell[984, 33, 443, 11, 37, "Input",ExpressionUUID->"db62d0a7-b047-4bc3-af38-5d04d9642faf"],
+Cell[CellGroupData[{
+Cell[1452, 48, 446, 10, 37, "Input",ExpressionUUID->"f40ddf51-e5f2-4211-ab0f-51ffe971eb10"],
+Cell[1901, 60, 289, 3, 114, "Output",ExpressionUUID->"4b415fca-1047-4031-a3eb-4ec81223e3a8"]
+}, Open  ]]
+}
+]
+*)
+

@@ -1,0 +1,4 @@
+-) vv2, f = 2 is [ 20/7 ] of vv0, f = 2
+-) vv4, f = 2 is [ 8/7  ] of vv0, f = 2
+-) vd2, f = 1 is [ 2    ] of vd0, f = 1
+-) dd2, f = 1 is [ 2    ] of dd0, f = 1
