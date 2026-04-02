@@ -1,16 +1,76 @@
-output/
-*~
+# Build artifacts
 build/
-class
-*.prof
-*.ini
 libclass.a
-*out
-python/classy.cpp
+class
+*.dSYM/
+*.so
+*.o
+*.opp
 *.pyc
+__pycache__/
+
+# Python packaging
+*.egg-info/
+*.egg
 python/build/
-*.dSYM
-RealSpaceInterface/cache/
+python/dist/
+python/classy.cpp
+python/classy.c
+
+# IDE / editor
+*~
 .DS_Store
-doc/manual/html
-doc/manual/latex
+.ipynb_checkpoints/
+.local/
+.clang-format
+
+# Output files
+output/
+*.prof
+*out
+pt_timing.log
+source/mPk.dat
+source/tCl.dat
+source_T_k_tau.dat
+myevolution.dat
+myselection.dat
+psd_FD_single.dat
+
+# Profiling
+perf.data
+perf.data.old
+CPU
+CPU.py
+profile_test.py
+
+# Dev artifacts
+.classpt_save/
+optimization_log.md
+claude_log.md
+CLAUDE.md
+notes/
+source/*.bak*
+
+# Non-upstream config
+maresuke.ini
+test.ini
+
+# Tests debug/validation data (keep only test_classpt.py, generate_reference_data.py, reference_data.npz)
+tests/*.npy
+tests/*.npz
+!tests/reference_data.npz
+tests/benchmark_*.py
+tests/bisect_*.py
+tests/bisect_*.sh
+tests/check_*.py
+tests/compare_*.py
+tests/debug_*.py
+tests/dump_*.py
+tests/omp_consistency.py
+tests/external_Pk_test.dat
+
+# Generated docs (LaTeX artifacts)
+doc/manual/latex/
+doc/input/latex/class.aux
+doc/input/latex/class.log
+doc/input/latex/class.synctex.gz

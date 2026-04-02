@@ -1,120 +1,113 @@
-CLASS: Cosmic Linear Anisotropy Solving System  {#mainpage}
-==============================================
+# CLASS-PT: nonlinear perturbation theory extension of the Boltzmann code CLASS
 
-Authors: Julien Lesgourgues, Thomas Tram, Nils Schoeneberg
+This is a modification of the CLASS code that computes the non-linear power spectra of dark matter and biased tracers in one-loop cosmological perturbation theory, for both Gaussian and non-Gaussian initial conditions.
 
-with several major inputs from other people, especially Benjamin
-Audren, Simon Prunet, Jesus Torrado, Miguel Zumalacarregui, Francesco
-Montanari, Deanna Hooper, Samuel Brieden, Daniel Meinert, Matteo Lucca, etc.
+This version is based on [CLASS v3.3.4](https://github.com/lesgourg/class_public) and includes all upstream improvements (updated BBN, Halofit/HMcode, spectral distortions, etc.).
 
-For download and information, see http://class-code.net
+CLASS-PT can be interfaced with the MCMC sampler [MontePython](https://github.com/brinckmann/montepython_public) using the custom-built likelihoods found [here](https://github.com/oliverphilcox/full_shape_likelihoods).
 
+# Getting started
 
-Compiling CLASS and getting started
------------------------------------
+Read [these instructions](https://github.com/Michalychforever/CLASS-PT/blob/master/instructions.pdf) for the installation details. See also this [troubleshooting](https://github.com/Michalychforever/CLASS-PT/blob/master/troubleshooting.rst) guide.
 
-(the information below can also be found on the webpage, just below
-the download button)
+The installation instructions for CLASS can be found on the official code [webpage](https://github.com/lesgourg/class_public).
 
-Download the code from the webpage and unpack the archive (tar -zxvf
-class_vx.y.z.tar.gz), or clone it from
-https://github.com/lesgourg/class_public. Go to the class directory
-(cd class/ or class_public/ or class_vx.y.z/) and compile (make clean;
-make class). You can usually speed up compilation with the option -j:
-make -j class. If the first compilation attempt fails, you may need to
-open the Makefile and adapt the name of the compiler (default: gcc),
-of the optimization flag (default: -O4 -ffast-math) and of the OpenMP
-flag (default: -fopenmp; this flag is facultative, you are free to
-compile without OpenMP if you don't want parallel execution; note that
-you need the version 4.2 or higher of gcc to be able to compile with
--fopenmp). Many more details on the CLASS compilation are given on the
-wiki page
+## Dependencies
 
-https://github.com/lesgourg/class_public/wiki/Installation
+- C/C++ compiler (gcc/g++ recommended, with `-fopenmp` support)
+- [OpenBLAS](https://www.openblas.net/) (path configured in Makefile via `OPENBLAS`)
+- Python 3 with NumPy and Cython (for the Python wrapper)
 
-(in particular, for compiling on Mac >= 10.9 despite of the clang
-incompatibility with OpenMP).
+## Compilation
 
-To check that the code runs, type:
+First, edit the `Makefile` to set the `OPENBLAS` variable to the path of `libopenblas.a` on your system.
 
-    ./class explanatory.ini
+Then ensure the OpenBLAS and GCC shared libraries are on your library path:
+```bash
+export LD_LIBRARY_PATH=/path/to/openblas/lib:/path/to/gcc/lib64:$LD_LIBRARY_PATH
+```
 
-The explanatory.ini file is THE reference input file, containing and
-explaining the use of all possible input parameters. We recommend to
-read it, to keep it unchanged (for future reference), and to create
-for your own purposes some shorter input files, containing only the
-input lines which are useful for you. Input files must have a *.ini
-extension. We provide an example of an input file containing a
-selection of the most used parameters, default.ini, that you may use as a
-starting point.
+Build and install:
+```bash
+# Build the CLASS executable and static library
+make class
 
-If you want to play with the precision/speed of the code, you can use
-one of the provided precision files (e.g. cl_permille.pre) or modify
-one of them, and run with two input files, for instance:
+# Build and install the Python wrapper
+make classy
 
-    ./class test.ini cl_permille.pre
+# Or build the wrapper in-place (for development)
+cd python && python setup.py build_ext --inplace && cd ..
 
-The files *.pre are suppposed to specify the precision parameters for
-which you don't want to keep default values. If you find it more
-convenient, you can pass these precision parameter values in your *.ini
-file instead of an additional *.pre file.
+# Clean build artifacts
+make clean
+```
 
-The automatically-generated documentation is located in
+After installation, verify:
+```python
+from classy import Class
+c = Class()
+c.set({'output': 'mPk'})
+c.compute()
+print(c.pk(0.1, 0))  # should print a positive number
+```
 
-    doc/manual/html/index.html
-    doc/manual/CLASS_manual.pdf
+## Quick example
 
-On top of that, if you wish to modify the code, you will find lots of
-comments directly in the files.
+Once you are all set, check out this [jupyter notebook](https://github.com/Michalychforever/CLASS-PT/blob/master/notebooks/nonlinear_pt.ipynb) for examples of working sessions. Here's a simple example of computing the galaxy power spectrum multipoles with CLASS-PT:
 
-Python
-------
+```python
+# Import modules
+from classy import Class
+import numpy as np
 
-To use CLASS from python, or ipython notebooks, or from the Monte
-Python parameter extraction code, you need to compile not only the
-code, but also its python wrapper. This can be done by typing just
-'make' instead of 'make class' (or for speeding up: 'make -j'). More
-details on the wrapper and its compilation are found on the wiki page
+# Set usual CLASS parameters
+z_pk = 0.5
+cosmo = Class()
+cosmo.set({'A_s':2.089e-9,
+           'n_s':0.9649,
+           'tau_reio':0.052,
+           'omega_b':0.02237,
+           'omega_cdm':0.12,
+           'h':0.6736,
+           'YHe':0.2425,
+           'N_ur':2.0328,
+           'N_ncdm':1,
+           'm_ncdm':0.06,
+           'z_pk':z_pk
+          })
+# Set additional CLASS-PT settings
+cosmo.set({'output':'mPk',
+           'non linear':'PT',
+           'IR resummation':'Yes',
+           'Bias tracers':'Yes',
+           'cb':'Yes', # use CDM+baryon spectra
+           'RSD':'Yes',
+           'AP':'Yes', # Alcock-Paczynski effect
+           'Omfid':'0.31', # fiducial Omega_m
+           'PNG':'No' # single-field inflation PNG
+         })
+cosmo.compute()
 
-https://github.com/lesgourg/class_public/wiki
+# Define some wavenumbers and compute spectra
+khvec = np.logspace(-3,np.log10(1),1000) # array of k in 1/Mpc
+cosmo.initialize_output(khvec, z_pk, len(khvec))
 
-Plotting utility
-----------------
+# Define nuisance parameters and extract outputs
+b1, b2, bG2, bGamma3, cs0, cs2, cs4, Pshot, b4 = 2., -1., 0.1, -0.1, 0., 30., 0., 3000., 10.
+pk_g0 = cosmo.pk_gg_l0(b1, b2, bG2, bGamma3, cs0, Pshot, b4)
+pk_g2 = cosmo.pk_gg_l2(b1, b2, bG2, bGamma3, cs2, b4)
+pk_g4 = cosmo.pk_gg_l4(b1, b2, bG2, bGamma3, cs4, b4)
+```
 
-Since version 2.3, the package includes an improved plotting script
-called CPU.py (Class Plotting Utility), written by Benjamin Audren and
-Jesus Torrado. It can plot the Cl's, the P(k) or any other CLASS
-output, for one or several models, as well as their ratio or percentage
-difference. The syntax and list of available options is obtained by
-typing 'pyhton CPU.py -h'. There is a similar script for MATLAB,
-written by Thomas Tram. To use it, once in MATLAB, type 'help
-plot_CLASS_output.m'
+You can also use the Mathematica notebook *'read_tables.nb'* to read the code output. We also provide a technical summary of the fNL implementations [here](https://github.com/Michalychforever/CLASS-PT/blob/master/notebooks/summary_orthogonal_github.ipynb).
 
-Developing the code
---------------------
+# Using the code
 
-If you want to develop the code, we suggest that you download it from
-the github webpage
+You can use CLASS-PT freely, provided that in your publications you cite at least the code paper [arXiv:2004.10607](https://arxiv.org/abs/2004.10607). Feel free to cite the other companion papers devoted to new large-scale structure analysis methodologies!
 
-https://github.com/lesgourg/class_public
-
-rather than from class-code.net. Then you will enjoy all the feature
-of git repositories. You can even develop your own branch and get it
-merged to the public distribution. For related instructions, check
-
-https://github.com/lesgourg/class_public/wiki/Public-Contributing
-
-Using the code
---------------
-
-You can use CLASS freely, provided that in your publications, you cite
-at least the paper `CLASS II: Approximation schemes <http://arxiv.org/abs/1104.2933>`. Feel free to cite more CLASS papers!
-
-Support
--------
-
-To get support, please open a new issue on the
-
-https://github.com/lesgourg/class_public
-
-webpage!
+# Authors
+- [Mikhail (Misha) Ivanov](mailto:ivanov@ias.edu)
+- Anton Chudaykin
+- Marko Simonovic
+- Oliver Philcox
+- Giovanni Cabass
