@@ -116,6 +116,7 @@ cdef class Class:
     cdef np.ndarray pk_mult
     cdef np.ndarray kh
     cdef double fz
+    cdef double Pd2d2_0
     cdef int output_init
 
     cdef char path_to_this[1000]
@@ -4673,6 +4674,11 @@ cdef class Class:
         self.kh = k
         self.fz = self.scale_independent_growth_factor_f(z)
         self.pk_mult = self.get_pk_mult(k, z, k_size)
+        # Precompute constant Pd2d2 contribution: integral of P_lin^2(k) k^3 d(ln k) / pi^2
+        h = self.ba.h
+        Plin_hMpc3 = self.pk_mult[14] * h**3.
+        _trapz = np.trapezoid if hasattr(np, 'trapezoid') else np.trapz
+        self.Pd2d2_0 = _trapz(Plin_hMpc3**2. * self.kh**3., x=np.log(self.kh)) / (np.pi**2.)
         self.output_init = True
 
     def pk_mm_real(self, cs):
@@ -4759,24 +4765,39 @@ cdef class Class:
         return (self.pk_mult[20] +self.pk_mult[27]+self.pk_mult[28] +self.pk_mult[29] +2.*cs4*self.pk_mult[13]/h**2.)*h**3.
 
     # Redshift-space multipoles: galaxy-galaxy
-    def pk_gg_l0(self, b1, b2, bG2, bGamma3, cs0, Pshot, b4):
-        """Return redshift-space galaxy-galaxy power spectrum monopole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
-        self._check_rsd_bias()
-        h = self.ba.h
-        return (self.pk_mult[15] +self.pk_mult[21]+ b1*self.pk_mult[16] + b1*self.pk_mult[22] + b1**2.*self.pk_mult[17] + b1**2.*self.pk_mult[23] + 0.25*b2**2.*self.pk_mult[1] + b1*b2*self.pk_mult[30]+ b2*self.pk_mult[31] + b1*bG2*self.pk_mult[32] + bG2*self.pk_mult[33]+ b2*bG2*self.pk_mult[4]+ bG2**2.*self.pk_mult[5] + 2.*cs0*self.pk_mult[11]/h**2.
-                  + (2.*bG2+0.8*bGamma3)*(b1*self.pk_mult[7]+self.pk_mult[8]))*h**3.+ Pshot + self.fz**2.*b4*(self.kh/h)**2.*(self.fz**2./9. + 2.*self.fz*b1/7. + b1**2./5)*(35./8.)*self.pk_mult[13]*h
+    def pk_gg_l0(self, b1, b2, bG2, bGamma3, cs0, Pshot_nbar, a0_nbar, a2_nbar, b4):
+        """Return redshift-space galaxy-galaxy power spectrum monopole with non-linear corrections.
 
-    def pk_gg_l2(self, b1, b2, bG2, bGamma3, cs2, b4):
-        """Return redshift-space galaxy-galaxy power spectrum quadrupole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        NB: this outputs in (h/Mpc)^3 units. Pshot_nbar, a0_nbar, a2_nbar are stochastic
+        parameters pre-divided by nbar (i.e. pass Pshot/nbar, a0/nbar, a2/nbar).
+        b4 uses k in h/Mpc convention (matching fs_utils.py)."""
         self._check_rsd_bias()
         h = self.ba.h
-        return (self.pk_mult[18] +self.pk_mult[24]+b1*self.pk_mult[19] +b1*self.pk_mult[25] +b1**2.*self.pk_mult[26] +b1*b2*self.pk_mult[34]+b2*self.pk_mult[35] +b1*bG2*self.pk_mult[36]+bG2*self.pk_mult[37]+2.*cs2*self.pk_mult[12]/h**2. +(2.*bG2+0.8*bGamma3)*self.pk_mult[9])*h**3. +self.fz**2.*b4*(self.kh/h)**2.*((self.fz**2.*70. + 165.*self.fz*b1+99.*b1**2.)*4./693.)*(35./8.)*self.pk_mult[13]*h
+        return ((self.pk_mult[15] +self.pk_mult[21]+ b1*self.pk_mult[16] + b1*self.pk_mult[22] + b1**2.*self.pk_mult[17] + b1**2.*self.pk_mult[23] + 0.25*b2**2.*self.pk_mult[1] + b1*b2*self.pk_mult[30]+ b2*self.pk_mult[31] + b1*bG2*self.pk_mult[32] + bG2*self.pk_mult[33]+ b2*bG2*self.pk_mult[4]+ bG2**2.*self.pk_mult[5] + 2.*cs0*self.pk_mult[11]/h**2.
+                  + (2.*bG2+0.8*bGamma3)*(b1*self.pk_mult[7]+self.pk_mult[8]))*h**3.
+                + Pshot_nbar + a0_nbar*(self.kh/0.45)**2. + a2_nbar*(1./3.)*(self.kh/0.45)**2.
+                + 0.25*b2**2.*self.Pd2d2_0
+                + self.fz**2.*b4*self.kh**2.*(self.fz**2./9. + 2.*self.fz*b1/7. + b1**2./5)*(35./8.)*self.pk_mult[13]*h)
+
+    def pk_gg_l2(self, b1, b2, bG2, bGamma3, cs2, a2_nbar, b4):
+        """Return redshift-space galaxy-galaxy power spectrum quadrupole with non-linear corrections.
+
+        NB: this outputs in (h/Mpc)^3 units. a2_nbar is the stochastic parameter
+        pre-divided by nbar (i.e. pass a2/nbar). b4 uses k in h/Mpc convention."""
+        self._check_rsd_bias()
+        h = self.ba.h
+        return ((self.pk_mult[18] +self.pk_mult[24]+b1*self.pk_mult[19] +b1*self.pk_mult[25] +b1**2.*self.pk_mult[26] +b1*b2*self.pk_mult[34]+b2*self.pk_mult[35] +b1*bG2*self.pk_mult[36]+bG2*self.pk_mult[37]+2.*cs2*self.pk_mult[12]/h**2. +(2.*bG2+0.8*bGamma3)*self.pk_mult[9])*h**3.
+                + a2_nbar*(2./3.)*(self.kh/0.45)**2.
+                + self.fz**2.*b4*self.kh**2.*((self.fz**2.*70. + 165.*self.fz*b1+99.*b1**2.)*4./693.)*(35./8.)*self.pk_mult[13]*h)
 
     def pk_gg_l4(self, b1, b2, bG2, bGamma3, cs4, b4):
-        """Return redshift-space galaxy-galaxy power spectrum hexadecapole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        """Return redshift-space galaxy-galaxy power spectrum hexadecapole with non-linear corrections.
+
+        NB: this outputs in (h/Mpc)^3 units. b4 uses k in h/Mpc convention."""
         self._check_rsd_bias()
         h = self.ba.h
-        return (self.pk_mult[20] +self.pk_mult[27]+b1*self.pk_mult[28] +b1**2.*self.pk_mult[29] +b2*self.pk_mult[38] +bG2*self.pk_mult[39] +2.*cs4*self.pk_mult[13]/h**2.)*h**3.+self.fz**2.*b4*(self.kh/h)**2.*((self.fz**2.*210. + 390.*self.fz*b1+143.*b1**2.)*8./5005.)*(35./8.)*self.pk_mult[13]*h
+        return ((self.pk_mult[20] +self.pk_mult[27]+b1*self.pk_mult[28] +b1**2.*self.pk_mult[29] +b2*self.pk_mult[38] +bG2*self.pk_mult[39] +2.*cs4*self.pk_mult[13]/h**2.)*h**3.
+                + self.fz**2.*b4*self.kh**2.*((self.fz**2.*210. + 390.*self.fz*b1+143.*b1**2.)*8./5005.)*(35./8.)*self.pk_mult[13]*h)
 
     # Redshift-space multipoles: galaxy-matter (cross)
     def pk_gm_l0(self, b1, b2, bG2, bGamma3, cs0):

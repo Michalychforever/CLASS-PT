@@ -52,6 +52,9 @@ CS0 = 5.0
 CS2 = 15.0
 CS4 = -5.0
 PSHOT = 5e3
+PSHOT_NBAR = 5e3
+A0_NBAR = 0.
+A2_NBAR = 0.
 B4 = 100.0
 
 
@@ -436,12 +439,12 @@ class TestRedshiftSpaceMultipoles(_FullConfigMixin, unittest.TestCase):
 
     # --- Galaxy multipoles ---
     def test_pk_gg_l0_positive(self):
-        pk = self.M.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT, B4)
+        pk = self.M.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT_NBAR, A0_NBAR, A2_NBAR, B4)
         mask = (self.kvec > 0.01) & (self.kvec < 0.3)
         self.assertTrue(np.all(pk[mask] > 0))
 
     def test_pk_gg_l2_shape(self):
-        self.assertEqual(len(self.M.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, B4)), len(self.kvec))
+        self.assertEqual(len(self.M.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, A2_NBAR, B4)), len(self.kvec))
 
     def test_pk_gg_l4_shape(self):
         self.assertEqual(len(self.M.pk_gg_l4(B1, B2, BG2, BGAMMA3, CS4, B4)), len(self.kvec))
@@ -456,24 +459,27 @@ class TestRedshiftSpaceMultipoles(_FullConfigMixin, unittest.TestCase):
     def test_pk_gg_l0_consistency(self):
         """Verify pk_gg_l0 matches manual construction from pk_mult."""
         h, fz, m, kh = self.h, self.fz, self.pk_mult, self.khvec
-        pk = self.M.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT, B4)
+        pk = self.M.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT_NBAR, A0_NBAR, A2_NBAR, B4)
+        Plin_hMpc3 = m[14] * h**3.
+        _trapz = np.trapezoid if hasattr(np, 'trapezoid') else np.trapz
+        Pd2d2_0 = _trapz(Plin_hMpc3**2. * kh**3., x=np.log(kh)) / (np.pi**2.)
         pk_manual = (
             m[15]+m[21] + B1*m[16]+B1*m[22] + B1**2*m[17]+B1**2*m[23]
             + 0.25*B2**2*m[1] + B1*B2*m[30]+B2*m[31]
             + B1*BG2*m[32]+BG2*m[33] + B2*BG2*m[4]+BG2**2*m[5]
             + 2.*CS0*m[11]/h**2
             + (2.*BG2+0.8*BGAMMA3)*(B1*m[7]+m[8])
-        )*h**3 + PSHOT + fz**2*B4*(kh/h)**2*(fz**2/9.+2.*fz*B1/7.+B1**2/5.)*(35./8.)*m[13]*h
+        )*h**3 + PSHOT_NBAR + A0_NBAR*(kh/0.45)**2 + A2_NBAR*(1./3.)*(kh/0.45)**2 + 0.25*B2**2*Pd2d2_0 + fz**2*B4*kh**2*(fz**2/9.+2.*fz*B1/7.+B1**2/5.)*(35./8.)*m[13]*h
         np.testing.assert_allclose(pk, pk_manual, rtol=1e-12)
 
     def test_pk_gg_l2_consistency(self):
         h, fz, m, kh = self.h, self.fz, self.pk_mult, self.khvec
-        pk = self.M.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, B4)
+        pk = self.M.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, A2_NBAR, B4)
         pk_manual = (
             m[18]+m[24] + B1*m[19]+B1*m[25] + B1**2*m[26]
             + B1*B2*m[34]+B2*m[35] + B1*BG2*m[36]+BG2*m[37]
             + 2.*CS2*m[12]/h**2 + (2.*BG2+0.8*BGAMMA3)*m[9]
-        )*h**3 + fz**2*B4*(kh/h)**2*((fz**2*70.+165.*fz*B1+99.*B1**2)*4./693.)*(35./8.)*m[13]*h
+        )*h**3 + A2_NBAR*(2./3.)*(kh/0.45)**2 + fz**2*B4*kh**2*((fz**2*70.+165.*fz*B1+99.*B1**2)*4./693.)*(35./8.)*m[13]*h
         np.testing.assert_allclose(pk, pk_manual, rtol=1e-12)
 
     def test_pk_gg_l4_consistency(self):
@@ -482,7 +488,7 @@ class TestRedshiftSpaceMultipoles(_FullConfigMixin, unittest.TestCase):
         pk_manual = (
             m[20]+m[27] + B1*m[28]+B1**2*m[29]
             + B2*m[38]+BG2*m[39] + 2.*CS4*m[13]/h**2
-        )*h**3 + fz**2*B4*(kh/h)**2*((fz**2*210.+390.*fz*B1+143.*B1**2)*8./5005.)*(35./8.)*m[13]*h
+        )*h**3 + fz**2*B4*kh**2*((fz**2*210.+390.*fz*B1+143.*B1**2)*8./5005.)*(35./8.)*m[13]*h
         np.testing.assert_allclose(pk, pk_manual, rtol=1e-12)
 
 
@@ -654,14 +660,14 @@ class TestAPEffect(unittest.TestCase):
         pass
 
     def test_ap_changes_monopole(self):
-        pk_noAP = self.M_noAP.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT, B4)[self.mask]
-        pk_AP = self.M_AP.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT, B4)[self.mask]
+        pk_noAP = self.M_noAP.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT_NBAR, A0_NBAR, A2_NBAR, B4)[self.mask]
+        pk_AP = self.M_AP.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT_NBAR, A0_NBAR, A2_NBAR, B4)[self.mask]
         self.assertFalse(np.allclose(pk_noAP, pk_AP, rtol=1e-4),
                          "AP effect has no impact on galaxy monopole")
 
     def test_ap_changes_quadrupole(self):
-        pk_noAP = self.M_noAP.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, B4)[self.mask]
-        pk_AP = self.M_AP.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, B4)[self.mask]
+        pk_noAP = self.M_noAP.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, A2_NBAR, B4)[self.mask]
+        pk_AP = self.M_AP.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, A2_NBAR, B4)[self.mask]
         self.assertFalse(np.allclose(pk_noAP, pk_AP, rtol=1e-4),
                          "AP effect has no impact on galaxy quadrupole")
 
@@ -808,7 +814,7 @@ class TestExternalPk(unittest.TestCase):
         self.assertEqual(len(self.M.pk_mm_real(CS)), len(self.kvec))
 
     def test_pk_gg_l0_finite(self):
-        pk = self.M.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT, B4)
+        pk = self.M.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT_NBAR, A0_NBAR, A2_NBAR, B4)
         self.assertTrue(np.all(np.isfinite(pk)), "External Pk: pk_gg_l0 has non-finite values")
 
     def test_pk_mm_l2_finite(self):
@@ -920,10 +926,10 @@ class TestRegressionFull(_FullConfigMixin, unittest.TestCase):
 
     # --- Galaxy multipoles ---
     def test_pk_gg_l0(self):
-        self._check('pk_gg_l0', self.M.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT, B4))
+        self._check('pk_gg_l0', self.M.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT_NBAR, A0_NBAR, A2_NBAR, B4))
 
     def test_pk_gg_l2(self):
-        self._check('pk_gg_l2', self.M.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, B4))
+        self._check('pk_gg_l2', self.M.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, A2_NBAR, B4))
 
     def test_pk_gg_l4(self):
         self._check('pk_gg_l4', self.M.pk_gg_l4(B1, B2, BG2, BGAMMA3, CS4, B4))
@@ -1096,10 +1102,10 @@ class TestRegressionNoAP(_RegressionBase):
 
     # Galaxy multipoles
     def test_pk_gg_l0(self):
-        self._check('noAP_pk_gg_l0', self.M.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT, B4))
+        self._check('noAP_pk_gg_l0', self.M.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT_NBAR, A0_NBAR, A2_NBAR, B4))
 
     def test_pk_gg_l2(self):
-        self._check('noAP_pk_gg_l2', self.M.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, B4))
+        self._check('noAP_pk_gg_l2', self.M.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, A2_NBAR, B4))
 
     def test_pk_gg_l4(self):
         self._check('noAP_pk_gg_l4', self.M.pk_gg_l4(B1, B2, BG2, BGAMMA3, CS4, B4))
@@ -1256,7 +1262,7 @@ khvec = kvec * h
 M.initialize_output(khvec, {Z_PK}, len(khvec))
 pk_mult = M.get_pk_mult(khvec, {Z_PK}, len(khvec))
 pk_mm = M.pk_mm_real({CS})
-pk_gg = M.pk_gg_l0({B1}, {B2}, {BG2}, {BGAMMA3}, {CS0}, {PSHOT}, {B4})
+pk_gg = M.pk_gg_l0({B1}, {B2}, {BG2}, {BGAMMA3}, {CS0}, {PSHOT_NBAR}, {A0_NBAR}, {A2_NBAR}, {B4})
 # Output as hex for bitwise comparison
 result = {{
     'pk_mm': [float(x) for x in pk_mm[::30]],

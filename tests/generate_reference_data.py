@@ -26,6 +26,7 @@ COSMO_PARAMS = {
 Z_PK = 0.61
 B1, B2, BG2, BGAMMA3 = 2.0, -1.0, 0.1, -0.1
 CS, CS0, CS2, CS4, PSHOT, B4 = 1.0, 5.0, 15.0, -5.0, 5e3, 100.0
+PSHOT_NBAR, A0_NBAR, A2_NBAR = 5e3, 0., 0.
 
 def make_kvecs(h):
     kvec = np.logspace(-3, np.log10(3), 300)
@@ -160,8 +161,8 @@ ref['pk_mm_l2'] = M_full.pk_mm_l2(CS2)[ref_idx]
 ref['pk_mm_l4'] = M_full.pk_mm_l4(CS4)[ref_idx]
 
 # Galaxy multipoles
-ref['pk_gg_l0'] = M_full.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT, B4)[ref_idx]
-ref['pk_gg_l2'] = M_full.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, B4)[ref_idx]
+ref['pk_gg_l0'] = M_full.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT_NBAR, A0_NBAR, A2_NBAR, B4)[ref_idx]
+ref['pk_gg_l2'] = M_full.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, A2_NBAR, B4)[ref_idx]
 ref['pk_gg_l4'] = M_full.pk_gg_l4(B1, B2, BG2, BGAMMA3, CS4, B4)[ref_idx]
 
 # fNL equilateral
@@ -224,8 +225,8 @@ ref['noAP_pk_gg_real'] = M_noAP.pk_gg_real(B1, B2, BG2, BGAMMA3, CS, CS0, PSHOT)
 ref['noAP_pk_mm_l0'] = M_noAP.pk_mm_l0(CS0)[ref_idx]
 ref['noAP_pk_mm_l2'] = M_noAP.pk_mm_l2(CS2)[ref_idx]
 ref['noAP_pk_mm_l4'] = M_noAP.pk_mm_l4(CS4)[ref_idx]
-ref['noAP_pk_gg_l0'] = M_noAP.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT, B4)[ref_idx]
-ref['noAP_pk_gg_l2'] = M_noAP.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, B4)[ref_idx]
+ref['noAP_pk_gg_l0'] = M_noAP.pk_gg_l0(B1, B2, BG2, BGAMMA3, CS0, PSHOT_NBAR, A0_NBAR, A2_NBAR, B4)[ref_idx]
+ref['noAP_pk_gg_l2'] = M_noAP.pk_gg_l2(B1, B2, BG2, BGAMMA3, CS2, A2_NBAR, B4)[ref_idx]
 ref['noAP_pk_gg_l4'] = M_noAP.pk_gg_l4(B1, B2, BG2, BGAMMA3, CS4, B4)[ref_idx]
 print(f"noAP config: 10 convenience methods + pk_mult")
 
