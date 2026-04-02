@@ -6,6 +6,7 @@
  */
 
 #include "input.h"
+#include "nonlinear_pt.h"
 
 /* The input module fills variables belonging to the structures of
    essentially all other modules. Thus we need to include all the
@@ -55,6 +56,7 @@ int input_init(int argc,
                struct primordial *ppm,
                struct harmonic *phr,
                struct fourier * pfo,
+               struct nonlinear_pt * pnlpt,
                struct lensing *ple,
                struct distortions *psd,
                struct output *pop,
@@ -75,7 +77,7 @@ int input_init(int argc,
 
   /** Initialize all parameters given the input 'file_content' structure.
       If its size is null, all parameters take their default values. */
-  class_call(input_read_from_file(&fc,ppr,pba,pth,ppt,ptr,ppm,phr,pfo,ple,psd,pop,
+  class_call(input_read_from_file(&fc,ppr,pba,pth,ppt,ptr,ppm,phr,pfo,pnlpt,ple,psd,pop,
                                   errmsg),
              errmsg,
              errmsg);
@@ -388,6 +390,7 @@ int input_read_from_file(struct file_content * pfc,
                          struct primordial *ppm,
                          struct harmonic *phr,
                          struct fourier * pfo,
+                         struct nonlinear_pt * pnlpt,
                          struct lensing *ple,
                          struct distortions *psd,
                          struct output *pop,
@@ -425,7 +428,7 @@ int input_read_from_file(struct file_content * pfc,
              errmsg);
 
   /** Update structs with input that is potentially updated after shooting */
-  class_call(input_read_parameters(pfc,ppr,pba,pth,ppt,ptr,ppm,phr,pfo,ple,psd,pop,
+  class_call(input_read_parameters(pfc,ppr,pba,pth,ppt,ptr,ppm,phr,pfo,pnlpt,ple,psd,pop,
                                     errmsg),
               errmsg,
               errmsg);
@@ -1157,6 +1160,7 @@ int input_get_guess(double *xguess,
   struct primordial pm;       /* for primordial spectra */
   struct harmonic hr;          /* for output spectra */
   struct fourier fo;        /* for non-linear spectra */
+  struct nonlinear_pt nlpt;   /* for one-loop PT spectra */
   struct lensing le;          /* for lensed spectra */
   struct distortions sd;      /* for spectral distortions */
   struct output op;           /* for output files */
@@ -1175,7 +1179,7 @@ int input_get_guess(double *xguess,
                                    errmsg),
              errmsg,
              errmsg);
-  class_call(input_read_parameters(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&hr,&fo,&le,&sd,&op,
+  class_call(input_read_parameters(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&hr,&fo,&nlpt,&le,&sd,&op,
                                    errmsg),
              errmsg,
              errmsg);
@@ -1325,6 +1329,7 @@ int input_try_unknown_parameters(double * unknown_parameter,
   struct primordial pm;       /* for primordial spectra */
   struct harmonic hr;          /* for output spectra */
   struct fourier fo;        /* for non-linear spectra */
+  struct nonlinear_pt nlpt;   /* for one-loop PT spectra */
   struct lensing le;          /* for lensed spectra */
   struct distortions sd;      /* for spectral distortions */
   struct output op;           /* for output files */
@@ -1353,7 +1358,7 @@ int input_try_unknown_parameters(double * unknown_parameter,
              errmsg,
              errmsg);
 
-  class_call(input_read_parameters(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&hr,&fo,&le,&sd,&op,
+  class_call(input_read_parameters(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&hr,&fo,&nlpt,&le,&sd,&op,
                                    errmsg),
              errmsg,
              errmsg);
@@ -1437,18 +1442,25 @@ int input_try_unknown_parameters(double * unknown_parameter,
     class_call_except(fourier_init(&pr,&ba,&th,&pt,&pm,&fo), fo.error_message, errmsg, primordial_free(&pm);perturbations_free(&pt);thermodynamics_free(&th);background_free(&ba));
   }
 
+  if (pfzw->required_computation_stage >= cs_nonlinear_pt){
+    if (input_verbose>2)
+      printf("Stage 5.5: nonlinear perturbation theory\n");
+    nlpt.nonlinear_pt_verbose = 0;
+    class_call_except(nonlinear_pt_init(&pr,&ba,&th,&pt,&pm,&nlpt), nlpt.error_message, errmsg, fourier_free(&fo);primordial_free(&pm);perturbations_free(&pt);thermodynamics_free(&th);background_free(&ba));
+  }
+
   if (pfzw->required_computation_stage >= cs_transfer){
     if (input_verbose>2)
       printf("Stage 6: transfer\n");
     tr.transfer_verbose = 0;
-    class_call_except(transfer_init(&pr,&ba,&th,&pt,&fo,&tr), tr.error_message, errmsg, fourier_free(&fo);primordial_free(&pm);perturbations_free(&pt);thermodynamics_free(&th);background_free(&ba));
+    class_call_except(transfer_init(&pr,&ba,&th,&pt,&fo,&nlpt,&tr), tr.error_message, errmsg, nonlinear_pt_free(&nlpt);fourier_free(&fo);primordial_free(&pm);perturbations_free(&pt);thermodynamics_free(&th);background_free(&ba));
   }
 
   if (pfzw->required_computation_stage >= cs_spectra){
     if (input_verbose>2)
       printf("Stage 7: spectra\n");
     hr.harmonic_verbose = 0;
-    class_call_except(harmonic_init(&pr,&ba,&pt,&pm,&fo,&tr,&hr),hr.error_message, errmsg, transfer_free(&tr);fourier_free(&fo);primordial_free(&pm);perturbations_free(&pt);thermodynamics_free(&th);background_free(&ba));
+    class_call_except(harmonic_init(&pr,&ba,&pt,&pm,&fo,&tr,&hr),hr.error_message, errmsg, transfer_free(&tr);nonlinear_pt_free(&nlpt);fourier_free(&fo);primordial_free(&pm);perturbations_free(&pt);thermodynamics_free(&th);background_free(&ba));
   }
 
   /** Get the corresponding shoot variable and put into output */
@@ -1505,6 +1517,9 @@ int input_try_unknown_parameters(double * unknown_parameter,
   }
   if (pfzw->required_computation_stage >= cs_transfer){
     class_call(transfer_free(&tr), tr.error_message, errmsg);
+  }
+  if (pfzw->required_computation_stage >= cs_nonlinear_pt){
+    class_call(nonlinear_pt_free(&nlpt), nlpt.error_message, errmsg);
   }
   if (pfzw->required_computation_stage >= cs_nonlinear){
     class_call(fourier_free(&fo), fo.error_message, errmsg);
@@ -1647,6 +1662,7 @@ int input_read_parameters(struct file_content * pfc,
                           struct primordial *ppm,
                           struct harmonic *phr,
                           struct fourier * pfo,
+                          struct nonlinear_pt * pnlpt,
                           struct lensing *ple,
                           struct distortions *psd,
                           struct output *pop,
@@ -1658,7 +1674,7 @@ int input_read_parameters(struct file_content * pfc,
   int input_verbose=0;
 
   /** Set all input parameters to default values */
-  class_call(input_default_params(pba,pth,ppt,ptr,ppm,phr,pfo,ple,psd,pop),
+  class_call(input_default_params(pba,pth,ppt,ptr,ppm,phr,pfo,pnlpt,ple,psd,pop),
              errmsg,
              errmsg);
 
@@ -1690,7 +1706,7 @@ int input_read_parameters(struct file_content * pfc,
              errmsg);
 
   /** Read parameters for nonlinear quantities */
-  class_call(input_read_parameters_nonlinear(pfc,ppr,pba,pth,ppt,pfo,
+  class_call(input_read_parameters_nonlinear(pfc,ppr,pba,pth,ppt,pfo,pnlpt,
                                              input_verbose,
                                              errmsg),
              errmsg,
@@ -1703,7 +1719,7 @@ int input_read_parameters(struct file_content * pfc,
              errmsg);
 
   /** Read parameters for spectra quantities */
-  class_call(input_read_parameters_spectra(pfc,ppr,pba,ppm,ppt,ptr,phr,pop,
+  class_call(input_read_parameters_spectra(pfc,ppr,pba,ppm,ppt,ptr,phr,pnlpt,pop,
                                            errmsg),
              errmsg,
              errmsg);
@@ -1727,7 +1743,7 @@ int input_read_parameters(struct file_content * pfc,
              errmsg);
 
   /** Read parameters for output quantities */
-  class_call(input_read_parameters_output(pfc,pba,pth,ppt,ptr,ppm,phr,pfo,ple,psd,pop,
+  class_call(input_read_parameters_output(pfc,pba,pth,ppt,ptr,ppm,phr,pfo,pnlpt,ple,psd,pop,
                                           errmsg),
              errmsg,
              errmsg);
@@ -3679,6 +3695,7 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
                                     struct thermodynamics * pth,
                                     struct perturbations * ppt,
                                     struct fourier * pfo,
+                                    struct nonlinear_pt * pnlpt,
                                     int input_verbose,
                                     ErrorMsg errmsg){
 
@@ -3832,13 +3849,148 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
       class_read_double("z_infinity", pfo->z_infinity);
       class_read_int("nk_wiggle", pfo->nk_wiggle);
     }
+    else if ((strstr(string1,"pt") != NULL) || (strstr(string1,"Pt") != NULL) || (strstr(string1,"PT") != NULL)) {
+      pnlpt->method = nlpt_spt;
+      pfo->method = nl_none;
+      ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
+      pnlpt->fNL_equil_ortho_switch = fNL_equil_ortho_no;
+      pnlpt->irres = irres_yes;
+      pnlpt->bias = bias_yes;
+      pnlpt->rsd = rsd_no;
+      pnlpt->AP_effect = AP_effect_no;
+      pnlpt->cb = _TRUE_;
+    }
     else if (strstr(string1,"no")!=NULL){
       pfo->method=nl_none;
       ppt->has_nl_corrections_based_on_delta_m = _FALSE_;
     }
     else {
       class_stop(errmsg,
-                 "You specified 'non_linear' = '%s'. It has to be one of {'halofit','hmcode','none'}.",string1);
+                 "You specified 'non_linear' = '%s'. It has to be one of {'halofit','hmcode','PT','none'}.",string1);
+    }
+  }
+
+  /** - CLASS-PT specific parameters */
+  if (pnlpt->method == nlpt_spt) {
+
+    /** Fiducial Om for AP */
+    class_call(parser_read_double(pfc,"Omfid",&param1,&flag1,errmsg),errmsg,errmsg);
+    if (flag1 == _TRUE_) { pnlpt->OmfidAP = param1; }
+    else { pnlpt->OmfidAP = 0.31; }
+
+    /** FFTLog mode */
+    class_call(parser_read_string(pfc,"FFTLog mode",&(string1),&(flag1),errmsg),errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      if ((strstr(string1,"Fast") != NULL) || (strstr(string1,"FAST") != NULL) || (strstr(string1,"F") != NULL)) {
+        ppr->nmax_nlpt = 128;
+      }
+      else if ((strstr(string1,"Precise") != NULL) || (strstr(string1,"PRECISE") != NULL) || (strstr(string1,"P") != NULL)) {
+        ppr->nmax_nlpt = 512;
+      }
+      else {
+        ppr->nmax_nlpt = 256;
+      }
+    }
+    else {
+      ppr->nmax_nlpt = 256;
+    }
+
+    /** Input Pk replacement */
+    class_call(parser_read_string(pfc,"Input Pk",&(string1),&(flag1),errmsg),errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      if (strlen(string1)>0) {
+        pnlpt->replace_pk = _TRUE_;
+        strcpy(pnlpt->input_pk,string1);
+      }
+      else { pnlpt->replace_pk = _FALSE_; }
+    }
+
+    /** Replace background */
+    class_call(parser_read_string(pfc,"replace background",&(string1),&(flag1),errmsg),errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      if ((strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL) || (strstr(string1,"Y") != NULL)){
+        pnlpt->replace_background = _TRUE_;
+        class_call(parser_read_double(pfc,"Hz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        pnlpt->replace_Hz_value = param1;
+        class_call(parser_read_double(pfc,"DAz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        pnlpt->replace_DAz_value = param1;
+        class_call(parser_read_double(pfc,"Dz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        pnlpt->replace_Dz_value = param1;
+        class_call(parser_read_double(pfc,"fz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        pnlpt->replace_fz_value = param1;
+      } else {
+        pnlpt->replace_background = _FALSE_;
+        class_call(parser_read_double(pfc,"Hz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        class_call(parser_read_double(pfc,"DAz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        class_call(parser_read_double(pfc,"Dz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+        class_call(parser_read_double(pfc,"fz_replace",&param1,&flag1,errmsg),errmsg,errmsg);
+      }
+    }
+
+    /** No-wiggle option */
+    class_call(parser_read_string(pfc,"no-wiggle",&(string1),&(flag1),errmsg),errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      if ((strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL) || (strstr(string1,"Y") != NULL)){
+        pnlpt->no_wiggle = _TRUE_;
+      } else { pnlpt->no_wiggle = _FALSE_; }
+    } else { pnlpt->no_wiggle = _FALSE_; }
+
+    /** BAO rescaling */
+    class_call(parser_read_double(pfc,"alpha_rs",&param1,&flag1,errmsg),errmsg,errmsg);
+    if (flag1 == _TRUE_) { pnlpt->alpha_rs = param1; }
+    else { pnlpt->alpha_rs = 1.0; }
+
+    /** Output format */
+    class_call(parser_read_string(pfc,"output format",&(string1),&(flag1),errmsg),errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      if ((strstr(string1,"Fast") != NULL) || (strstr(string1,"FAST") != NULL) || (strstr(string1,"F") != NULL)) {
+        pnlpt->fast_output = _TRUE_;
+      } else { pnlpt->fast_output = _FALSE_; }
+    }
+
+    /** cb switch */
+    class_call(parser_read_string(pfc,"cb",&(string1),&(flag1),errmsg),errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      if ((strstr(string1,"No") != NULL) || (strstr(string1,"NO") != NULL) || (strstr(string1,"N") != NULL)) {
+        pnlpt->cb = _FALSE_;
+      }
+      else { pnlpt->cb = _TRUE_; }
+    }
+
+    /** PNG (primordial non-Gaussianity) */
+    class_call(parser_read_string(pfc,"PNG",&(string1),&(flag1),errmsg),errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      if ((strstr(string1,"YES") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"Y") != NULL)) {
+        pnlpt->fNL_equil_ortho_switch = fNL_equil_ortho_yes;
+      } else { pnlpt->fNL_equil_ortho_switch = fNL_equil_ortho_no; }
+    } else { pnlpt->fNL_equil_ortho_switch = fNL_equil_ortho_no; }
+
+    /** IR resummation */
+    class_call(parser_read_string(pfc,"IR resummation",&(string1),&(flag1),errmsg),errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      if ((strstr(string1,"NO") != NULL) || (strstr(string1,"No") != NULL) || (strstr(string1,"N") != NULL)) {
+        pnlpt->irres = irres_no;
+      } else { pnlpt->irres = irres_yes; }
+    }
+
+    /** Bias tracers */
+    class_call(parser_read_string(pfc,"Bias tracers",&(string1),&(flag1),errmsg),errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      if ((strstr(string1,"NO") != NULL) || (strstr(string1,"No") != NULL) || (strstr(string1,"N") != NULL)) {
+        pnlpt->bias = bias_no;
+      } else { pnlpt->bias = bias_yes; }
+    }
+
+    /** RSD */
+    class_call(parser_read_string(pfc,"RSD",&(string1),&(flag1),errmsg),errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      if ((strstr(string1,"Y") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL)) {
+        pnlpt->rsd = rsd_yes;
+        class_call(parser_read_string(pfc,"AP",&(string1),&(flag1),errmsg),errmsg,errmsg);
+        if ((strstr(string1,"Y") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL)) {
+          pnlpt->AP_effect = AP_effect_yes;
+        } else { pnlpt->AP_effect = AP_effect_no; }
+      } else { pnlpt->rsd = rsd_no; }
     }
   }
 
@@ -4711,6 +4863,7 @@ int input_read_parameters_spectra(struct file_content * pfc,
                                   struct perturbations * ppt,
                                   struct transfer * ptr,
                                   struct harmonic *phr,
+                                  struct nonlinear_pt * pnlpt,
                                   struct output * pop,
                                   ErrorMsg errmsg){
 
@@ -4936,6 +5089,12 @@ int input_read_parameters_spectra(struct file_content * pfc,
       ppt->k_max_for_pk = param2;
     }
 
+    /* Force k_max = 100 h/Mpc when PT is active, since the FFTLog grid
+       extends to this value and needs the linear P(k) over the full range */
+    if (pnlpt->method == nlpt_spt) {
+      ppt->k_max_for_pk = 100. * pba->h;
+    }
+
     /** 3.a.1) Maximum k in primordial P(k) */
     /* Read */
     class_call(parser_read_double(pfc,"primordial_P_k_max_h/Mpc",&param1,&flag1,errmsg),
@@ -4971,8 +5130,10 @@ int input_read_parameters_spectra(struct file_content * pfc,
                  int1);
       /* Complete set of parameters */
       pop->z_pk_num = int1;
+      pnlpt->z_pk_num = int1;
       for (i=0; i<int1; i++) {
         pop->z_pk[i] = pointer1[i];
+        pnlpt->z_pk[i] = pop->z_pk[i];
       }
       free(pointer1);
     }
@@ -5454,6 +5615,7 @@ int input_read_parameters_output(struct file_content * pfc,
                                  struct primordial *ppm,
                                  struct harmonic *phr,
                                  struct fourier * pfo,
+                                 struct nonlinear_pt * pnlpt,
                                  struct lensing *ple,
                                  struct distortions *psd,
                                  struct output *pop,
@@ -5558,6 +5720,7 @@ int input_read_parameters_output(struct file_content * pfc,
   class_read_int("primordial_verbose",ppm->primordial_verbose);
   class_read_int("harmonic_verbose",phr->harmonic_verbose);
   class_read_int("fourier_verbose",pfo->fourier_verbose);
+  class_read_int("nonlinear_pt_verbose",pnlpt->nonlinear_pt_verbose);
   class_read_int("lensing_verbose",ple->lensing_verbose);
   class_read_int("distortions_verbose",psd->distortions_verbose);
   class_read_int("output_verbose",pop->output_verbose);
@@ -5664,6 +5827,7 @@ int input_default_params(struct background *pba,
                          struct primordial *ppm,
                          struct harmonic *phr,
                          struct fourier * pfo,
+                         struct nonlinear_pt * pnlpt,
                          struct lensing *ple,
                          struct distortions *psd,
                          struct output *pop) {
@@ -6003,6 +6167,16 @@ int input_default_params(struct background *pba,
   pfo->nk_wiggle = 512;
 
   pfo->has_pk_analytic_nowiggle = _FALSE_;
+
+  /** CLASS-PT defaults */
+  pnlpt->method = nlpt_none;
+  pnlpt->replace_pk = _FALSE_;
+  pnlpt->z_pk_num = 1;
+  pnlpt->z_pk[0] = 0.;
+  pnlpt->fast_output = _FALSE_;
+  pnlpt->cb = _TRUE_;
+  pnlpt->fNL_equil_ortho_switch = fNL_equil_ortho_no;
+  pnlpt->nonlinear_pt_verbose = 0;
 
   /**
    * Default to input_read_parameters_primordial

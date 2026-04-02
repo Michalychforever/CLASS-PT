@@ -525,6 +525,10 @@ class_precision_parameter(nonlinear_min_k_max,double,5.0) /**< when
 class_precision_parameter(k_max_for_pk_sigma8_min,double,10.) /**< minimal k_max for computation of sigma8 */
 class_precision_parameter(k_max_for_pk_sigma8_max,double,100.) /**< maximal k_max for computation of sigma8 */
 
+/** parameters relevant for CLASS-PT computation */
+
+class_precision_parameter(nmax_nlpt,int,256) /**< number of FFTLog sampling points for one-loop PT integrals (128=fast, 256=normal, 512=precise) */
+
 /** parameters relevant for HALOFIT computation */
 
 class_precision_parameter(halofit_min_k_nonlinear,double,1.0e-4)/**< value of k in 1/Mpc below which non-linear corrections will be neglected */

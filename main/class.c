@@ -11,6 +11,7 @@ int main(int argc, char **argv) {
   struct thermodynamics th;           /* for thermodynamics */
   struct perturbations pt;         /* for source functions */
   struct primordial pm;       /* for primordial spectra */
+  struct nonlinear_pt nlpt;   /* for one-loop PT spectra */
   struct fourier fo;        /* for non-linear spectra */
   struct transfer tr;        /* for transfer functions */
   struct harmonic hr;          /* for output spectra */
@@ -19,7 +20,7 @@ int main(int argc, char **argv) {
   struct output op;           /* for output files */
   ErrorMsg errmsg;            /* for error messages */
 
-  if (input_init(argc, argv,&pr,&ba,&th,&pt,&tr,&pm,&hr,&fo,&le,&sd,&op,errmsg) == _FAILURE_) {
+  if (input_init(argc, argv,&pr,&ba,&th,&pt,&tr,&pm,&hr,&fo,&nlpt,&le,&sd,&op,errmsg) == _FAILURE_) {
     printf("\n\nError running input_init \n=>%s\n",errmsg);
     return _FAILURE_;
   }
@@ -49,7 +50,12 @@ int main(int argc, char **argv) {
     return _FAILURE_;
   }
 
-  if (transfer_init(&pr,&ba,&th,&pt,&fo,&tr) == _FAILURE_) {
+  if (nonlinear_pt_init(&pr,&ba,&th,&pt,&pm,&nlpt) == _FAILURE_) {
+    printf("\n\nError in nonlinear_pt_init \n=>%s\n",nlpt.error_message);
+    return _FAILURE_;
+  }
+
+  if (transfer_init(&pr,&ba,&th,&pt,&fo,&nlpt,&tr) == _FAILURE_) {
     printf("\n\nError in transfer_init \n=>%s\n",tr.error_message);
     return _FAILURE_;
   }
@@ -98,6 +104,11 @@ int main(int argc, char **argv) {
 
   if (fourier_free(&fo) == _FAILURE_) {
     printf("\n\nError in fourier_free \n=>%s\n",fo.error_message);
+    return _FAILURE_;
+  }
+
+  if (nonlinear_pt_free(&nlpt) == _FAILURE_) {
+    printf("\n\nError in nonlinear_pt_free \n=>%s\n",nlpt.error_message);
     return _FAILURE_;
   }
 

@@ -16,6 +16,7 @@ int main(int argc, char **argv) {
   struct perturbations pt;         /* for source functions */
   struct primordial pm;       /* for primordial spectra */
   struct fourier fo;        /* for non-linear spectra */
+  struct nonlinear_pt nlpt;   /* for PT non-linear spectra */
   struct transfer tr;        /* for transfer functions */
   struct harmonic hr;          /* for output spectra */
   struct lensing le;          /* for lensed spectra */
@@ -23,7 +24,7 @@ int main(int argc, char **argv) {
   struct output op;           /* for output files */
   ErrorMsg errmsg;            /* for error messages */
 
-  if (input_init(argc, argv,&pr,&ba,&th,&pt,&tr,&pm,&hr,&fo,&le,&sd,&op,errmsg) == _FAILURE_) {
+  if (input_init(argc, argv,&pr,&ba,&th,&pt,&tr,&pm,&hr,&fo,&nlpt,&le,&sd,&op,errmsg) == _FAILURE_) {
     printf("\n\nError running input_init_from_arguments \n=>%s\n",errmsg);
     return _FAILURE_;
   }
@@ -53,7 +54,7 @@ int main(int argc, char **argv) {
     return _FAILURE_;
   }
 
-  if (transfer_init(&pr,&ba,&th,&pt,&fo,&tr) == _FAILURE_) {
+  if (transfer_init(&pr,&ba,&th,&pt,&fo,&nlpt,&tr) == _FAILURE_) {
     printf("\n\nError in transfer_init \n=>%s\n",tr.error_message);
     return _FAILURE_;
   }

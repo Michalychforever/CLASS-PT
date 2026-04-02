@@ -6,6 +6,9 @@
 #include "common.h"
 #include "parser.h"
 
+/* Forward declaration for PT module */
+struct nonlinear_pt;
+
 #define _N_FILEROOT_ 100 /* Number of files that will be not overwritten for a given root */
 
 /* macro for reading parameter values with routines from the parser */
@@ -208,7 +211,7 @@ enum target_names {theta_s, theta_s_100, Neff, Omega_dcdmdr, omega_dcdmdr, Omega
 #define _NUM_TARGETS_ 8
 
 /* Until which class stage is being computed? Pretty much fixed list, don't change. */
-enum computation_stage {cs_background, cs_thermodynamics, cs_perturbations, cs_primordial, cs_nonlinear, cs_transfer, cs_spectra};
+enum computation_stage {cs_background, cs_thermodynamics, cs_perturbations, cs_primordial, cs_nonlinear, cs_nonlinear_pt, cs_transfer, cs_spectra};
 
 /**
  * Structure for all temporary parameters for background fzero function
@@ -244,6 +247,7 @@ extern "C" {
                  struct primordial * ppm,
                  struct harmonic * phr,
                  struct fourier * pfo,
+                 struct nonlinear_pt * pnlpt,
                  struct lensing *ple,
                  struct distortions *psd,
                  struct output *pop,
@@ -270,6 +274,7 @@ extern "C" {
                            struct primordial *ppm,
                            struct harmonic *phr,
                            struct fourier *pfo,
+                           struct nonlinear_pt *pnlpt,
                            struct lensing *ple,
                            struct distortions *psd,
                            struct output *pop,
@@ -362,6 +367,7 @@ extern "C" {
                             struct primordial * ppm,
                             struct harmonic * phr,
                             struct fourier * pfo,
+                            struct nonlinear_pt * pnlpt,
                             struct lensing * ple,
                             struct distortions *psd,
                             struct output * pop,
@@ -394,6 +400,7 @@ extern "C" {
                                       struct thermodynamics * pth,
                                       struct perturbations * ppt,
                                       struct fourier * pfo,
+                                      struct nonlinear_pt * pnlpt,
                                       int input_verbose,
                                       ErrorMsg errmsg);
 
@@ -416,6 +423,7 @@ extern "C" {
                                     struct perturbations * ppt,
                                     struct transfer * ptr,
                                     struct harmonic * phr,
+                                    struct nonlinear_pt * pnlpt,
                                     struct output * pop,
                                     ErrorMsg errmsg);
 
@@ -445,6 +453,7 @@ extern "C" {
                                    struct primordial * ppm,
                                    struct harmonic * phr,
                                    struct fourier * pfo,
+                                   struct nonlinear_pt * pnlpt,
                                    struct lensing *ple,
                                    struct distortions *psd,
                                    struct output *pop,
@@ -463,6 +472,7 @@ extern "C" {
                            struct primordial *ppm,
                            struct harmonic *phr,
                            struct fourier *pfo,
+                           struct nonlinear_pt *pnlpt,
                            struct lensing *ple,
                            struct distortions *psd,
                            struct output *pop);

@@ -16,6 +16,7 @@ int class(
           struct perturbations * ppt,
           struct primordial * ppm,
           struct fourier * pfo,
+          struct nonlinear_pt * pnlpt,
           struct transfer * ptr,
           struct harmonic * phr,
           struct lensing * ple,
@@ -27,7 +28,7 @@ int class(
 
   int l;
 
-  class_call(input_read_from_file(pfc,ppr,pba,pth,ppt,ptr,ppm,phr,pfo,ple,psd,pop,errmsg),
+  class_call(input_read_from_file(pfc,ppr,pba,pth,ppt,ptr,ppm,phr,pfo,pnlpt,ple,psd,pop,errmsg),
              errmsg,
              errmsg);
 
@@ -51,7 +52,7 @@ int class(
              pfo->error_message,
              errmsg);
 
-  class_call(transfer_init(ppr,pba,pth,ppt,pfo,ptr),
+  class_call(transfer_init(ppr,pba,pth,ppt,pfo,pnlpt,ptr),
              ptr->error_message,
              errmsg);
 
@@ -120,6 +121,7 @@ int main() {
   struct primordial pm;       /* for primordial spectra */
   struct harmonic hr;          /* for output spectra */
   struct fourier fo;        /* for non-linear spectra */
+  struct nonlinear_pt nlpt;   /* for PT non-linear spectra */
   struct lensing le;          /* for lensed spectra */
   struct distortions sd;      /* for spectral distortions */
   struct output op;           /* for output files */
@@ -189,7 +191,7 @@ int main() {
     printf("#run with omega_b = %s\n",fc.value[4]);
 
     /* calls class and return the C_l's*/
-    if (class(&fc,&pr,&ba,&th,&pt,&pm,&fo,&tr,&hr,&le,&sd,&op,l_max,cl,errmsg) == _FAILURE_) {
+    if (class(&fc,&pr,&ba,&th,&pt,&pm,&fo,&nlpt,&tr,&hr,&le,&sd,&op,l_max,cl,errmsg) == _FAILURE_) {
       printf("\n\nError in class \n=>%s\n",errmsg);
       return _FAILURE_;
     }

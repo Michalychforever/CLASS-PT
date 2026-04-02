@@ -7,6 +7,9 @@
 #include "hyperspherical.h"
 #include "errno.h"
 
+/* Forward declaration for PT module */
+struct nonlinear_pt;
+
 /* macro: test if index_tt is in the range between index and index+num, while the flag is true */
 #define _index_tt_in_range_(index,num,flag) (flag == _TRUE_) && (index_tt >= index) && (index_tt < index+num)
 /* macro: test if index_tt corresponds to an integrated nCl/sCl contribution */
@@ -319,6 +322,7 @@ extern "C" {
                     struct thermodynamics * pth,
                     struct perturbations * ppt,
                     struct fourier * pfo,
+                    struct nonlinear_pt * pnlpt,
                     struct transfer * ptr
                     );
 
@@ -338,6 +342,7 @@ extern "C" {
   int transfer_perturbation_copy_sources_and_nl_corrections(
                                                             struct perturbations * ppt,
                                                             struct fourier * pfo,
+                                                            struct nonlinear_pt * pnlpt,
                                                             struct transfer * ptr,
                                                             double *** sources
                                                             );

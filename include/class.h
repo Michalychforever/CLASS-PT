@@ -25,6 +25,7 @@
 #include "thermodynamics.h"
 #include "perturbations.h"
 #include "primordial.h"
+#include "nonlinear_pt.h"
 #include "fourier.h"
 #include "transfer.h"
 #include "harmonic.h"

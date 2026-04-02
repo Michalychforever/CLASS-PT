@@ -28,6 +28,7 @@
  */
 
 #include "transfer.h"
+#include "nonlinear_pt.h"
 #include "parallel.h"
 
 /**
@@ -119,6 +120,7 @@ int transfer_init(
                   struct thermodynamics * pth,
                   struct perturbations * ppt,
                   struct fourier * pfo,
+                  struct nonlinear_pt * pnlpt,
                   struct transfer * ptr
                   ) {
 
@@ -221,7 +223,7 @@ int transfer_init(
               ptr->md_size*sizeof(double**),
               ptr->error_message);
 
-  class_call(transfer_perturbation_copy_sources_and_nl_corrections(ppt,pfo,ptr,sources),
+  class_call(transfer_perturbation_copy_sources_and_nl_corrections(ppt,pfo,pnlpt,ptr,sources),
              ptr->error_message,
              ptr->error_message);
 
@@ -654,6 +656,7 @@ int transfer_indices(
 int transfer_perturbation_copy_sources_and_nl_corrections(
                                                           struct perturbations * ppt,
                                                           struct fourier * pfo,
+                                                          struct nonlinear_pt * pnlpt,
                                                           struct transfer * ptr,
                                                           double *** sources
                                                           ) {
@@ -708,6 +711,30 @@ int transfer_perturbation_copy_sources_and_nl_corrections(
                   [index_tau * ppt->k_size[index_md] + index_k]
                   * pfo->nl_corr_density[pfo->index_pk_m][index_tau * ppt->k_size[index_md] + index_k];
               }
+            }
+          }
+        }
+        else if ((pnlpt->method != nlpt_none) && (_scalars_) &&
+                 (((ppt->has_source_delta_m == _TRUE_) && (index_tp == ppt->index_tp_delta_m)) ||
+                  ((ppt->has_source_theta_m == _TRUE_) && (index_tp == ppt->index_tp_theta_m)) ||
+                  ((ppt->has_source_phi == _TRUE_) && (index_tp == ppt->index_tp_phi)) ||
+                  ((ppt->has_source_phi_prime == _TRUE_) && (index_tp == ppt->index_tp_phi_prime)) ||
+                  ((ppt->has_source_phi_plus_psi == _TRUE_) && (index_tp == ppt->index_tp_phi_plus_psi)) ||
+                  ((ppt->has_source_psi == _TRUE_) && (index_tp == ppt->index_tp_psi)))) {
+
+          class_alloc(sources[index_md][index_ic * ppt->tp_size[index_md] + index_tp],
+                      ppt->k_size[index_md]*ppt->tau_size*sizeof(double),
+                      ptr->error_message);
+
+          for (index_tau=0; index_tau<ppt->tau_size; index_tau++) {
+            for (index_k=0; index_k<ppt->k_size[index_md]; index_k++) {
+              sources[index_md]
+                [index_ic * ppt->tp_size[index_md] + index_tp]
+                [index_tau * ppt->k_size[index_md] + index_k] =
+                ppt->sources[index_md]
+                [index_ic * ppt->tp_size[index_md] + index_tp]
+                [index_tau * ppt->k_size[index_md] + index_k]
+                * pnlpt->nl_corr_density[index_tau * ppt->k_size[index_md] + index_k];
             }
           }
         }
