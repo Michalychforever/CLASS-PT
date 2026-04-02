@@ -4630,6 +4630,43 @@ cdef class Class:
 
         return pk_mult
 
+    # Safety check helpers for PT output methods
+    def _check_pt(self):
+        """Check that PT computation was enabled."""
+        if self.nlpt.method == 0:
+            raise CosmoSevereError(
+                "PT was not computed. Set 'non linear': 'PT' to enable perturbation theory.")
+        if not self.output_init:
+            raise CosmoSevereError(
+                "Must call initialize_output(k, z, k_size) before accessing PT spectra.")
+
+    def _check_rsd(self):
+        """Check that RSD multipoles were computed."""
+        self._check_pt()
+        if self.nlpt.rsd != 0:  # rsd_yes = 0
+            raise CosmoSevereError(
+                "RSD multipoles were not computed. Set 'RSD': 'Yes' to enable redshift-space distortions.")
+
+    def _check_bias(self):
+        """Check that bias tracer spectra were computed."""
+        self._check_pt()
+        if self.nlpt.bias != 0:  # bias_yes = 0
+            raise CosmoSevereError(
+                "Bias tracer spectra were not computed. Set 'Bias tracers': 'Yes' to enable biased tracers.")
+
+    def _check_rsd_bias(self):
+        """Check that both RSD and bias tracers were computed."""
+        self._check_rsd()
+        self._check_bias()
+
+    def _check_fNL_ortho(self):
+        """Check that orthogonal fNL templates were computed."""
+        self._check_pt()
+        if self.nlpt.fNL_equil_ortho_switch != 0:  # fNL_equil_ortho_yes = 0
+            raise CosmoSevereError(
+                "Orthogonal/equilateral fNL templates were not computed. "
+                "Set 'PNG': 'Yes' to enable.")
+
     # New user interface functions
     def initialize_output(self, np.ndarray[DTYPE_t,ndim=1] k, double z, int k_size):
         """Compute and store the various non-linear power spectrum terms that will be called in the user interface routines below."""
@@ -4640,263 +4677,245 @@ cdef class Class:
 
     def pk_mm_real(self, cs):
         """Return real-space matter-matter power spectrum with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        self._check_pt()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[0]+self.pk_mult[14]+2*cs*self.pk_mult[10]/h**2.)*h**3.
 
     def pk_gg_real(self, b1, b2, bG2, bGamma3, cs, cs0, Pshot):
         """Return real-space galaxy-galaxy power spectrum with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        self._check_pt()
+        self._check_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (b1**2.*self.pk_mult[14] + b1**2.*self.pk_mult[0] + 2.*(cs*b1**2.+cs0*b1)*self.pk_mult[10]/h**2. + b1*b2*self.pk_mult[2]+ 0.25*b2**2.*self.pk_mult[1] + 2.*b1*bG2*self.pk_mult[3] + b1*(2.*bG2 + 0.8*bGamma3)*self.pk_mult[6] + bG2**2.*self.pk_mult[5] + b2*bG2*self.pk_mult[4])*h**3. + Pshot
 
     def pk_gm_real(self, b1, b2, bG2, bGamma3, cs, cs0):
         """Return real-space galaxy-matter power spectrum with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        self._check_pt()
+        self._check_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (b1*self.pk_mult[14] + b1*self.pk_mult[0] + (2.*cs*b1+cs0)*self.pk_mult[10]/h**2. +(b2/2)*self.pk_mult[2] + bG2*self.pk_mult[3] + (bG2 + 0.4*bGamma3)*self.pk_mult[6])*h**3.
 
     # fNL real-space contributions
     def pk_mm_fNL_real(self):
         """Return real-space matter-matter power spectrum fNL contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_pt()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return self.pk_mult[48]*h**3.
 
     def pk_mm_fNL_real_ortho(self):
         """Return real-space matter-matter power spectrum fNL orthogonal contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_pt()
+        self._check_fNL_ortho()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return self.pk_mult[48+24]*h**3.
 
     def pk_gm_fNL_real(self, b1, b2, bG2):
         """Return real-space galaxy-matter power spectrum fNL contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_pt()
+        self._check_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return b1*self.pk_mult[48]*h**3. + ((b2/2.)*self.pk_mult[49]+bG2*self.pk_mult[50])*h**3.
 
     def pk_gm_fNL_real_ortho(self, b1, b2, bG2):
         """Return real-space galaxy-matter power spectrum fNL orthogonal contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_pt()
+        self._check_bias()
+        self._check_fNL_ortho()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return b1*self.pk_mult[48+24]*h**3. + ((b2/2.)*self.pk_mult[49+24]+bG2*self.pk_mult[50+24])*h**3.
 
     def pk_gg_fNL_real(self, b1, b2, bG2):
         """Return real-space galaxy-galaxy power spectrum fNL contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_pt()
+        self._check_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return b1**2.*self.pk_mult[48]*h**3. + b1*((b2/2.)*self.pk_mult[49]+bG2*self.pk_mult[50])*h**3.
 
     def pk_gg_fNL_real_ortho(self, b1, b2, bG2):
         """Return real-space galaxy-galaxy power spectrum fNL orthogonal contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_pt()
+        self._check_bias()
+        self._check_fNL_ortho()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return b1**2.*self.pk_mult[48+24]*h**3. + b1*((b2/2.)*self.pk_mult[49+24]+bG2*self.pk_mult[50+24])*h**3.
 
     # Redshift-space multipoles: matter-matter
     def pk_mm_l0(self, cs0):
         """Return redshift-space matter-matter power spectrum monopole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        self._check_rsd()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[15] + self.pk_mult[21] + self.pk_mult[16] + self.pk_mult[22] + self.pk_mult[17] + self.pk_mult[23] + 2.*cs0*self.pk_mult[11]/h**2.)*h**3.
 
     def pk_mm_l2(self, cs2):
         """Return redshift-space matter-matter power spectrum quadrupole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        self._check_rsd()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[18] +self.pk_mult[24]+self.pk_mult[19] +self.pk_mult[25] +self.pk_mult[26]  +2.*cs2*self.pk_mult[12]/h**2.)*h**3.
 
     def pk_mm_l4(self, cs4):
         """Return redshift-space matter-matter power spectrum hexadecapole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        self._check_rsd()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[20] +self.pk_mult[27]+self.pk_mult[28] +self.pk_mult[29] +2.*cs4*self.pk_mult[13]/h**2.)*h**3.
 
     # Redshift-space multipoles: galaxy-galaxy
     def pk_gg_l0(self, b1, b2, bG2, bGamma3, cs0, Pshot, b4):
         """Return redshift-space galaxy-galaxy power spectrum monopole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        self._check_rsd_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[15] +self.pk_mult[21]+ b1*self.pk_mult[16] + b1*self.pk_mult[22] + b1**2.*self.pk_mult[17] + b1**2.*self.pk_mult[23] + 0.25*b2**2.*self.pk_mult[1] + b1*b2*self.pk_mult[30]+ b2*self.pk_mult[31] + b1*bG2*self.pk_mult[32] + bG2*self.pk_mult[33]+ b2*bG2*self.pk_mult[4]+ bG2**2.*self.pk_mult[5] + 2.*cs0*self.pk_mult[11]/h**2.
                   + (2.*bG2+0.8*bGamma3)*(b1*self.pk_mult[7]+self.pk_mult[8]))*h**3.+ Pshot + self.fz**2.*b4*(self.kh/h)**2.*(self.fz**2./9. + 2.*self.fz*b1/7. + b1**2./5)*(35./8.)*self.pk_mult[13]*h
 
     def pk_gg_l2(self, b1, b2, bG2, bGamma3, cs2, b4):
         """Return redshift-space galaxy-galaxy power spectrum quadrupole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        self._check_rsd_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[18] +self.pk_mult[24]+b1*self.pk_mult[19] +b1*self.pk_mult[25] +b1**2.*self.pk_mult[26] +b1*b2*self.pk_mult[34]+b2*self.pk_mult[35] +b1*bG2*self.pk_mult[36]+bG2*self.pk_mult[37]+2.*cs2*self.pk_mult[12]/h**2. +(2.*bG2+0.8*bGamma3)*self.pk_mult[9])*h**3. +self.fz**2.*b4*(self.kh/h)**2.*((self.fz**2.*70. + 165.*self.fz*b1+99.*b1**2.)*4./693.)*(35./8.)*self.pk_mult[13]*h
 
     def pk_gg_l4(self, b1, b2, bG2, bGamma3, cs4, b4):
         """Return redshift-space galaxy-galaxy power spectrum hexadecapole with non-linear corrections. NB: this outputs in (h/Mpc)^3 units"""
+        self._check_rsd_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[20] +self.pk_mult[27]+b1*self.pk_mult[28] +b1**2.*self.pk_mult[29] +b2*self.pk_mult[38] +bG2*self.pk_mult[39] +2.*cs4*self.pk_mult[13]/h**2.)*h**3.+self.fz**2.*b4*(self.kh/h)**2.*((self.fz**2.*210. + 390.*self.fz*b1+143.*b1**2.)*8./5005.)*(35./8.)*self.pk_mult[13]*h
 
     # Redshift-space multipoles: galaxy-matter (cross)
     def pk_gm_l0(self, b1, b2, bG2, bGamma3, cs0):
         """Return redshift-space galaxy-matter power spectrum monopole. NB: this outputs in (h/Mpc)^3 units"""
+        self._check_rsd_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[15] + self.pk_mult[21] + b1*(self.pk_mult[16] + self.pk_mult[22]) + b1*(self.pk_mult[17] + self.pk_mult[23]) + (b2/2.)*self.pk_mult[30] + (b2/2.)*self.pk_mult[31] + bG2*self.pk_mult[32] + bG2*self.pk_mult[33] + 2.*cs0*self.pk_mult[11]/h**2. + (bG2 + 0.4*bGamma3)*(b1*self.pk_mult[7]+self.pk_mult[8]))*h**3.
 
     def pk_gm_l2(self, b1, b2, bG2, bGamma3, cs2):
         """Return redshift-space galaxy-matter power spectrum quadrupole. NB: this outputs in (h/Mpc)^3 units"""
+        self._check_rsd_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[18] + self.pk_mult[24] + b1*(self.pk_mult[19] + self.pk_mult[25]) + b1*self.pk_mult[26] + (b2/2.)*self.pk_mult[34] + (b2/2.)*self.pk_mult[35] + bG2*self.pk_mult[36] + bG2*self.pk_mult[37] + 2.*cs2*self.pk_mult[12]/h**2. + (bG2 + 0.4*bGamma3)*self.pk_mult[9])*h**3.
 
     def pk_gm_l4(self, b1, b2, bG2, bGamma3, cs4):
         """Return redshift-space galaxy-matter power spectrum hexadecapole. NB: this outputs in (h/Mpc)^3 units"""
+        self._check_rsd_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[20] + self.pk_mult[27] + b1*self.pk_mult[28] + b1*self.pk_mult[29] + (b2/2.)*self.pk_mult[38] + bG2*self.pk_mult[39] + 2.*cs4*self.pk_mult[13]/h**2.)*h**3.
 
     # fNL multipole contributions: matter-matter
     def pk_mm_fNL_l0(self):
         """Return matter-matter power spectrum monopole fNL contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[51])*h**3.
 
     def pk_mm_fNL_l2(self):
         """Return matter-matter power spectrum quadrupole fNL contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[54])*h**3.
 
     def pk_mm_fNL_l4(self):
         """Return matter-matter power spectrum hexadecapole fNL contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[57])*h**3.
 
     # fNL multipole contributions: galaxy-galaxy
     def pk_gg_fNL_l0(self, b1, b2, bG2):
         """Return galaxy-galaxy power spectrum monopole fNL contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[51] + b1*self.pk_mult[52] + b1**2.*self.pk_mult[53] + b1*(b2/2.)*self.pk_mult[60] + (b2/2.)*self.pk_mult[61] + b1*bG2*self.pk_mult[62] + bG2*self.pk_mult[63])*h**3.
 
     def pk_gg_fNL_l2(self, b1, b2, bG2):
         """Return galaxy-galaxy power spectrum quadrupole fNL contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[54] + b1*self.pk_mult[55] + b1**2.*self.pk_mult[56] + b1*(b2/2.)*self.pk_mult[64] + (b2/2.)*self.pk_mult[65] + b1*bG2*self.pk_mult[66] + bG2*self.pk_mult[67])*h**3.
 
     def pk_gg_fNL_l4(self, b1, b2, bG2):
         """Return galaxy-galaxy power spectrum hexadecapole fNL contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[57] + b1*self.pk_mult[58] + b1**2.*self.pk_mult[59] + b1*(b2/2.)*self.pk_mult[68] + (b2/2.)*self.pk_mult[69] + b1*bG2*self.pk_mult[70] + bG2*self.pk_mult[71])*h**3.
 
     # fNL multipole contributions: galaxy-matter (cross)
     def pk_gm_fNL_l0(self, b1, b2, bG2):
         """Return galaxy-matter power spectrum monopole fNL contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[51] + b1*self.pk_mult[52] + b1*self.pk_mult[53] + (b2/2.)*self.pk_mult[60] + (b2/2.)*self.pk_mult[61] + bG2*self.pk_mult[62] + bG2*self.pk_mult[63])*h**3.
 
     def pk_gm_fNL_l2(self, b1, b2, bG2):
         """Return galaxy-matter power spectrum quadrupole fNL contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[54] + b1*self.pk_mult[55] + b1*self.pk_mult[56] + (b2/2.)*self.pk_mult[64] + (b2/2.)*self.pk_mult[65] + bG2*self.pk_mult[66] + bG2*self.pk_mult[67])*h**3.
 
     def pk_gm_fNL_l4(self, b1, b2, bG2):
         """Return galaxy-matter power spectrum hexadecapole fNL contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd_bias()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[57] + b1*self.pk_mult[58] + b1*self.pk_mult[59] + (b2/2.)*self.pk_mult[68] + (b2/2.)*self.pk_mult[69] + bG2*self.pk_mult[70] + bG2*self.pk_mult[71])*h**3.
 
     # ORTHOGONAL fNL multipole contributions: matter-matter
     def pk_mm_fNL_l0_ortho(self):
         """Return matter-matter power spectrum monopole fNL orthogonal contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd()
+        self._check_fNL_ortho()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[51+24])*h**3.
 
     def pk_mm_fNL_l2_ortho(self):
         """Return matter-matter power spectrum quadrupole fNL orthogonal contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd()
+        self._check_fNL_ortho()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[54+24])*h**3.
 
     def pk_mm_fNL_l4_ortho(self):
         """Return matter-matter power spectrum hexadecapole fNL orthogonal contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd()
+        self._check_fNL_ortho()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[57+24])*h**3.
 
     # ORTHOGONAL fNL multipole contributions: galaxy-galaxy
     def pk_gg_fNL_l0_ortho(self, b1, b2, bG2):
         """Return galaxy-galaxy power spectrum monopole fNL orthogonal contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd_bias()
+        self._check_fNL_ortho()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[51+24] + b1*self.pk_mult[52+24] + b1**2.*self.pk_mult[53+24] + b1*(b2/2.)*self.pk_mult[60+24] + (b2/2.)*self.pk_mult[61+24] + b1*bG2*self.pk_mult[62+24] + bG2*self.pk_mult[63+24])*h**3.
 
     def pk_gg_fNL_l2_ortho(self, b1, b2, bG2):
         """Return galaxy-galaxy power spectrum quadrupole fNL orthogonal contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd_bias()
+        self._check_fNL_ortho()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[54+24] + b1*self.pk_mult[55+24] + b1**2.*self.pk_mult[56+24] + b1*(b2/2.)*self.pk_mult[64+24] + (b2/2.)*self.pk_mult[65+24] + b1*bG2*self.pk_mult[66+24] + bG2*self.pk_mult[67+24])*h**3.
 
     def pk_gg_fNL_l4_ortho(self, b1, b2, bG2):
         """Return galaxy-galaxy power spectrum hexadecapole fNL orthogonal contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd_bias()
+        self._check_fNL_ortho()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[57+24] + b1*self.pk_mult[58+24] + b1**2.*self.pk_mult[59+24] + b1*(b2/2.)*self.pk_mult[68+24] + (b2/2.)*self.pk_mult[69+24] + b1*bG2*self.pk_mult[70+24] + bG2*self.pk_mult[71+24])*h**3.
 
     # ORTHOGONAL fNL multipole contributions: galaxy-matter (cross)
     def pk_gm_fNL_l0_ortho(self, b1, b2, bG2):
         """Return galaxy-matter power spectrum monopole fNL orthogonal contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd_bias()
+        self._check_fNL_ortho()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[51+24] + b1*self.pk_mult[52+24] + b1*self.pk_mult[53+24] + (b2/2.)*self.pk_mult[60+24] + (b2/2.)*self.pk_mult[61+24] + bG2*self.pk_mult[62+24] + bG2*self.pk_mult[63+24])*h**3.
 
     def pk_gm_fNL_l2_ortho(self, b1, b2, bG2):
         """Return galaxy-matter power spectrum quadrupole fNL orthogonal contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd_bias()
+        self._check_fNL_ortho()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[54+24] + b1*self.pk_mult[55+24] + b1*self.pk_mult[56+24] + (b2/2.)*self.pk_mult[64+24] + (b2/2.)*self.pk_mult[65+24] + bG2*self.pk_mult[66+24] + bG2*self.pk_mult[67+24])*h**3.
 
     def pk_gm_fNL_l4_ortho(self, b1, b2, bG2):
         """Return galaxy-matter power spectrum hexadecapole fNL orthogonal contribution. NB: output is in (h/Mpc)^3 units, and one still needs to multiply by fNL"""
+        self._check_rsd_bias()
+        self._check_fNL_ortho()
         h = self.ba.h
-        if not self.output_init:
-            raise Exception("Must run initialize_output() before calling this function")
         return (self.pk_mult[57+24] + b1*self.pk_mult[58+24] + b1*self.pk_mult[59+24] + (b2/2.)*self.pk_mult[68+24] + (b2/2.)*self.pk_mult[69+24] + bG2*self.pk_mult[70+24] + bG2*self.pk_mult[71+24])*h**3.

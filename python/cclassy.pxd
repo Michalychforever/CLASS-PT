@@ -412,6 +412,11 @@ cdef extern from "class.h":
 
     cdef struct nonlinear_pt:
         int method
+        int irres
+        int bias
+        int rsd
+        int AP_effect
+        int fNL_equil_ortho_switch
         int no_wiggle
         int wiggle_only
         double alpha_rs
