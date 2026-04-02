@@ -19,6 +19,7 @@
  * Reference: Chudaykin, Ivanov, Philcox, Simonovic (arXiv:2004.10607)
  */
 
+#define _GNU_SOURCE
 #include "nonlinear_pt.h"
 #include "fft.h"
 #include <time.h>

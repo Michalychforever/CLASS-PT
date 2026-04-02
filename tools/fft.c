@@ -5,6 +5,7 @@
  * This module computes the fast fourier transform (FFT) of any function
  */
  #include "fft.h"
+#define _GNU_SOURCE
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>

@@ -2,7 +2,7 @@
 
 This is a modification of the CLASS code that computes the non-linear power spectra of dark matter and biased tracers in one-loop cosmological perturbation theory, for both Gaussian and non-Gaussian initial conditions.
 
-This version is based on [CLASS v3.3.4](https://github.com/lesgourg/class_public) and includes all upstream improvements (updated BBN, Halofit/HMcode, spectral distortions, etc.).
+This version is based on [CLASS v3](https://github.com/lesgourg/class_public) and includes all upstream improvements (updated BBN, Halofit/HMcode, spectral distortions, etc.). A GitHub Actions workflow automatically checks for new upstream CLASS releases and opens a pull request when updates are available.
 
 CLASS-PT can be interfaced with the MCMC sampler [MontePython](https://github.com/brinckmann/montepython_public) using the custom-built likelihoods found [here](https://github.com/oliverphilcox/full_shape_likelihoods).
 

@@ -263,28 +263,27 @@ print(f"CMB config: 3 Cl spectra + {len(k_test)} P(k) values")
 
 # ============================================================================
 # No-wiggle and alpha_rs reference data (using noAP instance)
-# NOTE: Skipped — no_wiggle/alpha_rs kwargs not yet ported to v3 wrapper
 # ============================================================================
-# k_nw = np.array([0.05, 0.1, 0.15, 0.2, 0.25]) * h4
-# pk_w, pk_nw = [], []
-# for k in k_nw:
-#     rw = M_noAP.pk(k, Z_PK, no_wiggle=False)
-#     rnw = M_noAP.pk(k, Z_PK, no_wiggle=True)
-#     pk_w.append(rw[0] if isinstance(rw, (list, tuple)) else rw)
-#     pk_nw.append(rnw[0] if isinstance(rnw, (list, tuple)) else rnw)
-# ref['nw_k_test'] = k_nw
-# ref['nw_pk_wiggle'] = np.array(pk_w)
-# ref['nw_pk_nowiggle'] = np.array(pk_nw)
-# alphas = [0.95, 1.0, 1.05]
-# k_alpha = 0.1 * h4
-# pk_alpha = []
-# for a in alphas:
-#     r = M_noAP.pk(k_alpha, Z_PK, alpha_rs=a)
-#     pk_alpha.append(r[0] if isinstance(r, (list, tuple)) else r)
-# ref['alpha_k_test'] = np.float64(k_alpha)
-# ref['alpha_values'] = np.array(alphas)
-# ref['alpha_pk'] = np.array(pk_alpha)
-print("No-wiggle/alpha_rs: SKIPPED (not yet ported to v3)")
+k_nw = np.array([0.05, 0.1, 0.15, 0.2, 0.25]) * h4
+pk_w, pk_nw = [], []
+for k in k_nw:
+    rw = M_noAP.pk(k, Z_PK, no_wiggle=False)
+    rnw = M_noAP.pk(k, Z_PK, no_wiggle=True)
+    pk_w.append(rw[0] if isinstance(rw, (list, tuple)) else rw)
+    pk_nw.append(rnw[0] if isinstance(rnw, (list, tuple)) else rnw)
+ref['nw_k_test'] = k_nw
+ref['nw_pk_wiggle'] = np.array(pk_w)
+ref['nw_pk_nowiggle'] = np.array(pk_nw)
+alphas = [0.95, 1.0, 1.05]
+k_alpha = 0.1 * h4
+pk_alpha = []
+for a in alphas:
+    r = M_noAP.pk(k_alpha, Z_PK, alpha_rs=a)
+    pk_alpha.append(r[0] if isinstance(r, (list, tuple)) else r)
+ref['alpha_k_test'] = np.float64(k_alpha)
+ref['alpha_values'] = np.array(alphas)
+ref['alpha_pk'] = np.array(pk_alpha)
+print(f"No-wiggle/alpha_rs: {len(k_nw)} k-points, {len(alphas)} alpha values")
 
 # ============================================================================
 # Save
