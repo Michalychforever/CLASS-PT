@@ -2,7 +2,7 @@ name: Sync upstream CLASS
 
 on:
   push:
-    branches: [class_v3_public]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: class_v3_public
+          ref: main
           fetch-depth: 0
 
       - name: Fetch upstream
@@ -64,13 +64,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BEHIND=${{ steps.check.outputs.behind }}
-          EXISTING=$(gh pr list --head sync-upstream --base class_v3_public --json number --jq '.[0].number' || echo "")
+          EXISTING=$(gh pr list --head sync-upstream --base main --json number --jq '.[0].number' || echo "")
           if [ -n "$EXISTING" ]; then
             echo "PR #$EXISTING already exists, updated branch"
           else
             gh pr create \
               --title "Sync upstream CLASS ($BEHIND new commits)" \
-              --base class_v3_public \
+              --base main \
               --head sync-upstream \
               --body "$(cat <<'EOF'
           ## Upstream sync
@@ -88,13 +88,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BEHIND=${{ steps.check.outputs.behind }}
-          EXISTING=$(gh pr list --head sync-upstream-conflict --base class_v3_public --json number --jq '.[0].number' || echo "")
+          EXISTING=$(gh pr list --head sync-upstream-conflict --base main --json number --jq '.[0].number' || echo "")
           if [ -n "$EXISTING" ]; then
             echo "PR #$EXISTING already exists, updated branch"
           else
             gh pr create \
               --title "Sync upstream CLASS ($BEHIND new commits) — CONFLICTS" \
-              --base class_v3_public \
+              --base main \
               --head sync-upstream-conflict \
               --body "$(cat <<'EOF'
           ## Upstream sync — manual resolution needed
