@@ -548,6 +548,53 @@ static const size_t m13_complex_offsets[] = {
 };
 #define N_M13_COMPLEX (sizeof(m13_complex_offsets) / sizeof(m13_complex_offsets[0]))
 
+/* Offsets of real-valued M12 kernel matrices (21 regular + 21 ortho = 42 total) */
+static const size_t m12_real_offsets[] = {
+    offsetof(struct nonlinear_pt, M12_oneline),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vv0_f2),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vv0_f3),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vd0_f1),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vd0_f2),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_dd0_f0),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_dd0_f1),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vv2_f3),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vd2_f2),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vv4_f3),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vd4_f2),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_mu_powers_vd2_f1),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_mu_powers_vd2_f2),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_mu_powers_dd2_f1),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_mu_powers_vv4_f2),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_mu_powers_vd4_f2),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_mu_powers_vv6_f3),
+    offsetof(struct nonlinear_pt, M12_oneline_bias_real_space_b2),
+    offsetof(struct nonlinear_pt, M12_oneline_bias_real_space_bG2),
+    offsetof(struct nonlinear_pt, M12_oneline_bias_multipoles_b2_vv0_f1),
+    offsetof(struct nonlinear_pt, M12_oneline_bias_multipoles_bG2_vv0_f1),
+    offsetof(struct nonlinear_pt, M12_oneline_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vv0_f2_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vv0_f3_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vd0_f1_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vd0_f2_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_dd0_f0_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_dd0_f1_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vv2_f3_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vd2_f2_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vv4_f3_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_multipoles_vd4_f2_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_mu_powers_vd2_f1_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_mu_powers_vd2_f2_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_mu_powers_dd2_f1_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_mu_powers_vv4_f2_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_mu_powers_vd4_f2_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_matter_mu_powers_vv6_f3_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_bias_real_space_b2_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_bias_real_space_bG2_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_bias_multipoles_b2_vv0_f1_ortho),
+    offsetof(struct nonlinear_pt, M12_oneline_bias_multipoles_bG2_vv0_f1_ortho),
+};
+#define N_M12_REAL (sizeof(m12_real_offsets) / sizeof(m12_real_offsets[0]))
+
 /* Compact spline setup: compute spline derivative table */
 #define SPLINE_SETUP(x, n, data, dd, mode)                                    \
     class_call(array_spline_table_columns(x, n, data, 1, dd, mode,            \
@@ -1611,6 +1658,11 @@ int nonlinear_pt_free(
             }
             for (int ci_ = 0; ci_ < N_M13_COMPLEX; ci_++) {
                 complex double **ptr = (complex double **)((char *)pnlpt + m13_complex_offsets[ci_]);
+                free(*ptr);
+            }
+            /* Free all real M12 kernel matrices */
+            for (int ri_ = 0; ri_ < N_M12_REAL; ri_++) {
+                double **ptr = (double **)((char *)pnlpt + m12_real_offsets[ri_]);
                 free(*ptr);
             }
             free(pnlpt->growthf);
@@ -4883,10 +4935,13 @@ int nonlinear_pt_loop(
         f13, x, x_transfer, x_w, x_w_transfer,
         f22, f12, Pdisc, PPRIMdisc, ddpk_nl,
         ddpk_nl_fNL, ddpk_nl_fNL_ortho, ddpk_CTR, ddpk_Tree, etam,
-        cmsym, P22, P13, P12_fNL, P12_fNL_ortho,
+        etam_transfer, cmsym,
+        P22, P13, P12_fNL, P12_fNL_ortho,
         P13UV, P_CTR, P1loop, Ptree, myddlnpk,
+        myddlnpPRIMk,
+        Xr, Xi, kb_cache, sc_cos, sc_sin,
     };
-    for (int fi_ = 0; fi_ < 25; fi_++) free(_f[fi_]); }
+    for (int fi_ = 0; fi_ < 30; fi_++) free(_f[fi_]); }
 
     /* ================================================================== */
     /* === BIASED TRACER POWER SPECTRA === */
@@ -5612,6 +5667,13 @@ int nonlinear_pt_loop(
         free(etam2_transfer);
         free(cmsym2_transfer);
         free(P_IFG2);
+        free(f22_Id2d2);
+        free(kb2_cache);
+        free(kb2_transfer_cache);
+        free(sc_cos2);
+        free(sc_sin2);
+        free(sc_cos2_t);
+        free(sc_sin2_t);
 
     } /* end of bias conditional expression */
 
@@ -5626,6 +5688,15 @@ int nonlinear_pt_loop(
             for (index_k = 0; index_k < pnlpt->k_size; index_k++)
                 _eps_arr[ai_][index_k] = epsilon_for_logs;
     }
+    /* --- Free arrays shared between main and bias sections --- */
+    free(cmsym_transfer);
+    free(Xr_transfer);
+    free(Xi_transfer);
+    free(lnk_cache);
+    free(kb_transfer_cache);
+    free(sc_cos_t);
+    free(sc_sin_t);
+
     /* --- Free temporary arrays --- */
     { void *_f[] = {
         js, kdisc, Pbin, Tbin,
