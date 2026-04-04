@@ -4912,6 +4912,8 @@ int nonlinear_pt_loop(
                              out_tmp_ + large_for_logs_big,
                              exp(lnpk_l[index_k]) * 8. * f * f / 35. + large_for_logs_big, 1);
         TIMER_ADD(spline_out);
+        free(Ptree_2_dd);
+        free(Ptree_4_vd);
 
         { void *_f[] = {
             ddpk_nl_4_dd, P13UV_0_vv, P13_0_vv, P1loop_0_vv, P22_0_vv,
