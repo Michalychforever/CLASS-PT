@@ -4941,7 +4941,7 @@ int nonlinear_pt_loop(
         myddlnpPRIMk,
         Xr, Xi, kb_cache, sc_cos, sc_sin,
     };
-    for (int fi_ = 0; fi_ < 30; fi_++) free(_f[fi_]); }
+    for (int fi_ = 0; fi_ < 32; fi_++) free(_f[fi_]); }
 
     /* ================================================================== */
     /* === BIASED TRACER POWER SPECTRA === */
