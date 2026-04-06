@@ -2746,6 +2746,10 @@ static int nonlinear_pt_ir_resummation(
     double kstep = (kmax2 - kmin2) / (Nird - 1.);
     double lnk0 = lnk_l[0];
     double exp_lnk0 = exp(lnk0);
+    int _ksz_ir = pnlpt->k_size;
+    double _lnk_hi = lnk_l[_ksz_ir - 1];
+    double _exp_lnk_hi = exp(_lnk_hi);
+    double _slope_hi = (_ksz_ir >= 2) ? (lnpk_l[_ksz_ir-1] - lnpk_l[_ksz_ir-2]) / (lnk_l[_ksz_ir-1] - lnk_l[_ksz_ir-2]) : ppm->n_s;
     #pragma omp parallel
     {
         int _last_idx = 0;
@@ -2753,13 +2757,17 @@ static int nonlinear_pt_ir_resummation(
         for (index_ir = 0; index_ir < Nir; index_ir++) {
             double _kbin2 = kmin2 + index_ir * kstep;
 
-            if (_kbin2 >= exp_lnk0) {
+            if (_kbin2 < exp_lnk0) {
+                logkPdiscr[index_ir] = log(_kbin2) + lnpk_l[0] + (ppm->n_s) * (log(_kbin2) - lnk0);
+            } else if (_kbin2 <= _exp_lnk_hi) {
                 double _logPbin2;
                 array_interpolate_spline(lnk_l, pnlpt->k_size, lnpk_l, myddlnpk, 1, log(_kbin2),
                                          &_last_idx, &_logPbin2, 1, pnlpt->error_message);
                 logkPdiscr[index_ir] = log(_kbin2) + _logPbin2;
             } else {
-                logkPdiscr[index_ir] = log(_kbin2) + lnpk_l[0] + (ppm->n_s) * (log(_kbin2) - lnk0);
+                /* High-k power-law extrapolation */
+                double _dlnk = log(_kbin2) - _lnk_hi;
+                logkPdiscr[index_ir] = log(_kbin2) + lnpk_l[_ksz_ir-1] + _slope_hi * _dlnk;
             }
 
             /* DST-II symmetry: alternating sign for odd-indexed real FFT input */
@@ -2935,14 +2943,19 @@ static int nonlinear_pt_ir_resummation(
             array_interpolate_spline(knw_ir, Nir, Pnw_ir, ddPnw, 1, pnlpt->alpha_rs * kdisc[i],
                                      &_last_idx, &_Pnwval_rescaled, 1, pnlpt->error_message);
 
-            if (kdisc[i] >= exp(lnk_l[0])) {
-                double _lnpk_out;
-                array_interpolate_spline(lnk_l, pnlpt->k_size, lnpk_l, myddlnpk, 1,
-                                         log(pnlpt->alpha_rs * kdisc[i]),
-                                         &_last_idx, &_lnpk_out, 1, pnlpt->error_message);
-                _Pwval_rescaled = exp(_lnpk_out);
-            } else {
-                _Pwval_rescaled = exp(lnpk_l[0]) * pow(pnlpt->alpha_rs * kdisc[i] / exp(lnk_l[0]), ppm->n_s);
+            {
+                double _lnk_eval = log(pnlpt->alpha_rs * kdisc[i]);
+                if (_lnk_eval < lnk_l[0]) {
+                    _Pwval_rescaled = exp(lnpk_l[0]) * pow(pnlpt->alpha_rs * kdisc[i] / exp(lnk_l[0]), ppm->n_s);
+                } else if (_lnk_eval <= _lnk_hi) {
+                    double _lnpk_out;
+                    array_interpolate_spline(lnk_l, pnlpt->k_size, lnpk_l, myddlnpk, 1,
+                                             _lnk_eval, &_last_idx, &_lnpk_out, 1, pnlpt->error_message);
+                    _Pwval_rescaled = exp(_lnpk_out);
+                } else {
+                    double _dlnk = _lnk_eval - _lnk_hi;
+                    _Pwval_rescaled = exp(lnpk_l[_ksz_ir - 1] + _slope_hi * _dlnk);
+                }
             }
 
             Pnw[i] = _Pnwval2;
@@ -3185,21 +3198,32 @@ int nonlinear_pt_loop(
     last_index = 0;
     int i_kdisc = 0;
 
+    /* Compute local spectral index at high-k end for power-law extrapolation */
+    int ksz = pnlpt->k_size;
+    double ln_pk_slope_hi = (lnpk_l[ksz-1] - lnpk_l[ksz-2]) / (lnk_l[ksz-1] - lnk_l[ksz-2]);
+    double ln_pPRIMk_slope_hi = (lnpPRIMk_l[ksz-1] - lnpPRIMk_l[ksz-2]) / (lnk_l[ksz-1] - lnk_l[ksz-2]);
+
     for (i_kdisc = 0; i_kdisc < Nmax; i_kdisc++) {
         kdisc[i_kdisc] = kmin * exp(i_kdisc * Delta);
+        double lnk_disc = log(kdisc[i_kdisc]);
 
-        if (kdisc[i_kdisc] >= exp(lnk_l[0])) {
-            SPLINE_EVAL(lnk_l, pnlpt->k_size, lnpk_l, myddlnpk, log(kdisc[i_kdisc]), &last_index, &lnpk_out);
-            SPLINE_EVAL(lnk_l, pnlpt->k_size, lnpPRIMk_l, myddlnpPRIMk, log(kdisc[i_kdisc]), &last_index, &lnpPRIMk_out);
-
-            Pdisc[i_kdisc] = exp(lnpk_out);
-            PPRIMdisc[i_kdisc] = exp(lnpPRIMk_out);
-
-        } /* end k in CLASS range */
-        else
-        {
+        if (lnk_disc < lnk_l[0]) {
+            /* Low-k extrapolation: power-law with n_s */
             Pdisc[i_kdisc] = exp(lnpk_l[0]) * pow(kdisc[i_kdisc] / exp(lnk_l[0]), ppm->n_s);
             PPRIMdisc[i_kdisc] = exp(lnpPRIMk_l[0]) * pow(kdisc[i_kdisc] / exp(lnk_l[0]), ppm->n_s);
+        }
+        else if (lnk_disc <= lnk_l[ksz-1]) {
+            /* Within CLASS range: spline interpolation */
+            SPLINE_EVAL(lnk_l, pnlpt->k_size, lnpk_l, myddlnpk, lnk_disc, &last_index, &lnpk_out);
+            SPLINE_EVAL(lnk_l, pnlpt->k_size, lnpPRIMk_l, myddlnpPRIMk, lnk_disc, &last_index, &lnpPRIMk_out);
+            Pdisc[i_kdisc] = exp(lnpk_out);
+            PPRIMdisc[i_kdisc] = exp(lnpPRIMk_out);
+        }
+        else {
+            /* High-k extrapolation: power-law using local slope at boundary */
+            double dlnk = lnk_disc - lnk_l[ksz-1];
+            Pdisc[i_kdisc] = exp(lnpk_l[ksz-1] + ln_pk_slope_hi * dlnk);
+            PPRIMdisc[i_kdisc] = exp(lnpPRIMk_l[ksz-1] + ln_pPRIMk_slope_hi * dlnk);
         }
     }
 

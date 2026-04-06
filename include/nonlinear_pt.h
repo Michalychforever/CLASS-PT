@@ -633,6 +633,7 @@ double * ln_pk_0_b2;
   //@{
 
   short nonlinear_pt_verbose;  	/**< amount of information written in standard output */
+  double pt_k_max_h;  /**< max k in h/Mpc for perturbations grid (default 100; lower = faster but less accurate) */
 
   ErrorMsg error_message; 	/**< zone for writing error messages */
 
