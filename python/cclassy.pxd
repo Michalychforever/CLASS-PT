@@ -421,6 +421,107 @@ cdef extern from "class.h":
         int wiggle_only
         double alpha_rs
         ErrorMsg error_message
+        int z_pk_num
+        double z_pk[100]
+        int k_size
+        int ln_k_size
+        double * ln_k
+        double * ln_pk_nl
+        double * ln_pk_Id2d2
+        double * ln_pk_Id2d2_2
+        double * ln_pk_Id2d2_4
+        double * ln_pk_Id2
+        double * ln_pk_IG2
+        double * ln_pk_Id2G2
+        double * ln_pk_Id2G2_2
+        double * ln_pk_Id2G2_4
+        double * ln_pk_IG2G2
+        double * ln_pk_IG2G2_2
+        double * ln_pk_IG2G2_4
+        double * ln_pk_IFG2
+        double * ln_pk_IFG2_0b1
+        double * ln_pk_IFG2_0
+        double * ln_pk_IFG2_2
+        double * ln_pk_CTR
+        double * ln_pk_CTR_0
+        double * ln_pk_CTR_2
+        double * ln_pk_CTR_4
+        double * ln_pk_Tree
+        double * ln_pk_Tree_0_vv
+        double * ln_pk_Tree_0_vd
+        double * ln_pk_Tree_0_dd
+        double * ln_pk_Tree_2_vv
+        double * ln_pk_Tree_2_vd
+        double * ln_pk_Tree_4_vv
+        double * ln_pk_0_vv
+        double * ln_pk_0_vd
+        double * ln_pk_0_dd
+        double * ln_pk_2_vv
+        double * ln_pk_2_vd
+        double * ln_pk_2_dd
+        double * ln_pk_4_vv
+        double * ln_pk_4_vd
+        double * ln_pk_4_dd
+        double * ln_pk_0_b1b2
+        double * ln_pk_0_b1bG2
+        double * ln_pk_0_b2
+        double * ln_pk_0_bG2
+        double * ln_pk_2_b1b2
+        double * ln_pk_2_b1bG2
+        double * ln_pk_2_b2
+        double * ln_pk_2_bG2
+        double * ln_pk_4_b2
+        double * ln_pk_4_bG2
+        double * ln_pk_4_b1b2
+        double * ln_pk_4_b1bG2
+        double * ln_pk_nl_fNL
+        double * ln_pk_fNLd2
+        double * ln_pk_fNLG2
+        double * ln_pk_fNL_0_vv
+        double * ln_pk_fNL_0_vd
+        double * ln_pk_fNL_0_dd
+        double * ln_pk_fNL_2_vv
+        double * ln_pk_fNL_2_vd
+        double * ln_pk_fNL_2_dd
+        double * ln_pk_fNL_4_vv
+        double * ln_pk_fNL_4_vd
+        double * ln_pk_fNL_4_dd
+        double * ln_pk12_0_b1b2
+        double * ln_pk12_0_b2
+        double * ln_pk12_0_b1bG2
+        double * ln_pk12_0_bG2
+        double * ln_pk12_2_b1b2
+        double * ln_pk12_2_b2
+        double * ln_pk12_2_b1bG2
+        double * ln_pk12_2_bG2
+        double * ln_pk12_4_b1b2
+        double * ln_pk12_4_b2
+        double * ln_pk12_4_b1bG2
+        double * ln_pk12_4_bG2
+        double * ln_pk_nl_fNL_ortho
+        double * ln_pk_fNLd2_ortho
+        double * ln_pk_fNLG2_ortho
+        double * ln_pk_fNL_0_vv_ortho
+        double * ln_pk_fNL_0_vd_ortho
+        double * ln_pk_fNL_0_dd_ortho
+        double * ln_pk_fNL_2_vv_ortho
+        double * ln_pk_fNL_2_vd_ortho
+        double * ln_pk_fNL_2_dd_ortho
+        double * ln_pk_fNL_4_vv_ortho
+        double * ln_pk_fNL_4_vd_ortho
+        double * ln_pk_fNL_4_dd_ortho
+        double * ln_pk12_0_b1b2_ortho
+        double * ln_pk12_0_b2_ortho
+        double * ln_pk12_0_b1bG2_ortho
+        double * ln_pk12_0_bG2_ortho
+        double * ln_pk12_2_b1b2_ortho
+        double * ln_pk12_2_b2_ortho
+        double * ln_pk12_2_b1bG2_ortho
+        double * ln_pk12_2_bG2_ortho
+        double * ln_pk12_4_b1b2_ortho
+        double * ln_pk12_4_b2_ortho
+        double * ln_pk12_4_b1bG2_ortho
+        double * ln_pk12_4_bG2_ortho
 
     cdef struct fourier:
         short is_allocated
@@ -821,4 +922,12 @@ cdef extern from "class.h":
         double * output_tot_pk12_l_4_b2_ortho,
         double * output_tot_pk12_l_4_b1bG2_ortho,
         double * output_tot_pk12_l_4_bG2_ortho
+        )
+
+    int nonlinear_pt_pk_mult_at_kvec_and_z(
+        void * pnlpt,
+        double * kvec,
+        int n_k,
+        double z,
+        double * pk_mult
         )
