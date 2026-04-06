@@ -4573,3 +4573,111 @@ for (i_z=0; i_z<pnlpt->z_pk_num; i_z++) {
 
 }
 
+
+/**
+ * Vectorized interpolation of PT power spectra at an array of k values.
+ *
+ * This function is equivalent to calling nonlinear_pt_pk_at_k_and_z() for
+ * each k value, but avoids the per-k overhead of allocating/freeing ~192
+ * arrays and recomputing 96 splines. Instead, it:
+ * - Calls nonlinear_pt_bias_at_z_i() once to get all 96 spectra
+ * - Computes spline coefficients once per component
+ * - Evaluates the spline at all k values
+ *
+ * Output layout: pk_mult[c * n_k + ik] = exp(spline(ln(kvec[ik]))) for
+ * component c and k-index ik. The 96 components are in the same order as
+ * the output pointers of nonlinear_pt_pk_at_k_and_z().
+ */
+int nonlinear_pt_pk_mult_at_kvec_and_z(
+    struct nonlinear_pt * pnlpt,
+    double * kvec,
+    int n_k,
+    double z,
+    double * pk_mult
+) {
+    int i_z, c, ik, nk;
+    int last_index;
+    double val;
+    double * data = NULL;
+    double * spline_c = NULL;
+    double * ln_kvec = NULL;
+
+    nk = pnlpt->ln_k_size;
+
+    /* Find z-index */
+    for (i_z = 0; i_z < pnlpt->z_pk_num; i_z++) {
+        if (pnlpt->z_pk[i_z] == z) break;
+    }
+    if (i_z == pnlpt->z_pk_num) {
+        sprintf(pnlpt->error_message,
+                "nonlinear_pt_pk_mult_at_kvec_and_z: z=%e not in z_pk list", z);
+        return _FAILURE_;
+    }
+
+    /* Allocate 96 spectrum arrays for bias_at_z_i */
+    double * spectra[96];
+    for (c = 0; c < 96; c++) {
+        class_alloc(spectra[c], nk * sizeof(double), pnlpt->error_message);
+    }
+
+    /* Copy data from struct arrays */
+    class_call(nonlinear_pt_bias_at_z_i(
+        pnlpt, logarithmic, i_z,
+        spectra[0], spectra[1], spectra[2], spectra[3], spectra[4],
+        spectra[5], spectra[6], spectra[7], spectra[8], spectra[9],
+        spectra[10], spectra[11], spectra[12], spectra[13], spectra[14],
+        spectra[15], spectra[16], spectra[17], spectra[18], spectra[19],
+        spectra[20], spectra[21], spectra[22], spectra[23], spectra[24],
+        spectra[25], spectra[26], spectra[27], spectra[28], spectra[29],
+        spectra[30], spectra[31], spectra[32], spectra[33], spectra[34],
+        spectra[35], spectra[36], spectra[37], spectra[38], spectra[39],
+        spectra[40], spectra[41], spectra[42], spectra[43], spectra[44],
+        spectra[45], spectra[46], spectra[47],
+        spectra[48], spectra[49], spectra[50],
+        spectra[51], spectra[52], spectra[53], spectra[54], spectra[55],
+        spectra[56], spectra[57], spectra[58], spectra[59],
+        spectra[60], spectra[61], spectra[62], spectra[63],
+        spectra[64], spectra[65], spectra[66], spectra[67],
+        spectra[68], spectra[69], spectra[70], spectra[71],
+        spectra[72], spectra[73], spectra[74],
+        spectra[75], spectra[76], spectra[77], spectra[78], spectra[79],
+        spectra[80], spectra[81], spectra[82], spectra[83],
+        spectra[84], spectra[85], spectra[86], spectra[87],
+        spectra[88], spectra[89], spectra[90], spectra[91],
+        spectra[92], spectra[93], spectra[94], spectra[95]
+    ), pnlpt->error_message, pnlpt->error_message);
+
+    /* Pre-compute ln(k) array */
+    class_alloc(ln_kvec, n_k * sizeof(double), pnlpt->error_message);
+    for (ik = 0; ik < n_k; ik++)
+        ln_kvec[ik] = log(kvec[ik]);
+
+    /* Allocate single spline buffer (reused for each component) */
+    class_alloc(spline_c, nk * sizeof(double), pnlpt->error_message);
+
+    /* For each component: compute spline once, evaluate at all k */
+    for (c = 0; c < 96; c++) {
+        class_call(array_spline_table_lines(
+            pnlpt->ln_k, nk, spectra[c], 1, spline_c,
+            _SPLINE_NATURAL_, pnlpt->error_message),
+            pnlpt->error_message, pnlpt->error_message);
+
+        last_index = 0;
+        for (ik = 0; ik < n_k; ik++) {
+            class_call(array_interpolate_spline(
+                pnlpt->ln_k, nk, spectra[c], spline_c, 1,
+                ln_kvec[ik], &last_index, &val, 1,
+                pnlpt->error_message),
+                pnlpt->error_message, pnlpt->error_message);
+            pk_mult[c * n_k + ik] = exp(val);
+        }
+
+        free(spectra[c]);
+    }
+
+    free(spline_c);
+    free(ln_kvec);
+
+    return _SUCCESS_;
+}
+

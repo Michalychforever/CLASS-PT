@@ -1075,6 +1075,14 @@ extern "C" {
                              double * pk_tot_fNL_4_bG2_ortho
                              );
 
+  int nonlinear_pt_pk_mult_at_kvec_and_z(
+                             struct nonlinear_pt * pnlpt,
+                             double * kvec,
+                             int n_k,
+                             double z,
+                             double * pk_mult
+                             );
+
 
 #ifdef __cplusplus
 }

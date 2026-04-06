@@ -4604,16 +4604,126 @@ cdef class Class:
         result.append(factor_fNL*(pk12_4_bG2_ortho - large_for_logs_fNL))
         return result
 
-    def get_pk_mult(self, np.ndarray[DTYPE_t,ndim=1] k, double z, int k_size, no_wiggle=False, alpha_rs=1.0):
-        """Fast function to get the non-linear power spectrum multipole components on a k array"""
-        cdef np.ndarray[DTYPE_t, ndim = 2] pk_mult = np.zeros((96,k_size),'float64')
-        cdef np.ndarray[DTYPE_t, ndim = 1] this_pk
-        cdef int index_k, index_comb
+    def get_pk_mult(self, np.ndarray[DTYPE_t,ndim=1] k, double z, int k_size, no_wiggle=False, double alpha_rs=1.0):
+        """Fast vectorized function to get the non-linear power spectrum multipole components on a k array.
 
-        for index_k in range(k_size):
-            this_pk = np.asarray(self.pk_pt(k[index_k],z, no_wiggle=no_wiggle, alpha_rs=alpha_rs))
-            for index_comb in range(96):
-                pk_mult[index_comb, index_k] = this_pk[index_comb]
+        Calls the C function nonlinear_pt_pk_mult_at_kvec_and_z which computes
+        spline coefficients once per component and evaluates at all k values,
+        avoiding the per-k overhead of nonlinear_pt_pk_at_k_and_z.
+        Results are bit-identical to the per-k C function.
+        """
+        cdef int i
+        cdef double pk_val
+        cdef double large_m = 50000.
+        cdef double large_b = 1000000.
+        cdef double large_s = 100.
+        cdef double large_f = 50000.
+        cdef double fac_fNL
+
+        if self.pt.has_pk_matter == _FALSE_:
+            raise CosmoSevereError("No power spectrum computed. You must add mPk to the list of outputs.")
+
+        self.recompute_nonlinear_pt(no_wiggle=no_wiggle, alpha_rs=alpha_rs)
+
+        if self.nlpt.method == 0:
+            # No PT - fall back to linear P(k)
+            pk_mult = np.zeros((1, k_size), dtype=np.float64)
+            for i in range(k_size):
+                if fourier_pk_at_k_and_z(&self.ba, &self.pm, &self.fo, pk_linear, k[i], z,
+                                          self.fo.index_pk_m, &pk_val, NULL) == _FAILURE_:
+                    raise CosmoSevereError(self.fo.error_message)
+                pk_mult[0, i] = pk_val
+            return pk_mult
+
+        # Call vectorized C function: computes spline once per component, evaluates at all k
+        cdef np.ndarray[DTYPE_t, ndim=2] raw_pk = np.empty((96, k_size), dtype=np.float64)
+        if nonlinear_pt_pk_mult_at_kvec_and_z(
+                &self.nlpt, <double*>k.data, k_size, z,
+                <double*>raw_pk.data) == _FAILURE_:
+            raise CosmoSevereError(self.nlpt.error_message)
+
+        fac_fNL = sqrt(self.pm.A_s) * (1944./625.) * (pi**4.)
+
+        # Apply sign and offset transformations matching pk_pt()
+        # raw_pk[c, ik] = exp(spline_interpolated_ln_pk) from the C function
+        pk_mult = np.empty((96, k_size), dtype=np.float64)
+
+        # idx 0: pk_val - large_m
+        pk_mult[0] = raw_pk[0] - large_m
+        # idx 1: -pk_Id2d2 + large_b
+        pk_mult[1] = -raw_pk[1] + large_b
+        # idx 2: pk_Id2 - large_s
+        pk_mult[2] = raw_pk[2] - large_s
+        # idx 3: -pk_IG2 + large_s
+        pk_mult[3] = -raw_pk[3] + large_s
+        # idx 4: -pk_Id2G2 + large_b
+        pk_mult[4] = -raw_pk[4] + large_b
+        # idx 5: pk_IG2G2 - large_b
+        pk_mult[5] = raw_pk[5] - large_b
+        # idx 6: -pk_IFG2 + large_s
+        pk_mult[6] = -raw_pk[6] + large_s
+        # idx 7: -pk_IFG2_0b1 + large_b
+        pk_mult[7] = -raw_pk[7] + large_b
+        # idx 8: -pk_IFG2_0 + large_b
+        pk_mult[8] = -raw_pk[8] + large_b
+        # idx 9: -pk_IFG2_2 + large_b
+        pk_mult[9] = -raw_pk[9] + large_b
+        # idx 10-13: -pk_CTR variants (no offset)
+        pk_mult[10] = -raw_pk[10]
+        pk_mult[11] = -raw_pk[11]
+        pk_mult[12] = -raw_pk[12]
+        pk_mult[13] = -raw_pk[13]
+        # idx 14: pk_Tree (no offset)
+        pk_mult[14] = raw_pk[14]
+        # idx 15-20: Tree multipoles - large_b
+        pk_mult[15] = raw_pk[15] - large_b
+        pk_mult[16] = raw_pk[16] - large_b
+        pk_mult[17] = raw_pk[17] - large_b
+        pk_mult[18] = raw_pk[18] - large_b
+        pk_mult[19] = raw_pk[19] - large_b
+        pk_mult[20] = raw_pk[20] - large_b
+        # idx 21-29: loop multipoles - large_b
+        pk_mult[21] = raw_pk[21] - large_b
+        pk_mult[22] = raw_pk[22] - large_b
+        pk_mult[23] = raw_pk[23] - large_b
+        pk_mult[24] = raw_pk[24] - large_b
+        pk_mult[25] = raw_pk[25] - large_b
+        pk_mult[26] = raw_pk[26] - large_b
+        pk_mult[27] = raw_pk[27] - large_b
+        pk_mult[28] = raw_pk[28] - large_b
+        pk_mult[29] = raw_pk[29] - large_b
+        # idx 30-31: 0_b1b2, 0_b2 - large_b
+        pk_mult[30] = raw_pk[30] - large_b
+        pk_mult[31] = raw_pk[31] - large_b
+        # idx 32-33: -0_b1bG2, -0_bG2 + large_b
+        pk_mult[32] = -raw_pk[32] + large_b
+        pk_mult[33] = -raw_pk[33] + large_b
+        # idx 34-35: 2_b1b2, 2_b2 - large_b
+        pk_mult[34] = raw_pk[34] - large_b
+        pk_mult[35] = raw_pk[35] - large_b
+        # idx 36-37: -2_b1bG2, -2_bG2 + large_b
+        pk_mult[36] = -raw_pk[36] + large_b
+        pk_mult[37] = -raw_pk[37] + large_b
+        # idx 38: 4_b2 - large_b
+        pk_mult[38] = raw_pk[38] - large_b
+        # idx 39: -4_bG2 + large_b
+        pk_mult[39] = -raw_pk[39] + large_b
+        # idx 40-41: 4_b1b2, 4_b1bG2 - large_b
+        pk_mult[40] = raw_pk[40] - large_b
+        pk_mult[41] = raw_pk[41] - large_b
+        # idx 42-47: b2b2/b2bG2/bG2bG2 - large_b
+        pk_mult[42] = raw_pk[42] - large_b
+        pk_mult[43] = raw_pk[43] - large_b
+        pk_mult[44] = raw_pk[44] - large_b
+        pk_mult[45] = raw_pk[45] - large_b
+        pk_mult[46] = raw_pk[46] - large_b
+        pk_mult[47] = raw_pk[47] - large_b
+        # idx 48-71: fNL equilateral (factor_fNL * (exp(.) - large_f))
+        for i in range(48, 72):
+            pk_mult[i] = fac_fNL * (raw_pk[i] - large_f)
+        # idx 72-95: fNL orthogonal (factor_fNL * (exp(.) - large_f))
+        for i in range(72, 96):
+            pk_mult[i] = fac_fNL * (raw_pk[i] - large_f)
 
         return pk_mult
 
