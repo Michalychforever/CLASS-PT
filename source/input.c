@@ -3992,6 +3992,12 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
         } else { pnlpt->AP_effect = AP_effect_no; }
       } else { pnlpt->rsd = rsd_no; }
     }
+
+    /** PT k_max in h/Mpc (controls perturbations grid extent; default 100) */
+    class_call(parser_read_double(pfc,"PT_k_max_h/Mpc",&param1,&flag1,errmsg),errmsg,errmsg);
+    if (flag1 == _TRUE_) {
+      pnlpt->pt_k_max_h = param1;
+    }
   }
 
   /** - special steps if we want Halofit with wa_fld non-zero:
@@ -5090,7 +5096,7 @@ int input_read_parameters_spectra(struct file_content * pfc,
     }
 
     if (pnlpt->method == nlpt_spt) {
-      ppt->k_max_for_pk = 100. * pba->h;
+      ppt->k_max_for_pk = pnlpt->pt_k_max_h * pba->h;
     }
 
     /** 3.a.1) Maximum k in primordial P(k) */
@@ -6175,6 +6181,7 @@ int input_default_params(struct background *pba,
   pnlpt->cb = _TRUE_;
   pnlpt->fNL_equil_ortho_switch = fNL_equil_ortho_no;
   pnlpt->nonlinear_pt_verbose = 0;
+  pnlpt->pt_k_max_h = 100.;
 
   /**
    * Default to input_read_parameters_primordial
