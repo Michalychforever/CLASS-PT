@@ -869,7 +869,7 @@ extern "C" {
 #endif
 
 
-  /* Output/interpolation functions for PT spectra (in nonlinear_pt_output.c) */
+  /* Output/interpolation functions for PT spectra */
 
   int nonlinear_pt_bias_at_z_i(
                        struct nonlinear_pt *pnlpt,

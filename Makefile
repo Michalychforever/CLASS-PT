@@ -118,7 +118,7 @@ HEADERFILES += $(wildcard ./$(HMCODE)/*.h)
 
 TOOLS = growTable.o dei_rkck.o sparse.o evolver_rkck.o  evolver_ndf15.o arrays.opp parser.o quadrature.o hyperspherical.opp common.o trigonometric_integrals.o fft.o
 
-SOURCE = input.o background.o thermodynamics.o perturbations.opp primordial.opp fourier.o nonlinear_pt.o nonlinear_pt_output.o transfer.opp harmonic.opp lensing.opp distortions.o
+SOURCE = input.o background.o thermodynamics.o perturbations.opp primordial.opp fourier.o nonlinear_pt.o transfer.opp harmonic.opp lensing.opp distortions.o
 
 INPUT = input.o
 
