@@ -3400,27 +3400,14 @@ int nonlinear_pt_loop(
     class_alloc(x, (Nmax + 1) * sizeof(complex double), pnlpt->error_message);
 
     /* --- OpenMP + BLAS thread control ---
-     * Adaptive threading strategy:
-     *   OMP ≤ 8: Use task-level parallelism with single-threaded BLAS
-     *   OMP > 8: Use multi-threaded BLAS for coarse-grained work
-     * The fine-grained loops (M22 fills, build_X) have if(omp <= 8) guards,
-     * so at high thread counts they run serially while BLAS can use threads. */
+     * Single-threaded BLAS: the dsymm calls operate on small matrices
+     * (129x256) where multi-threaded BLAS adds overhead. The 9-way OMP
+     * dispatch loops parallelize independent BLAS calls at the task level.
+     * Benchmarked: multi-threaded BLAS (OpenBLAS, MKL) causes severe
+     * contention at OMP >= 16 with no benefit at OMP <= 8. */
     int _blas_threads_saved = openblas_get_num_threads();
     int _n_threads = omp_get_max_threads();
-
-    if (_n_threads <= 8) {
-        /* Low thread count: single-threaded BLAS, parallelize tasks */
-        openblas_set_num_threads(1);
-    } else if (_n_threads <= 16) {
-        /* Medium: 2-thread BLAS for each of the ~9 parallel BLAS dispatch tasks */
-        openblas_set_num_threads(2);
-    } else if (_n_threads <= 32) {
-        /* High: 4-thread BLAS, fewer parallel tasks */
-        openblas_set_num_threads(4);
-    } else {
-        /* Very high (64+): 8-thread BLAS, minimal parallel tasks */
-        openblas_set_num_threads(8);
-    }
+    openblas_set_num_threads(1);
 
     /* Workspace for batch real BLAS operations — per-thread arrays */
     double *Xr, *Xi; /* X matrices: Np1 x Nmax */
@@ -3802,197 +3789,108 @@ int nonlinear_pt_loop(
                 pnlpt->M13_4_vd_oneline_complex[index_i] = m13_base * 9. * (f * f * (1. + 2. * nu1)) / 245.;
             }
 
-            /* Batch compute P13_0_vv for all k values at once */
+            /* === P13 computations (cheap, sequential) === */
             COMPUTE_P13(0_vv, pnlpt->M13_0_vv_oneline_complex,
                         -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * (f * f * (441. + 566. * f + 175. * f * f) / 1225.));
+            COMPUTE_P13(0_vd, pnlpt->M13_0_vd_oneline_complex,
+                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * (2. * f * (625. + 558. * f + 315. * f * f) / 1575.));
+            COMPUTE_P13(0_dd, pnlpt->M13_0_dd_oneline_complex,
+                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * ((61. - 2. * f + 35. * f * f) / 105.));
+            COMPUTE_P13(2_vv, pnlpt->M13_2_vv_oneline_complex,
+                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * (2. * f * f * (54. + 74. * f + 25. * f * f) / 105.));
+            COMPUTE_P13(2_vd, pnlpt->M13_2_vd_oneline_complex,
+                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * 4. * f * (175. + 180. * f + 126. * f * f) / 441.);
+            COMPUTE_P13(2_dd, pnlpt->M13_2_dd_oneline_complex,
+                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * (2. * f * (35. * f - 2.) / 105.));
+            COMPUTE_P13(4_vv, pnlpt->M13_4_vv_oneline_complex,
+                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * (24. * f * f * (33. + 58. * f + 25. * f * f) / 1925.));
+            COMPUTE_P13(4_vd, pnlpt->M13_4_vd_oneline_complex,
+                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * 16. * f * f * (22. + 35. * f) / 1225.);
 
-            /* Batch compute P22_0_vv and P12_0_vv for all k values */
-            TIMER_START(blas);
-            COMPUTE_P22(0_vv, pnlpt->M22_oneline_0_vv_complex);
-            COMPUTE_P12(0_vv, pnlpt->M12_oneline_0_vv_complex);
-            TIMER_ADD(blas);
+            /* === Parallel P22 + P12 dispatch (expensive BLAS, 9 independent tasks) === */
+            {
+                /* M22 matrices and output P22 arrays for each multipole component */
+                const double complex *_rsd_M22[] = {
+                    pnlpt->M22_oneline_0_vv_complex, pnlpt->M22_oneline_0_vd_complex,
+                    pnlpt->M22_oneline_0_dd_complex, pnlpt->M22_oneline_2_vv_complex,
+                    pnlpt->M22_oneline_2_vd_complex, pnlpt->M22_oneline_2_dd_complex,
+                    pnlpt->M22_oneline_4_vv_complex, pnlpt->M22_oneline_4_vd_complex,
+                    pnlpt->M22_oneline_4_dd_complex};
+                double *_rsd_P22_out[] = {
+                    P22_0_vv, P22_0_vd, P22_0_dd, P22_2_vv, P22_2_vd, P22_2_dd,
+                    P22_4_vv, P22_4_vd, P22_4_dd};
+                /* M12 matrices for fNL (regular + ortho), NULL if no P12 for that component */
+                const double complex *_rsd_M12[] = {
+                    pnlpt->M12_oneline_0_vv_complex, pnlpt->M12_oneline_0_vd_complex,
+                    pnlpt->M12_oneline_0_dd_complex, pnlpt->M12_oneline_2_vv_complex,
+                    pnlpt->M12_oneline_2_vd_complex, pnlpt->M12_oneline_2_dd_complex,
+                    pnlpt->M12_oneline_4_vv_complex, pnlpt->M12_oneline_4_vd_complex,
+                    NULL};
+                const double complex *_rsd_M12_ortho[] = {
+                    pnlpt->M12_oneline_0_vv_complex_ortho, pnlpt->M12_oneline_0_vd_complex_ortho,
+                    pnlpt->M12_oneline_0_dd_complex_ortho, pnlpt->M12_oneline_2_vv_complex_ortho,
+                    pnlpt->M12_oneline_2_vd_complex_ortho, pnlpt->M12_oneline_2_dd_complex_ortho,
+                    pnlpt->M12_oneline_4_vv_complex_ortho, pnlpt->M12_oneline_4_vd_complex_ortho,
+                    NULL};
+                double *_rsd_P12_out[] = {
+                    P12_0_vv, P12_0_vd, P12_0_dd, P12_2_vv, P12_2_vd, P12_2_dd,
+                    P12_4_vv, P12_4_vd, NULL};
+                double *_rsd_P12_ortho_out[] = {
+                    P12_0_vv_ortho, P12_0_vd_ortho, P12_0_dd_ortho, P12_2_vv_ortho,
+                    P12_2_vd_ortho, P12_2_dd_ortho, P12_4_vv_ortho, P12_4_vd_ortho,
+                    NULL};
 
-            /* Compute orthogonal fNL variant if needed */
-            if (has_fNL) {
                 TIMER_START(blas);
-                COMPUTE_P12(0_vv_ortho, pnlpt->M12_oneline_0_vv_complex_ortho);
+                #pragma omp parallel for schedule(dynamic)
+                for (int _i = 0; _i < 9; _i++) {
+                    int _tid = omp_get_thread_num();
+                    double *_f22 = (double *)malloc(Nmax * sizeof(double));
+                    batch_quadratic_form(Np1, Nmax, _rsd_M22[_i], Xr, Xi,
+                                         _f22, ws_Mr[_tid], ws_Mi[_tid], ws_Y1[_tid], ws_Y2[_tid]);
+                    assemble_P22(Nmax, kdisc, _f22, cutoff, _rsd_P22_out[_i]);
+                    if (has_fNL && _rsd_M12[_i] != NULL) {
+                        double *_f12 = (double *)malloc(Nmax * sizeof(double));
+                        batch_quadratic_form(Np1, Nmax, _rsd_M12[_i],
+                                             Xr_transfer, Xi_transfer,
+                                             _f12, ws_Mr[_tid], ws_Mi[_tid], ws_Y1[_tid], ws_Y2[_tid]);
+                        assemble_P12(Nmax, kdisc, _f12, Tbin, cutoff, _rsd_P12_out[_i]);
+                        batch_quadratic_form(Np1, Nmax, _rsd_M12_ortho[_i],
+                                             Xr_transfer, Xi_transfer,
+                                             _f12, ws_Mr[_tid], ws_Mi[_tid], ws_Y1[_tid], ws_Y2[_tid]);
+                        assemble_P12(Nmax, kdisc, _f12, Tbin, cutoff, _rsd_P12_ortho_out[_i]);
+                        free(_f12);
+                    }
+                    free(_f22);
+                }
                 TIMER_ADD(blas);
             }
 
-            /* Assemble P1loop and related quantities */
+            /* === Assembly loops (cheap, sequential) === */
             for (int j = 0; j < Nmax; j++) {
                 P1loop_0_vv[j] = P13_0_vv[j] + P22_0_vv[j];
                 P_CTR_0[j] = kdisc[j] * kdisc[j] * Pbin[j];
                 Ptree_0_vv[j] = Pbin[j] * (f * f / 5.);
-            }
-
-            /* Computing P_{vd} contribution */
-            /* (M22 and M13 arrays already filled by fused loop above) */
-
-            COMPUTE_P13(0_vd, pnlpt->M13_0_vd_oneline_complex,
-                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * (2. * f * (625. + 558. * f + 315. * f * f) / 1575.));
-
-            TIMER_START(blas);
-            COMPUTE_P22(0_vd, pnlpt->M22_oneline_0_vd_complex);
-            COMPUTE_P12(0_vd, pnlpt->M12_oneline_0_vd_complex);
-            TIMER_ADD(blas);
-
-            if (has_fNL) {
-                TIMER_START(blas);
-                COMPUTE_P12(0_vd_ortho, pnlpt->M12_oneline_0_vd_complex_ortho);
-                TIMER_ADD(blas);
-            }
-
-            for (int j = 0; j < Nmax; j++) {
                 P1loop_0_vd[j] = P13_0_vd[j] + P22_0_vd[j];
                 Ptree_0_vd[j] = Pbin[j] * (f * 2. / 3.);
-            }
-
-            /* Computing P_{dd} contribution */
-
-
-            /* --- Monopole (ell=0), density-density component: P_{0,dd} ~ f^0 --- */
-            /* f13/f22/f12 computed inline by batch BLAS macros */
-
-            COMPUTE_P13(0_dd, pnlpt->M13_0_dd_oneline_complex,
-                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * ((61. - 2. * f + 35. * f * f) / 105.));
-
-            TIMER_START(blas);
-            COMPUTE_P22(0_dd, pnlpt->M22_oneline_0_dd_complex);
-            COMPUTE_P12(0_dd, pnlpt->M12_oneline_0_dd_complex);
-            TIMER_ADD(blas);
-
-            if (has_fNL) {
-                TIMER_START(blas);
-                COMPUTE_P12(0_dd_ortho, pnlpt->M12_oneline_0_dd_complex_ortho);
-                TIMER_ADD(blas);
-            }
-
-            for (int j = 0; j < Nmax; j++) {
                 P1loop_0_dd[j] = P13_0_dd[j] + P22_0_dd[j];
                 Ptree_0_dd[j] = Pbin[j];
-            }
-
-            /* Computing P_{vv} contribution - Quadrupole */
-
-
-            COMPUTE_P13(2_vv, pnlpt->M13_2_vv_oneline_complex,
-                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * (2. * f * f * (54. + 74. * f + 25. * f * f) / 105.));
-
-            TIMER_START(blas);
-            COMPUTE_P22(2_vv, pnlpt->M22_oneline_2_vv_complex);
-            COMPUTE_P12(2_vv, pnlpt->M12_oneline_2_vv_complex);
-            TIMER_ADD(blas);
-
-            if (has_fNL) {
-                TIMER_START(blas);
-                COMPUTE_P12(2_vv_ortho, pnlpt->M12_oneline_2_vv_complex_ortho);
-                TIMER_ADD(blas);
-            }
-
-            for (int j = 0; j < Nmax; j++) {
                 P1loop_2_vv[j] = P13_2_vv[j] + P22_2_vv[j];
                 P_CTR_2[j] = kdisc[j] * kdisc[j] * Pbin[j] * f * 2. / 3.;
                 Ptree_2_vv[j] = Pbin[j] * (f * f * 4. / 7.);
-            }
-
-            /* Computing P_{vd} contribution - Quadrupole */
-
-
-            COMPUTE_P13(2_vd, pnlpt->M13_2_vd_oneline_complex,
-                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * 4. * f * (175. + 180. * f + 126. * f * f) / 441.);
-            TIMER_START(blas);
-            COMPUTE_P22(2_vd, pnlpt->M22_oneline_2_vd_complex);
-            COMPUTE_P12(2_vd, pnlpt->M12_oneline_2_vd_complex);
-            TIMER_ADD(blas);
-            if (has_fNL) {
-                TIMER_START(blas);
-                COMPUTE_P12(2_vd_ortho, pnlpt->M12_oneline_2_vd_complex_ortho);
-                TIMER_ADD(blas);
-            }
-
-            for (int j = 0; j < Nmax; j++) {
                 P1loop_2_vd[j] = P13_2_vd[j] + P22_2_vd[j];
                 Ptree_2_vd[j] = Pbin[j] * (f * 4. / 3.);
-            }
-
-            /* Computing P_{dd} contribution - Quadrupole */
-
-
-            COMPUTE_P13(2_dd, pnlpt->M13_2_dd_oneline_complex,
-                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * (2. * f * (35. * f - 2.) / 105.));
-            TIMER_START(blas);
-            COMPUTE_P22(2_dd, pnlpt->M22_oneline_2_dd_complex);
-            COMPUTE_P12(2_dd, pnlpt->M12_oneline_2_dd_complex);
-            TIMER_ADD(blas);
-            if (has_fNL) {
-                TIMER_START(blas);
-                COMPUTE_P12(2_dd_ortho, pnlpt->M12_oneline_2_dd_complex_ortho);
-                TIMER_ADD(blas);
-            }
-
-            for (int j = 0; j < Nmax; j++) {
                 P1loop_2_dd[j] = P13_2_dd[j] + P22_2_dd[j];
                 Ptree_2_dd[j] = Pbin[j];
-            }
-
-            /* Computing P_{vv} contribution - Hexadecapole */
-
-
-            COMPUTE_P13(4_vv, pnlpt->M13_4_vv_oneline_complex,
-                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * (24. * f * f * (33. + 58. * f + 25. * f * f) / 1925.));
-            TIMER_START(blas);
-            COMPUTE_P22(4_vv, pnlpt->M22_oneline_4_vv_complex);
-            COMPUTE_P12(4_vv, pnlpt->M12_oneline_4_vv_complex);
-            TIMER_ADD(blas);
-            if (has_fNL) {
-                TIMER_START(blas);
-                COMPUTE_P12(4_vv_ortho, pnlpt->M12_oneline_4_vv_complex_ortho);
-                TIMER_ADD(blas);
-            }
-
-            for (int j = 0; j < Nmax; j++) {
                 P1loop_4_vv[j] = P13_4_vv[j] + P22_4_vv[j];
                 P_CTR_4[j] = kdisc[j] * kdisc[j] * Pbin[j] * (f * f * 8. / 35.);
                 Ptree_4_vv[j] = Pbin[j] * (f * f * 8. / 35.);
-            }
-
-            /* Computing P_{vd} contribution - Hexadecapole */
-
-
-            COMPUTE_P13(4_vd, pnlpt->M13_4_vd_oneline_complex,
-                        -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * 16. * f * f * (22. + 35. * f) / 1225.);
-            TIMER_START(blas);
-            COMPUTE_P22(4_vd, pnlpt->M22_oneline_4_vd_complex);
-            COMPUTE_P12(4_vd, pnlpt->M12_oneline_4_vd_complex);
-            TIMER_ADD(blas);
-            if (has_fNL) {
-                TIMER_START(blas);
-                COMPUTE_P12(4_vd_ortho, pnlpt->M12_oneline_4_vd_complex_ortho);
-                TIMER_ADD(blas);
-            }
-
-            for (int j = 0; j < Nmax; j++) {
                 P1loop_4_vd[j] = P13_4_vd[j] + P22_4_vd[j];
                 Ptree_4_vd[j] = Pbin[j] * (f * f * 4. / 7.);
+                P1loop_4_dd[j] = P22_4_dd[j]; /* no P13 for 4_dd */
             }
-
-            /* Computing P_{dd} contribution - Hexadecapole */
-
 
             double complex *f22_4_dd;
             class_alloc(f22_4_dd, Nmax * sizeof(complex double), pnlpt->error_message);
-
-            /* P22_4_dd - hexadecapole density-density (no P13, no P12) */
-            double *f22_tmp = malloc(Nmax * sizeof(double));
-            TIMER_START(blas);
-            batch_quadratic_form(Np1, Nmax, pnlpt->M22_oneline_4_dd_complex, Xr, Xi,
-                                 f22_tmp, Mr_ws, Mi_ws, Y1_ws, Y2_ws);
-            TIMER_ADD(blas);
-            assemble_P22(Nmax, kdisc, f22_tmp, cutoff, P22_4_dd);
-            for (int j = 0; j < Nmax; j++)
-                P1loop_4_dd[j] = P22_4_dd[j];
-            free(f22_tmp);
 
         } /* end of IR resummation expression */
 
@@ -5554,8 +5452,14 @@ int nonlinear_pt_loop(
         free(cmsym2_transfer);
         free(P_IFG2);
         free(f22_Id2d2);
-        /* etam2/etam2_transfer, kb2/sincos2 arrays: intentionally not freed
-         * (same pre-existing heap corruption as etam) */
+        free(etam2);
+        free(etam2_transfer);
+        free(kb2_cache);
+        free(kb2_transfer_cache);
+        free(sc_cos2);
+        free(sc_sin2);
+        free(sc_cos2_t);
+        free(sc_sin2_t);
 
     } /* end of bias conditional expression */
 
@@ -5574,8 +5478,10 @@ int nonlinear_pt_loop(
     free(cmsym_transfer);
     free(Xr_transfer);
     free(Xi_transfer);
-    /* lnk_cache, kb_cache, kb_transfer_cache, sc_cos/sin/cos_t/sin_t:
-     * intentionally not freed — same pre-existing heap corruption as etam. */
+    free(lnk_cache);
+    free(kb_transfer_cache);
+    free(sc_cos_t);
+    free(sc_sin_t);
 
     /* --- Free temporary arrays --- */
     { void *_f[] = {
