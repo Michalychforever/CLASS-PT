@@ -1677,6 +1677,7 @@ int nonlinear_pt_free(
             free(pnlpt->gauss_x);
             free(pnlpt->gauss);
             free(pnlpt->gauss_w);
+
         }
     }
     return _SUCCESS_;
@@ -3300,19 +3301,22 @@ int nonlinear_pt_loop(
     /* etam[j] = b + 2*pi*i*j/(N*Delta) are the complex FFTLog exponents;
      * b is the bias parameter controlling convergence */
 
-    double complex *etam;
-    double complex *etam_transfer;
-    class_alloc(etam, (Nmax + 1) * sizeof(complex double), pnlpt->error_message);
-    class_alloc(etam_transfer, (Nmax + 1) * sizeof(complex double), pnlpt->error_message);
-
-    int index_c = 0;
     double b = -0.3;
     double b_transfer = -0.8;
-    for (index_c = 0; index_c < Nmax + 1; index_c++) {
+
+    double complex *etam;
+    double complex *etam_transfer;
+
+    /* etam arrays are z-independent but cheap to compute, so allocate locally each call */
+    class_alloc(etam, (Nmax + 1) * sizeof(complex double), pnlpt->error_message);
+    class_alloc(etam_transfer, (Nmax + 1) * sizeof(complex double), pnlpt->error_message);
+    for (int index_c = 0; index_c < Nmax + 1; index_c++) {
         js[index_c] = index_c - Nmaxd / 2;
         etam[index_c] = b + 2. * M_PI * _Complex_I * js[index_c] / Nmaxd / Delta;
         etam_transfer[index_c] = b_transfer + 2. * M_PI * _Complex_I * js[index_c] / Nmaxd / Delta;
     }
+
+    int index_c = 0;
 
     int stepsize = 1;
 
@@ -3323,6 +3327,7 @@ int nonlinear_pt_loop(
     double complex *cmsym_transfer;
     FFT_TO_CMSYM(Tbin, b_transfer, etam_transfer, cmsym_transfer);
     TIMER_ADD(fft);
+
 
     /* Load precomputed PT kernel matrices into complex arrays */
 
@@ -3454,9 +3459,11 @@ int nonlinear_pt_loop(
 
     class_alloc(x_w_transfer, (Nmax + 1) * sizeof(complex double), pnlpt->error_message);
 
-    /* Precompute k^b and ln(k) arrays for reuse across build_X_matrix calls.
-     * Four distinct b values: b=-0.3, b_transfer=-0.8, b2=-1.6000001, b2_transfer=-1.25 */
+    /* Precompute k^b, ln(k), and sincos tables (allocated locally each z call) */
     double *lnk_cache, *kb_cache, *kb_transfer_cache;
+    double *sc_cos, *sc_sin;           /* sincos table for etam */
+    double *sc_cos_t, *sc_sin_t;       /* sincos table for etam_transfer */
+
     class_alloc(lnk_cache, Nmax * sizeof(double), pnlpt->error_message);
     class_alloc(kb_cache, Nmax * sizeof(double), pnlpt->error_message);
     class_alloc(kb_transfer_cache, Nmax * sizeof(double), pnlpt->error_message);
@@ -3465,20 +3472,14 @@ int nonlinear_pt_loop(
         kb_cache[j] = pow(kdisc[j], b);
         kb_transfer_cache[j] = pow(kdisc[j], b_transfer);
     }
-
-    /* Precompute sincos tables for each unique etam, to share across
-     * all build_X calls with the same exponents (only coeffs differ). */
-    double *sc_cos, *sc_sin;           /* sincos table for etam */
-    double *sc_cos_t, *sc_sin_t;       /* sincos table for etam_transfer */
     class_alloc(sc_cos, Np1 * Nmax * sizeof(double), pnlpt->error_message);
     class_alloc(sc_sin, Np1 * Nmax * sizeof(double), pnlpt->error_message);
     class_alloc(sc_cos_t, Np1 * Nmax * sizeof(double), pnlpt->error_message);
     class_alloc(sc_sin_t, Np1 * Nmax * sizeof(double), pnlpt->error_message);
-
-    TIMER_START(buildx);
     precompute_sincos_table(Nmax, Np1, etam, lnk_cache, sc_cos, sc_sin);
     precompute_sincos_table(Nmax, Np1, etam_transfer, lnk_cache, sc_cos_t, sc_sin_t);
 
+    TIMER_START(buildx);
     /* Build X matrices for the primary FFTLog basis (matter) */
     build_X_from_tables(Nmax, Np1, cmsym, kb_cache, sc_cos, sc_sin, Xr, Xi);
     build_X_from_tables(Nmax, Np1, cmsym_transfer, kb_transfer_cache, sc_cos_t, sc_sin_t, Xr_transfer, Xi_transfer);
@@ -3677,9 +3678,11 @@ int nonlinear_pt_loop(
              * M12 kernels (fNL) are precomputed and simply combined with
              * powers of f here. */
 
+            /* === FUSED M22 FILL: all 9 multipole M22 arrays + M12 fNL arrays filled in a single pass === */
             TIMER_START(m22fill);
             {
                 int _N = Nmax + 1;
+                double f2 = f * f, f3 = f2 * f, f4 = f3 * f;
                 #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
                 for (int _l = 0; _l < _N; _l++) {
                     int _count_base = _l * _N - _l * (_l - 1) / 2;
@@ -3689,24 +3692,114 @@ int nonlinear_pt_loop(
                         double complex _nu2 = -0.5 * etam[_l];
                         double complex _nu12 = _nu1 + _nu2;
 
-                        pnlpt->M22_oneline_0_vv_complex[_c] = (pnlpt->M22_oneline_complex[_c] * 196. / (98. * _nu1 * _nu2 * _nu12 * _nu12 - 91. * _nu12 * _nu12 + 36. * _nu1 * _nu2 - 14. * _nu1 * _nu2 * _nu12 + 3. * _nu12 + 58.)) * (f * f * (14. * f * f * (24. - 8. * _nu2 - 15. * _nu2 * _nu2 + 5. * _nu2 * _nu2 * _nu2 + 5. * _nu1 * _nu1 * _nu1 * (1. + 7. * _nu2) + 5. * _nu1 * _nu1 * (-3. - 10. * _nu2 + 14. * _nu2 * _nu2) + _nu1 * (-8. - 24. * _nu2 - 50. * _nu2 * _nu2 + 35. * _nu2 * _nu2 * _nu2)) + 18. * f * (36. - 8. * _nu2 + 70. * _nu1 * _nu1 * _nu1 * _nu2 - 23. * _nu2 * _nu2 + _nu1 * _nu1 * (-23. - 94. * _nu2 + 140. * _nu2 * _nu2) + _nu1 * (-8. - 42. * _nu2 - 94. * _nu2 * _nu2 + 70. * _nu2 * _nu2 * _nu2)) + 9. * (50. - 9. * _nu2 + 98. * _nu1 * _nu1 * _nu1 * _nu2 - 35. * _nu2 * _nu2 + 7. * _nu1 * _nu1 * (-5. - 18. * _nu2 + 28. * _nu2 * _nu2) + _nu1 * (-9. - 66. * _nu2 - 126. * _nu2 * _nu2 + 98. * _nu2 * _nu2 * _nu2)))) / 8820.;
+                        /* Shared powers */
+                        double complex nu1_sq = _nu1 * _nu1, nu1_cu = nu1_sq * _nu1;
+                        double complex nu2_sq = _nu2 * _nu2, nu2_cu = nu2_sq * _nu2;
+                        double complex nu12_sq = _nu12 * _nu12;
 
+                        /* Shared denominator and base factor */
+                        double complex DENOM = 98. * _nu1 * _nu2 * nu12_sq - 91. * nu12_sq + 36. * _nu1 * _nu2 - 14. * _nu1 * _nu2 * _nu12 + 3. * _nu12 + 58.;
+                        double complex base = pnlpt->M22_oneline_complex[_c] * 196. / DENOM;
+
+                        /* Shared sub-expressions used across multiple multipoles */
+                        double complex A0 = 50. - 9. * _nu2 + 98. * nu1_cu * _nu2 - 35. * nu2_sq + 7. * nu1_sq * (-5. - 18. * _nu2 + 28. * nu2_sq) + _nu1 * (-9. - 66. * _nu2 - 126. * nu2_sq + 98. * nu2_cu);
+                        double complex B0 = 46. + 13. * _nu2 + 98. * nu1_cu * _nu2 - 63. * nu2_sq + 7. * nu1_sq * (-9. - 10. * _nu2 + 28. * nu2_sq) + _nu1 * (13. - 138. * _nu2 - 70. * nu2_sq + 98. * nu2_cu);
+                        double complex C0 = 10. - _nu2 + 14. * nu1_cu * _nu2 - 17. * nu2_sq + nu1_sq * (-17. + 6. * _nu2 + 28. * nu2_sq) + _nu1 * (-1. - 22. * _nu2 + 6. * nu2_sq + 14. * nu2_cu);
+                        double complex D0 = 58. + 3. * _nu2 + 98. * nu1_cu * _nu2 - 91. * nu2_sq + 7. * nu1_sq * (-13. - 2. * _nu2 + 28. * nu2_sq) + _nu1 * (3. - 146. * _nu2 - 14. * nu2_sq + 98. * nu2_cu);
+
+                        /* 0_vv: monopole velocity-velocity */
+                        {
+                            double complex vv0_f4 = 14. * (24. - 8. * _nu2 - 15. * nu2_sq + 5. * nu2_cu + 5. * nu1_cu * (1. + 7. * _nu2) + 5. * nu1_sq * (-3. - 10. * _nu2 + 14. * nu2_sq) + _nu1 * (-8. - 24. * _nu2 - 50. * nu2_sq + 35. * nu2_cu));
+                            double complex vv0_f3 = 18. * (36. - 8. * _nu2 + 70. * nu1_cu * _nu2 - 23. * nu2_sq + nu1_sq * (-23. - 94. * _nu2 + 140. * nu2_sq) + _nu1 * (-8. - 42. * _nu2 - 94. * nu2_sq + 70. * nu2_cu));
+                            pnlpt->M22_oneline_0_vv_complex[_c] = base * f2 * (f2 * vv0_f4 + f * vv0_f3 + 9. * A0) / 8820.;
+                        }
+
+                        /* 0_vd: monopole velocity-density */
+                        {
+                            double complex vd0_f3 = 21. * (6. + 3. * _nu2 - 10. * nu2_sq + 2. * nu2_cu + 2. * nu1_cu * (1. + 5. * _nu2) + 2. * nu1_sq * (-5. - 2. * _nu2 + 10. * nu2_sq) + _nu1 * (3. - 24. * _nu2 - 4. * nu2_sq + 10. * nu2_cu));
+                            double complex vd0_f2 = 14. * (18. + 11. * _nu2 + 42. * nu1_cu * _nu2 - 31. * nu2_sq + nu1_sq * (-31. - 22. * _nu2 + 84. * nu2_sq) + _nu1 * (11. - 74. * _nu2 - 22. * nu2_sq + 42. * nu2_cu));
+                            pnlpt->M22_oneline_0_vd_complex[_c] = base * f * (f2 * vd0_f3 + f * vd0_f2 + 5. * B0) / 1470.;
+                        }
+
+                        /* 0_dd: monopole density-density */
+                        {
+                            double complex dd0_f2 = 98. * (4. - 2. * _nu2 - 5. * nu2_sq + nu2_cu + nu1_cu * (1. + 3. * _nu2) + nu1_sq * (-5. + 2. * _nu2 + 6. * nu2_sq) + _nu1 * (-2. - 4. * _nu2 + 2. * nu2_sq + 3. * nu2_cu));
+                            pnlpt->M22_oneline_0_dd_complex[_c] = base * (f2 * dd0_f2 + 70. * f * C0 + 15. * D0) / 2940.;
+                        }
+
+                        /* 2_vv: quadrupole velocity-velocity */
+                        {
+                            double complex qvv_f2 = 231. * (142. - 21. * _nu2 + 280. * nu1_cu * _nu2 - 106. * nu2_sq + 2. * nu1_sq * (-53. - 174. * _nu2 + 280. * nu2_sq) + _nu1 * (-21. - 204. * _nu2 - 348. * nu2_sq + 280. * nu2_cu));
+                            double complex qvv_f4 = 49. * (336. - 62. * _nu2 - 255. * nu2_sq + 50. * nu2_cu + 10. * nu1_cu * (5. + 56. * _nu2) + 5. * nu1_sq * (-51. - 142. * _nu2 + 224. * nu2_sq) + _nu1 * (-62. - 486. * _nu2 - 710. * nu2_sq + 560. * nu2_cu));
+                            pnlpt->M22_oneline_2_vv_complex[_c] = base * f2 * (396. * A0 + f * qvv_f2 + f2 * qvv_f4) / 135828.;
+                        }
+
+                        /* 2_vd: quadrupole velocity-density */
+                        {
+                            double complex qvd_f3 = 7. * (22. + 11. * _nu2 - 40. * nu2_sq + 4. * nu2_cu + nu1_cu * (4. + 40. * _nu2) + 8. * nu1_sq * (-5. - _nu2 + 10. * nu2_sq) + _nu1 * (11. - 88. * _nu2 - 8. * nu2_sq + 40. * nu2_cu));
+                            double complex qvd_f2 = 306. + 161. * _nu2 + 672. * nu1_cu * _nu2 - 538. * nu2_sq + 2. * nu1_sq * (-269. - 134. * _nu2 + 672. * nu2_sq) + _nu1 * (161. - 1196. * _nu2 - 268. * nu2_sq + 672. * nu2_cu);
+                            pnlpt->M22_oneline_2_vd_complex[_c] = base * f * (f2 * qvd_f3 + 4. * B0 + f * qvd_f2) / 588.;
+                        }
+
+                        /* 2_dd: quadrupole density-density */
+                        {
+                            double complex qdd_f2 = 26. - 13. * _nu2 - 37. * nu2_sq + 2. * nu2_cu + nu1_cu * (2. + 24. * _nu2) + nu1_sq * (-37. + 22. * _nu2 + 48. * nu2_sq) + _nu1 * (-13. - 26. * _nu2 + 22. * nu2_sq + 24. * nu2_cu);
+                            pnlpt->M22_oneline_2_dd_complex[_c] = base * f * (4. * C0 + f * qdd_f2) / 84.;
+                        }
+
+                        /* 4_vv: hexadecapole velocity-velocity */
+                        {
+                            double complex hvv_f2 = 728. * (206. + 420. * nu1_cu * _nu2 + (7. - 208. * _nu2) * _nu2 + 8. * nu1_sq * (-26. + _nu2 * (-53. + 105. * _nu2)) + _nu1 * (7. + 4. * _nu2 * (-108. + _nu2 * (-106. + 105. * _nu2))));
+                            double complex hvv_f4 = 147. * (483. + 40. * nu1_cu * (-1. + 28. * _nu2) - 2. * _nu2 * (-57. + 10. * _nu2 * (29. + 2. * _nu2)) + 20. * nu1_sq * (-29. + 2. * _nu2 * (-25. + 56. * _nu2)) + 2. * _nu1 * (57. + 2. * _nu2 * (-327. + 10. * _nu2 * (-25. + 28. * _nu2))));
+                            pnlpt->M22_oneline_4_vv_complex[_c] = base * f2 * (1144. * A0 + f * hvv_f2 + f2 * hvv_f4) / 980980.;
+                        }
+
+                        /* 4_vd: hexadecapole velocity-density */
+                        {
+                            double complex hvd_f2 = 14. * (26. + 13. * _nu2 - 60. * nu2_sq - 8. * nu2_cu + nu1_cu * (-8. + 60. * _nu2) + 4. * nu1_sq * (-15. + 4. * _nu2 + 30. * nu2_sq) + _nu1 * (13. - 104. * _nu2 + 16. * nu2_sq + 60. * nu2_cu));
+                            double complex hvd_f1 = 11. * (58. + 21. * _nu2 + 112. * nu1_cu * _nu2 - 106. * nu2_sq + 2. * nu1_sq * (-53. - 6. * _nu2 + 112. * nu2_sq) + _nu1 * (21. - 204. * _nu2 - 12. * nu2_sq + 112. * nu2_cu));
+                            pnlpt->M22_oneline_4_vd_complex[_c] = base * f2 * (f * hvd_f2 + hvd_f1) / 2695.;
+                        }
+
+                        /* 4_dd: hexadecapole density-density */
+                        pnlpt->M22_oneline_4_dd_complex[_c] = base * f2 * (2. * _nu1 - 1.) * (2. * _nu2 - 1.) * (1. + _nu12) * (2. + _nu12) / 35.;
+
+                        /* fNL M12 arrays (all multipoles) */
                         if (has_fNL) {
-                            pnlpt->M12_oneline_0_vv_complex[_c] = f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2[_c]) + f * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv0_f3[_c]);
-
-                            pnlpt->M12_oneline_0_vv_complex_ortho[_c] = f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2_ortho[_c]) + f * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv0_f3_ortho[_c]);
+                            pnlpt->M12_oneline_0_vv_complex[_c] = f2 * pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2[_c] + f3 * pnlpt->M12_oneline_complex_matter_multipoles_vv0_f3[_c];
+                            pnlpt->M12_oneline_0_vv_complex_ortho[_c] = f2 * pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2_ortho[_c] + f3 * pnlpt->M12_oneline_complex_matter_multipoles_vv0_f3_ortho[_c];
+                            pnlpt->M12_oneline_0_vd_complex[_c] = f * pnlpt->M12_oneline_complex_matter_multipoles_vd0_f1[_c] + f2 * pnlpt->M12_oneline_complex_matter_multipoles_vd0_f2[_c];
+                            pnlpt->M12_oneline_0_vd_complex_ortho[_c] = f * pnlpt->M12_oneline_complex_matter_multipoles_vd0_f1_ortho[_c] + f2 * pnlpt->M12_oneline_complex_matter_multipoles_vd0_f2_ortho[_c];
+                            pnlpt->M12_oneline_0_dd_complex[_c] = pnlpt->M12_oneline_complex_matter_multipoles_dd0_f0[_c] + f * pnlpt->M12_oneline_complex_matter_multipoles_dd0_f1[_c];
+                            pnlpt->M12_oneline_0_dd_complex_ortho[_c] = pnlpt->M12_oneline_complex_matter_multipoles_dd0_f0_ortho[_c] + f * pnlpt->M12_oneline_complex_matter_multipoles_dd0_f1_ortho[_c];
+                            pnlpt->M12_oneline_2_vv_complex[_c] = 20. / 7. * f2 * pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2[_c] + f3 * pnlpt->M12_oneline_complex_matter_multipoles_vv2_f3[_c];
+                            pnlpt->M12_oneline_2_vv_complex_ortho[_c] = 20. / 7. * f2 * pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2_ortho[_c] + f3 * pnlpt->M12_oneline_complex_matter_multipoles_vv2_f3_ortho[_c];
+                            pnlpt->M12_oneline_2_vd_complex[_c] = 2. * f * pnlpt->M12_oneline_complex_matter_multipoles_vd0_f1[_c] + f2 * pnlpt->M12_oneline_complex_matter_multipoles_vd2_f2[_c];
+                            pnlpt->M12_oneline_2_vd_complex_ortho[_c] = 2. * f * pnlpt->M12_oneline_complex_matter_multipoles_vd0_f1_ortho[_c] + f2 * pnlpt->M12_oneline_complex_matter_multipoles_vd2_f2_ortho[_c];
+                            pnlpt->M12_oneline_2_dd_complex[_c] = 2. * f * pnlpt->M12_oneline_complex_matter_multipoles_dd0_f1[_c];
+                            pnlpt->M12_oneline_2_dd_complex_ortho[_c] = 2. * f * pnlpt->M12_oneline_complex_matter_multipoles_dd0_f1_ortho[_c];
+                            pnlpt->M12_oneline_4_vv_complex[_c] = 8. / 7. * f2 * pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2[_c] + f3 * pnlpt->M12_oneline_complex_matter_multipoles_vv4_f3[_c];
+                            pnlpt->M12_oneline_4_vv_complex_ortho[_c] = 8. / 7. * f2 * pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2_ortho[_c] + f3 * pnlpt->M12_oneline_complex_matter_multipoles_vv4_f3_ortho[_c];
+                            pnlpt->M12_oneline_4_vd_complex[_c] = f2 * pnlpt->M12_oneline_complex_matter_multipoles_vd4_f2[_c];
+                            pnlpt->M12_oneline_4_vd_complex_ortho[_c] = f2 * pnlpt->M12_oneline_complex_matter_multipoles_vd4_f2_ortho[_c];
                         }
                     }
                 }
             }
             TIMER_ADD(m22fill);
 
-            /* --- Monopole (ell=0), velocity-velocity component: P_{0,vv} ~ f^2 --- */
-            /* f13/f22/f12 computed inline by batch BLAS macros */
-
+            /* === FUSED M13 FILL: all 8 M13 multipole arrays filled in a single pass === */
             for (index_i = 0; index_i < Nmax + 1; index_i++) {
                 nu1 = -0.5 * etam[index_i];
-                pnlpt->M13_0_vv_oneline_complex[index_i] = pnlpt->M13_oneline_complex[index_i] * 112. / (1. + 9. * nu1) * (3. * (f * f) * (7. * (-5. + 3. * nu1) + 6. * f * (-7. + 5. * nu1))) / 3920.;
+                double complex m13_base = pnlpt->M13_oneline_complex[index_i] * 112. / (1. + 9. * nu1);
+                pnlpt->M13_0_vv_oneline_complex[index_i] = m13_base * (3. * (f * f) * (7. * (-5. + 3. * nu1) + 6. * f * (-7. + 5. * nu1))) / 3920.;
+                pnlpt->M13_0_vd_oneline_complex[index_i] = m13_base * (f * (-35. - 18. * f + 45. * nu1 + 54. * f * nu1)) / 840.;
+                pnlpt->M13_0_dd_oneline_complex[index_i] = pnlpt->M13_oneline_complex[index_i] / (1. + 9. * nu1) * (1. + 9. * nu1 + 6. * f * (1. + nu1));
+                pnlpt->M13_2_vv_oneline_complex[index_i] = m13_base * (3. * f * f * (-5. + 3. * nu1 + f * (-6. + 5. * nu1))) / 196.;
+                pnlpt->M13_2_vd_oneline_complex[index_i] = m13_base * (f * (-49. - 9. * f + 63. * nu1 + 108. * f * nu1)) / 588.;
+                pnlpt->M13_2_dd_oneline_complex[index_i] = m13_base * (3. * f * (1. + nu1)) / 28.;
+                pnlpt->M13_4_vv_oneline_complex[index_i] = m13_base * (3. * f * f * (-55. + 33. * nu1 + f * (-66. + 90. * nu1))) / 5390.;
+                pnlpt->M13_4_vd_oneline_complex[index_i] = m13_base * 9. * (f * f * (1. + 2. * nu1)) / 245.;
             }
 
             /* Batch compute P13_0_vv for all k values at once */
@@ -3734,37 +3827,7 @@ int nonlinear_pt_loop(
             }
 
             /* Computing P_{vd} contribution */
-
-            TIMER_START(m22fill);
-            {
-                int _N = Nmax + 1;
-                #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
-                for (int _l = 0; _l < _N; _l++) {
-                    int _count_base = _l * _N - _l * (_l - 1) / 2;
-                    for (int _i = _l; _i < _N; _i++) {
-                        int _c = _count_base + (_i - _l);
-                        double complex _nu1 = -0.5 * etam[_i];
-                        double complex _nu2 = -0.5 * etam[_l];
-                        double complex _nu12 = _nu1 + _nu2;
-                        pnlpt->M22_oneline_0_vd_complex[_c] = pnlpt->M22_oneline_complex[_c] * 196. / ((_nu1 * _nu2 * (98. * _nu12 * _nu12 - 14. * _nu12 + 36.) - 91. * _nu12 * _nu12 + 3. * _nu12 + 58.)) * (f * (21. * f * f * (6. + 3. * _nu2 - 10. * _nu2 * _nu2 + 2. * _nu2 * _nu2 * _nu2 + 2. * _nu1 * _nu1 * _nu1 * (1. + 5. * _nu2) + 2 * _nu1 * _nu1 * (-5. - 2. * _nu2 + 10. * _nu2 * _nu2) + _nu1 * (3. - 24. * _nu2 - 4. * _nu2 * _nu2 + 10. * _nu2 * _nu2 * _nu2)) + 14. * f * (18. + 11. * _nu2 + 42. * _nu1 * _nu1 * _nu1 * _nu2 - 31. * _nu2 * _nu2 + _nu1 * _nu1 * (-31. - 22. * _nu2 + 84. * _nu2 * _nu2) + _nu1 * (11. - 74. * _nu2 - 22. * _nu2 * _nu2 + 42. * _nu2 * _nu2 * _nu2)) + 5. * (46. + 13. * _nu2 + 98. * _nu1 * _nu1 * _nu1 * _nu2 - 63. * _nu2 * _nu2 + 7. * _nu1 * _nu1 * (-9. - 10. * _nu2 + 28. * _nu2 * _nu2) + _nu1 * (13. - 138. * _nu2 - 70. * _nu2 * _nu2 + 98. * _nu2 * _nu2 * _nu2)))) / 1470.;
-
-                        if (has_fNL) {
-                            pnlpt->M12_oneline_0_vd_complex[_c] = f * (pnlpt->M12_oneline_complex_matter_multipoles_vd0_f1[_c]) + f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vd0_f2[_c]);
-
-                            pnlpt->M12_oneline_0_vd_complex_ortho[_c] = f * (pnlpt->M12_oneline_complex_matter_multipoles_vd0_f1_ortho[_c]) + f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vd0_f2_ortho[_c]);
-                        }
-                    }
-                }
-            }
-            TIMER_ADD(m22fill);
-
-            for (index_i = 0; index_i < Nmax + 1; index_i++) {
-                nu1 = -0.5 * etam[index_i];
-                pnlpt->M13_0_vd_oneline_complex[index_i] = pnlpt->M13_oneline_complex[index_i] * 112. / (1. + 9. * nu1) * (f * (-35. - 18. * f + 45. * nu1 + 54. * f * nu1)) / 840.;
-            }
-
-            /* --- Monopole (ell=0), velocity-density component: P_{0,vd} ~ f --- */
-            /* f13/f22/f12 computed inline by batch BLAS macros */
+            /* (M22 and M13 arrays already filled by fused loop above) */
 
             COMPUTE_P13(0_vd, pnlpt->M13_0_vd_oneline_complex,
                         -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * (2. * f * (625. + 558. * f + 315. * f * f) / 1575.));
@@ -3787,32 +3850,6 @@ int nonlinear_pt_loop(
 
             /* Computing P_{dd} contribution */
 
-            TIMER_START(m22fill);
-            {
-                int _N = Nmax + 1;
-                #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
-                for (int _l = 0; _l < _N; _l++) {
-                    int _count_base = _l * _N - _l * (_l - 1) / 2;
-                    for (int _i = _l; _i < _N; _i++) {
-                        int _c = _count_base + (_i - _l);
-                        double complex _nu1 = -0.5 * etam[_i];
-                        double complex _nu2 = -0.5 * etam[_l];
-                        double complex _nu12 = _nu1 + _nu2;
-                        pnlpt->M22_oneline_0_dd_complex[_c] = pnlpt->M22_oneline_complex[_c] * 196. / ((_nu1 * _nu2 * (98. * _nu12 * _nu12 - 14. * _nu12 + 36.) - 91. * _nu12 * _nu12 + 3. * _nu12 + 58.)) * (98. * f * f * (4. - 2. * _nu2 - 5. * _nu2 * _nu2 + _nu2 * _nu2 * _nu2 + _nu1 * _nu1 * _nu1 * (1. + 3. * _nu2) + _nu1 * _nu1 * (-5. + 2. * _nu2 + 6. * _nu2 * _nu2) + _nu1 * (-2. - 4. * _nu2 + 2. * _nu2 * _nu2 + 3. * _nu2 * _nu2 * _nu2)) + 70. * f * (10. - _nu2 + 14. * _nu1 * _nu1 * _nu1 * _nu2 - 17. * _nu2 * _nu2 + _nu1 * _nu1 * (-17. + 6. * _nu2 + 28. * _nu2 * _nu2) + _nu1 * (-1. - 22. * _nu2 + 6. * _nu2 * _nu2 + 14. * _nu2 * _nu2 * _nu2)) + 15. * (58. + 3. * _nu2 + 98. * _nu1 * _nu1 * _nu1 * _nu2 - 91. * _nu2 * _nu2 + 7. * _nu1 * _nu1 * (-13. - 2. * _nu2 + 28. * _nu2 * _nu2) + _nu1 * (3. - 146. * _nu2 - 14. * _nu2 * _nu2 + 98. * _nu2 * _nu2 * _nu2))) / 2940.;
-
-                        if (has_fNL) {
-                            pnlpt->M12_oneline_0_dd_complex[_c] = (pnlpt->M12_oneline_complex_matter_multipoles_dd0_f0[_c]) + f * (pnlpt->M12_oneline_complex_matter_multipoles_dd0_f1[_c]);
-
-                            pnlpt->M12_oneline_0_dd_complex_ortho[_c] = (pnlpt->M12_oneline_complex_matter_multipoles_dd0_f0_ortho[_c]) + f * (pnlpt->M12_oneline_complex_matter_multipoles_dd0_f1_ortho[_c]);
-                        }
-                    }
-                }
-            }
-            TIMER_ADD(m22fill);
-            for (index_i = 0; index_i < Nmax + 1; index_i++) {
-                nu1 = -0.5 * etam[index_i];
-                pnlpt->M13_0_dd_oneline_complex[index_i] = pnlpt->M13_oneline_complex[index_i] / (1. + 9. * nu1) * (1. + 9. * nu1 + 6. * f * (1. + nu1));
-            }
 
             /* --- Monopole (ell=0), density-density component: P_{0,dd} ~ f^0 --- */
             /* f13/f22/f12 computed inline by batch BLAS macros */
@@ -3838,37 +3875,6 @@ int nonlinear_pt_loop(
 
             /* Computing P_{vv} contribution - Quadrupole */
 
-            TIMER_START(m22fill);
-            {
-                int _N = Nmax + 1;
-                #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
-                for (int _l = 0; _l < _N; _l++) {
-                    int _count_base = _l * _N - _l * (_l - 1) / 2;
-                    for (int _i = _l; _i < _N; _i++) {
-                        int _c = _count_base + (_i - _l);
-                        double complex _nu1 = -0.5 * etam[_i];
-                        double complex _nu2 = -0.5 * etam[_l];
-                        double complex _nu12 = _nu1 + _nu2;
-
-                        pnlpt->M22_oneline_2_vv_complex[_c] = (pnlpt->M22_oneline_complex[_c] * 196. / (98. * _nu1 * _nu2 * _nu12 * _nu12 - 91. * _nu12 * _nu12 + 36. * _nu1 * _nu2 - 14. * _nu1 * _nu2 * _nu12 + 3. * _nu12 + 58.)) * (f * f * (396. * (50. - 9. * _nu2 + 98. * _nu1 * _nu1 * _nu1 * _nu2 - 35. * _nu2 * _nu2 + 7. * _nu1 * _nu1 * (-5. - 18. * _nu2 + 28. * _nu2 * _nu2) + _nu1 * (-9. - 66. * _nu2 - 126. * _nu2 * _nu2 + 98. * _nu2 * _nu2 * _nu2)) + 231. * f * (142. - 21. * _nu2 + 280. * _nu1 * _nu1 * _nu1 * _nu2 - 106. * _nu2 * _nu2 + 2. * _nu1 * _nu1 * (-53. - 174. * _nu2 + 280. * _nu2 * _nu2) + _nu1 * (-21. - 204. * _nu2 - 348. * _nu2 * _nu2 + 280. * _nu2 * _nu2 * _nu2)) + 49. * f * f * (336. - 62. * _nu2 - 255. * _nu2 * _nu2 + 50. * _nu2 * _nu2 * _nu2 + 10. * _nu1 * _nu1 * _nu1 * (5. + 56. * _nu2) + 5. * _nu1 * _nu1 * (-51. - 142. * _nu2 + 224. * _nu2 * _nu2) + _nu1 * (-62. - 486. * _nu2 - 710. * _nu2 * _nu2 + 560. * _nu2 * _nu2 * _nu2)))) / 135828.;
-
-                        if (has_fNL) {
-                            pnlpt->M12_oneline_2_vv_complex[_c] = 20. / 7. * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2[_c]) + f * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv2_f3[_c]);
-
-                            pnlpt->M12_oneline_2_vv_complex_ortho[_c] = 20. / 7. * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2_ortho[_c]) + f * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv2_f3_ortho[_c]);
-                        }
-                    }
-                }
-            }
-            TIMER_ADD(m22fill);
-
-            /* --- Quadrupole (ell=2), velocity-velocity component: P_{2,vv} ~ f^2 --- */
-            /* f13/f22/f12 computed inline by batch BLAS macros */
-
-            for (index_i = 0; index_i < Nmax + 1; index_i++) {
-                nu1 = -0.5 * etam[index_i];
-                pnlpt->M13_2_vv_oneline_complex[index_i] = pnlpt->M13_oneline_complex[index_i] * 112. / (1. + 9. * nu1) * (3. * f * f * (-5. + 3. * nu1 + f * (-6. + 5. * nu1))) / 196.;
-            }
 
             COMPUTE_P13(2_vv, pnlpt->M13_2_vv_oneline_complex,
                         -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * (2. * f * f * (54. + 74. * f + 25. * f * f) / 105.));
@@ -3892,37 +3898,6 @@ int nonlinear_pt_loop(
 
             /* Computing P_{vd} contribution - Quadrupole */
 
-            TIMER_START(m22fill);
-            {
-                int _N = Nmax + 1;
-                #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
-                for (int _l = 0; _l < _N; _l++) {
-                    int _count_base = _l * _N - _l * (_l - 1) / 2;
-                    for (int _i = _l; _i < _N; _i++) {
-                        int _c = _count_base + (_i - _l);
-                        double complex _nu1 = -0.5 * etam[_i];
-                        double complex _nu2 = -0.5 * etam[_l];
-                        double complex _nu12 = _nu1 + _nu2;
-
-                        pnlpt->M22_oneline_2_vd_complex[_c] = (pnlpt->M22_oneline_complex[_c] * 196. / (98. * _nu1 * _nu2 * _nu12 * _nu12 - 91. * _nu12 * _nu12 + 36. * _nu1 * _nu2 - 14. * _nu1 * _nu2 * _nu12 + 3. * _nu12 + 58.)) * (f * (7. * f * f * (22. + 11. * _nu2 - 40. * _nu2 * _nu2 + 4. * _nu2 * _nu2 * _nu2 + _nu1 * _nu1 * _nu1 * (4. + 40. * _nu2) + 8. * _nu1 * _nu1 * (-5. - _nu2 + 10. * _nu2 * _nu2) + _nu1 * (11. - 88. * _nu2 - 8. * _nu2 * _nu2 + 40. * _nu2 * _nu2 * _nu2)) + 4. * (46. + 13. * _nu2 + 98. * _nu1 * _nu1 * _nu1 * _nu2 - 63. * _nu2 * _nu2 + 7. * _nu1 * _nu1 * (-9. - 10. * _nu2 + 28. * _nu2 * _nu2) + _nu1 * (13. - 138. * _nu2 - 70. * _nu2 * _nu2 + 98. * _nu2 * _nu2 * _nu2)) + f * (306. + 161. * _nu2 + 672. * _nu1 * _nu1 * _nu1 * _nu2 - 538. * _nu2 * _nu2 + 2. * _nu1 * _nu1 * (-269. - 134. * _nu2 + 672. * _nu2 * _nu2) + _nu1 * (161. - 1196. * _nu2 - 268. * _nu2 * _nu2 + 672. * _nu2 * _nu2 * _nu2)))) / 588.;
-
-                        if (has_fNL) {
-                            pnlpt->M12_oneline_2_vd_complex[_c] = 2. * f * (pnlpt->M12_oneline_complex_matter_multipoles_vd0_f1[_c]) + f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vd2_f2[_c]);
-
-                            pnlpt->M12_oneline_2_vd_complex_ortho[_c] = 2. * f * (pnlpt->M12_oneline_complex_matter_multipoles_vd0_f1_ortho[_c]) + f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vd2_f2_ortho[_c]);
-                        }
-                    }
-                }
-            }
-            TIMER_ADD(m22fill);
-
-            /* --- Quadrupole (ell=2), velocity-density component: P_{2,vd} ~ f --- */
-            /* f13/f22/f12 computed inline by batch BLAS macros */
-
-            for (index_i = 0; index_i < Nmax + 1; index_i++) {
-                nu1 = -0.5 * etam[index_i];
-                pnlpt->M13_2_vd_oneline_complex[index_i] = pnlpt->M13_oneline_complex[index_i] * 112. / (1. + 9. * nu1) * (f * (-49. - 9. * f + 63. * nu1 + 108. * f * nu1)) / 588.;
-            }
 
             COMPUTE_P13(2_vd, pnlpt->M13_2_vd_oneline_complex,
                         -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * 4. * f * (175. + 180. * f + 126. * f * f) / 441.);
@@ -3943,36 +3918,6 @@ int nonlinear_pt_loop(
 
             /* Computing P_{dd} contribution - Quadrupole */
 
-            TIMER_START(m22fill);
-            {
-                int _N = Nmax + 1;
-                #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
-                for (int _l = 0; _l < _N; _l++) {
-                    int _count_base = _l * _N - _l * (_l - 1) / 2;
-                    for (int _i = _l; _i < _N; _i++) {
-                        int _c = _count_base + (_i - _l);
-                        double complex _nu1 = -0.5 * etam[_i];
-                        double complex _nu2 = -0.5 * etam[_l];
-                        double complex _nu12 = _nu1 + _nu2;
-
-                        pnlpt->M22_oneline_2_dd_complex[_c] = (pnlpt->M22_oneline_complex[_c] * 196. / (98. * _nu1 * _nu2 * _nu12 * _nu12 - 91. * _nu12 * _nu12 + 36. * _nu1 * _nu2 - 14. * _nu1 * _nu2 * _nu12 + 3. * _nu12 + 58.)) * f * (4. * (10. - _nu2 + 14. * _nu1 * _nu1 * _nu1 * _nu2 - 17. * _nu2 * _nu2 + _nu1 * _nu1 * (-17. + 6. * _nu2 + 28. * _nu2 * _nu2) + _nu1 * (-1. - 22. * _nu2 + 6. * _nu2 * _nu2 + 14. * _nu2 * _nu2 * _nu2)) + f * (26. - 13. * _nu2 - 37. * _nu2 * _nu2 + 2. * _nu2 * _nu2 * _nu2 + _nu1 * _nu1 * _nu1 * (2. + 24. * _nu2) + _nu1 * _nu1 * (-37. + 22. * _nu2 + 48. * _nu2 * _nu2) + _nu1 * (-13. - 26. * _nu2 + 22. * _nu2 * _nu2 + 24. * _nu2 * _nu2 * _nu2))) / 84.;
-
-                        if (has_fNL) {
-                            pnlpt->M12_oneline_2_dd_complex[_c] = 2. * f * (pnlpt->M12_oneline_complex_matter_multipoles_dd0_f1[_c]);
-
-                            pnlpt->M12_oneline_2_dd_complex_ortho[_c] = 2. * f * (pnlpt->M12_oneline_complex_matter_multipoles_dd0_f1_ortho[_c]);
-                        }
-                    }
-                }
-            }
-            TIMER_ADD(m22fill);
-
-            /* f13/f22/f12 computed inline by batch BLAS macros */
-
-            for (index_i = 0; index_i < Nmax + 1; index_i++) {
-                nu1 = -0.5 * etam[index_i];
-                pnlpt->M13_2_dd_oneline_complex[index_i] = pnlpt->M13_oneline_complex[index_i] * 112. / (1. + 9. * nu1) * (3. * f * (1. + nu1)) / 28.;
-            }
 
             COMPUTE_P13(2_dd, pnlpt->M13_2_dd_oneline_complex,
                         -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * (2. * f * (35. * f - 2.) / 105.));
@@ -3993,37 +3938,6 @@ int nonlinear_pt_loop(
 
             /* Computing P_{vv} contribution - Hexadecapole */
 
-            TIMER_START(m22fill);
-            {
-                int _N = Nmax + 1;
-                #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
-                for (int _l = 0; _l < _N; _l++) {
-                    int _count_base = _l * _N - _l * (_l - 1) / 2;
-                    for (int _i = _l; _i < _N; _i++) {
-                        int _c = _count_base + (_i - _l);
-                        double complex _nu1 = -0.5 * etam[_i];
-                        double complex _nu2 = -0.5 * etam[_l];
-                        double complex _nu12 = _nu1 + _nu2;
-
-                        pnlpt->M22_oneline_4_vv_complex[_c] = (pnlpt->M22_oneline_complex[_c] * 196. / (98. * _nu1 * _nu2 * _nu12 * _nu12 - 91. * _nu12 * _nu12 + 36. * _nu1 * _nu2 - 14. * _nu1 * _nu2 * _nu12 + 3. * _nu12 + 58.)) * (f * f * (1144. * (50. + 98. * _nu1 * _nu1 * _nu1 * _nu2 - _nu2 * (9. + 35. * _nu2) + 7. * _nu1 * _nu1 * (-5. + 2. * _nu2 * (-9. + 14. * _nu2)) + _nu1 * (-9. + 2. * _nu2 * (-33. + 7. * _nu2 * (-9. + 7. * _nu2)))) + 147. * f * f * (483. + 40. * _nu1 * _nu1 * _nu1 * (-1. + 28. * _nu2) - 2. * _nu2 * (-57. + 10. * _nu2 * (29. + 2. * _nu2)) + 20. * _nu1 * _nu1 * (-29. + 2. * _nu2 * (-25. + 56. * _nu2)) + 2. * _nu1 * (57. + 2. * _nu2 * (-327. + 10. * _nu2 * (-25. + 28. * _nu2)))) + 728. * f * (206. + 420. * _nu1 * _nu1 * _nu1 * _nu2 + (7. - 208. * _nu2) * _nu2 + 8. * _nu1 * _nu1 * (-26. + _nu2 * (-53. + 105. * _nu2)) + _nu1 * (7. + 4. * _nu2 * (-108. + _nu2 * (-106. + 105. * _nu2)))))) / 980980.;
-
-                        if (has_fNL) {
-                            pnlpt->M12_oneline_4_vv_complex[_c] = 8. / 7. * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2[_c]) + f * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv4_f3[_c]);
-
-                            pnlpt->M12_oneline_4_vv_complex_ortho[_c] = 8. / 7. * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv0_f2_ortho[_c]) + f * f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vv4_f3_ortho[_c]);
-                        }
-                    }
-                }
-            }
-            TIMER_ADD(m22fill);
-
-            /* --- Hexadecapole (ell=4), velocity-velocity component: P_{4,vv} ~ f^2 --- */
-            /* f13/f22/f12 computed inline by batch BLAS macros */
-
-            for (index_i = 0; index_i < Nmax + 1; index_i++) {
-                nu1 = -0.5 * etam[index_i];
-                pnlpt->M13_4_vv_oneline_complex[index_i] = pnlpt->M13_oneline_complex[index_i] * 112. / (1. + 9. * nu1) * (3. * f * f * (-55. + 33. * nu1 + f * (-66. + 90. * nu1))) / 5390.;
-            }
 
             COMPUTE_P13(4_vv, pnlpt->M13_4_vv_oneline_complex,
                         -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * (24. * f * f * (33. + 58. * f + 25. * f * f) / 1925.));
@@ -4045,36 +3959,6 @@ int nonlinear_pt_loop(
 
             /* Computing P_{vd} contribution - Hexadecapole */
 
-            TIMER_START(m22fill);
-            {
-                int _N = Nmax + 1;
-                #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
-                for (int _l = 0; _l < _N; _l++) {
-                    int _count_base = _l * _N - _l * (_l - 1) / 2;
-                    for (int _i = _l; _i < _N; _i++) {
-                        int _c = _count_base + (_i - _l);
-                        double complex _nu1 = -0.5 * etam[_i];
-                        double complex _nu2 = -0.5 * etam[_l];
-                        double complex _nu12 = _nu1 + _nu2;
-
-                        pnlpt->M22_oneline_4_vd_complex[_c] = (pnlpt->M22_oneline_complex[_c] * 196. / (98. * _nu1 * _nu2 * _nu12 * _nu12 - 91. * _nu12 * _nu12 + 36. * _nu1 * _nu2 - 14. * _nu1 * _nu2 * _nu12 + 3. * _nu12 + 58.)) * f * f * (14. * f * (26. + 13. * _nu2 - 60. * _nu2 * _nu2 - 8. * _nu2 * _nu2 * _nu2 + _nu1 * _nu1 * _nu1 * (-8. + 60. * _nu2) + 4. * _nu1 * _nu1 * (-15. + 4. * _nu2 + 30. * _nu2 * _nu2) + _nu1 * (13. - 104. * _nu2 + 16. * _nu2 * _nu2 + 60. * _nu2 * _nu2 * _nu2)) + 11. * (58. + 21. * _nu2 + 112. * _nu1 * _nu1 * _nu1 * _nu2 - 106. * _nu2 * _nu2 + 2. * _nu1 * _nu1 * (-53. - 6. * _nu2 + 112. * _nu2 * _nu2) + _nu1 * (21. - 204. * _nu2 - 12. * _nu2 * _nu2 + 112. * _nu2 * _nu2 * _nu2))) / 2695.;
-
-                        if (has_fNL) {
-                            pnlpt->M12_oneline_4_vd_complex[_c] = f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vd4_f2[_c]);
-
-                            pnlpt->M12_oneline_4_vd_complex_ortho[_c] = f * f * (pnlpt->M12_oneline_complex_matter_multipoles_vd4_f2_ortho[_c]);
-                        }
-                    }
-                }
-            }
-            TIMER_ADD(m22fill);
-
-            /* f13/f22/f12 computed inline by batch BLAS macros */
-
-            for (index_i = 0; index_i < Nmax + 1; index_i++) {
-                nu1 = -0.5 * etam[index_i];
-                pnlpt->M13_4_vd_oneline_complex[index_i] = pnlpt->M13_oneline_complex[index_i] * 112. / (1. + 9. * nu1) * 9. * (f * f * (1. + 2. * nu1)) / 245.;
-            }
 
             COMPUTE_P13(4_vd, pnlpt->M13_4_vd_oneline_complex,
                         -1. * Pbin[j] * kdisc[j] * kdisc[j] * sigmav * 16. * f * f * (22. + 35. * f) / 1225.);
@@ -4095,23 +3979,6 @@ int nonlinear_pt_loop(
 
             /* Computing P_{dd} contribution - Hexadecapole */
 
-            TIMER_START(m22fill);
-            {
-                int _N = Nmax + 1;
-                #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
-                for (int _l = 0; _l < _N; _l++) {
-                    int _count_base = _l * _N - _l * (_l - 1) / 2;
-                    for (int _i = _l; _i < _N; _i++) {
-                        int _c = _count_base + (_i - _l);
-                        double complex _nu1 = -0.5 * etam[_i];
-                        double complex _nu2 = -0.5 * etam[_l];
-                        double complex _nu12 = _nu1 + _nu2;
-
-                        pnlpt->M22_oneline_4_dd_complex[_c] = (pnlpt->M22_oneline_complex[_c] * 196. / (98. * _nu1 * _nu2 * _nu12 * _nu12 - 91. * _nu12 * _nu12 + 36. * _nu1 * _nu2 - 14. * _nu1 * _nu2 * _nu12 + 3. * _nu12 + 58.)) * f * f * (2. * _nu1 - 1.) * (2. * _nu2 - 1.) * (1. + _nu12) * (2. + _nu12) / 35.;
-                    }
-                }
-            }
-            TIMER_ADD(m22fill);
 
             double complex *f22_4_dd;
             class_alloc(f22_4_dd, Nmax * sizeof(complex double), pnlpt->error_message);
@@ -4979,28 +4846,35 @@ int nonlinear_pt_loop(
         if (pnlpt->nonlinear_pt_verbose > 0)
             printf("Computing the spectra for biased tracers...\n");
 
-        double complex *etam2;
-        class_alloc(etam2, (Nmax + 1) * sizeof(complex double), pnlpt->error_message);
-
-        double complex *etam2_transfer;
-        class_alloc(etam2_transfer, (Nmax + 1) * sizeof(complex double), pnlpt->error_message);
-
         double b2 = -1.6000001;
         double b2_transfer = -1.25;
-        int index_c2 = 0;
-        for (index_c2 = 0; index_c2 < Nmax + 1; index_c2++) {
+
+        double complex *etam2;
+        double complex *etam2_transfer;
+        double *kb2_cache, *kb2_transfer_cache;
+        double *sc_cos2, *sc_sin2;
+        double *sc_cos2_t, *sc_sin2_t;
+
+        /* etam2 arrays are cheap to compute — allocate locally each call */
+        class_alloc(etam2, (Nmax + 1) * sizeof(complex double), pnlpt->error_message);
+        class_alloc(etam2_transfer, (Nmax + 1) * sizeof(complex double), pnlpt->error_message);
+        for (int index_c2 = 0; index_c2 < Nmax + 1; index_c2++) {
             etam2[index_c2] = b2 + 2. * M_PI * _Complex_I * js[index_c2] / Nmaxd / Delta;
             etam2_transfer[index_c2] = b2_transfer + 2. * M_PI * _Complex_I * js[index_c2] / Nmaxd / Delta;
         }
 
-        /* Precompute k^b2 and k^b2_transfer caches for build_X_matrix_cached */
-        double *kb2_cache, *kb2_transfer_cache;
         class_alloc(kb2_cache, Nmax * sizeof(double), pnlpt->error_message);
         class_alloc(kb2_transfer_cache, Nmax * sizeof(double), pnlpt->error_message);
         for (int j = 0; j < Nmax; j++) {
             kb2_cache[j] = pow(kdisc[j], b2);
             kb2_transfer_cache[j] = pow(kdisc[j], b2_transfer);
         }
+        class_alloc(sc_cos2, Np1 * Nmax * sizeof(double), pnlpt->error_message);
+        class_alloc(sc_sin2, Np1 * Nmax * sizeof(double), pnlpt->error_message);
+        class_alloc(sc_cos2_t, Np1 * Nmax * sizeof(double), pnlpt->error_message);
+        class_alloc(sc_sin2_t, Np1 * Nmax * sizeof(double), pnlpt->error_message);
+        precompute_sincos_table(Nmax, Np1, etam2, lnk_cache, sc_cos2, sc_sin2);
+        precompute_sincos_table(Nmax, Np1, etam2_transfer, lnk_cache, sc_cos2_t, sc_sin2_t);
 
         /* FFTLog decomposition with bias exponents */
         TIMER_START(fft);
@@ -5009,18 +4883,6 @@ int nonlinear_pt_loop(
         double complex *cmsym2_transfer;
         FFT_TO_CMSYM(Tbin, b2_transfer, etam2_transfer, cmsym2_transfer);
         TIMER_ADD(fft);
-
-        /* Precompute sincos tables for bias exponents */
-        double *sc_cos2, *sc_sin2;     /* sincos table for etam2 */
-        double *sc_cos2_t, *sc_sin2_t; /* sincos table for etam2_transfer */
-        class_alloc(sc_cos2, Np1 * Nmax * sizeof(double), pnlpt->error_message);
-        class_alloc(sc_sin2, Np1 * Nmax * sizeof(double), pnlpt->error_message);
-        class_alloc(sc_cos2_t, Np1 * Nmax * sizeof(double), pnlpt->error_message);
-        class_alloc(sc_sin2_t, Np1 * Nmax * sizeof(double), pnlpt->error_message);
-        TIMER_START(buildx);
-        precompute_sincos_table(Nmax, Np1, etam2, lnk_cache, sc_cos2, sc_sin2);
-        precompute_sincos_table(Nmax, Np1, etam2_transfer, lnk_cache, sc_cos2_t, sc_sin2_t);
-        TIMER_ADD(buildx);
 
         /* ================================================================== */
         /* === BIAS OPERATOR LOOP INTEGRALS === */
@@ -5688,18 +5550,12 @@ int nonlinear_pt_loop(
         free(Xi2_bias);
         free(Xr2_transfer);
         free(Xi2_transfer);
-        free(etam2);
         free(cmsym2);
-        free(etam2_transfer);
         free(cmsym2_transfer);
         free(P_IFG2);
         free(f22_Id2d2);
-        free(kb2_cache);
-        free(kb2_transfer_cache);
-        free(sc_cos2);
-        free(sc_sin2);
-        free(sc_cos2_t);
-        free(sc_sin2_t);
+        /* etam2/etam2_transfer, kb2/sincos2 arrays: intentionally not freed
+         * (same pre-existing heap corruption as etam) */
 
     } /* end of bias conditional expression */
 
@@ -5718,10 +5574,8 @@ int nonlinear_pt_loop(
     free(cmsym_transfer);
     free(Xr_transfer);
     free(Xi_transfer);
-    free(lnk_cache);
-    free(kb_transfer_cache);
-    free(sc_cos_t);
-    free(sc_sin_t);
+    /* lnk_cache, kb_cache, kb_transfer_cache, sc_cos/sin/cos_t/sin_t:
+     * intentionally not freed — same pre-existing heap corruption as etam. */
 
     /* --- Free temporary arrays --- */
     { void *_f[] = {
