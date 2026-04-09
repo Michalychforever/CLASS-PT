@@ -2063,7 +2063,7 @@ static void build_X_from_tables(
     const double *sc_cos, const double *sc_sin,
     double *Xr, double *Xi) {
     /* Only parallelize if we have enough work per thread (nk=128, reasonable up to 8 threads) */
-    #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
+    #pragma omp parallel for schedule(static)
     for (int j = 0; j < nk; j++) {
         double kb = kb_cache[j];
         int offset = j * ncoeff;
@@ -2093,8 +2093,13 @@ static void batch_dot_product(
 
     double one = 1., zero = 0., neg = -1.;
     int inc = 1;
+    /* Critical section: OpenBLAS memory allocator is not thread-safe
+     * when called concurrently from multiple OMP threads. */
+    #pragma omp critical(blas_alloc)
+    {
     dgemv_("T", &ncoeff, &nk, &one, (double *)Xr, &ncoeff, mr_ws, &inc, &zero, f, &inc);
     dgemv_("T", &ncoeff, &nk, &neg, (double *)Xi, &ncoeff, mi_ws, &inc, &one, f, &inc);
+    }
 }
 
 /** Batch quadratic form: f[j] = X[j,:]^T · M · X[j,:]  for all j */
@@ -2115,12 +2120,17 @@ static void batch_quadratic_form(
         }
     }
 
-    /* f = diag(Xr^T Mr Xr - Xi^T Mr Xi - 2 Xr^T Mi Xi) via dsymm */
+    /* f = diag(Xr^T Mr Xr - Xi^T Mr Xi - 2 Xr^T Mi Xi) via dsymm.
+     * Critical section: OpenBLAS memory allocator is not thread-safe
+     * when called concurrently from multiple OMP threads. */
     double one = 1., zero = 0.;
 
     /* Y1 = Mr * Xr, Y2 = Mr * Xi */
+    #pragma omp critical(blas_alloc)
+    {
     dsymm_("L", "U", &ncoeff, &nk, &one, Mr_ws, &ncoeff, (double *)Xr, &ncoeff, &zero, Y1_ws, &ncoeff);
     dsymm_("L", "U", &ncoeff, &nk, &one, Mr_ws, &ncoeff, (double *)Xi, &ncoeff, &zero, Y2_ws, &ncoeff);
+    }
 
     /* Extract diagonal: f[j] = Xr[:,j].Y1[:,j] - Xi[:,j].Y2[:,j] */
     for (int j = 0; j < nk; j++) {
@@ -2135,6 +2145,7 @@ static void batch_quadratic_form(
     }
 
     /* Y1 = Mi * Xi */
+    #pragma omp critical(blas_alloc)
     dsymm_("L", "U", &ncoeff, &nk, &one, Mi_ws, &ncoeff, (double *)Xi, &ncoeff, &zero, Y1_ws, &ncoeff);
 
     /* f[j] -= 2 * Xr[:,j].Y1[:,j] */
@@ -2168,9 +2179,12 @@ static void batch_bilinear_form(
         }
     }
 
+    /* Critical section: OpenBLAS memory allocator is not thread-safe
+     * when called concurrently from multiple OMP threads. */
     double one = 1., zero = 0.;
 
     /* Y = Mr * Xrr;  f[j] = Xlr[:,j] . Y[:,j] */
+    #pragma omp critical(blas_alloc)
     dsymm_("L", "U", &ncoeff, &nk, &one, Mr_ws, &ncoeff, (double *)Xrr, &ncoeff, &zero, Y_ws, &ncoeff);
     for (int j = 0; j < nk; j++) {
         double s = 0.;
@@ -2180,6 +2194,7 @@ static void batch_bilinear_form(
     }
 
     /* Y = Mi * Xrr;  f[j] -= Xli[:,j] . Y[:,j] */
+    #pragma omp critical(blas_alloc)
     dsymm_("L", "U", &ncoeff, &nk, &one, Mi_ws, &ncoeff, (double *)Xrr, &ncoeff, &zero, Y_ws, &ncoeff);
     for (int j = 0; j < nk; j++) {
         double s = 0.;
@@ -2189,6 +2204,7 @@ static void batch_bilinear_form(
     }
 
     /* Y = Mi * Xri;  f[j] -= Xlr[:,j] . Y[:,j] */
+    #pragma omp critical(blas_alloc)
     dsymm_("L", "U", &ncoeff, &nk, &one, Mi_ws, &ncoeff, (double *)Xri, &ncoeff, &zero, Y_ws, &ncoeff);
     for (int j = 0; j < nk; j++) {
         double s = 0.;
@@ -2198,6 +2214,7 @@ static void batch_bilinear_form(
     }
 
     /* Y = Mr * Xri;  f[j] -= Xli[:,j] . Y[:,j] */
+    #pragma omp critical(blas_alloc)
     dsymm_("L", "U", &ncoeff, &nk, &one, Mr_ws, &ncoeff, (double *)Xri, &ncoeff, &zero, Y_ws, &ncoeff);
     for (int j = 0; j < nk; j++) {
         double s = 0.;
@@ -2608,7 +2625,7 @@ static void assemble_P12(int nk, const double *k, const double *f,
 #define FILL_M22_BIAS(M_out, kernel_expr, P_out)                               \
     {                                                                          \
         int _Nb_ = Nmax + 1;                                                   \
-        _Pragma("omp parallel for schedule(static) if(omp_get_max_threads() <= 8)") \
+        _Pragma("omp parallel for schedule(static)") \
         for (int _lb_ = 0; _lb_ < _Nb_; _lb_++) {                             \
             int _cbb_ = _lb_ * _Nb_ - _lb_ * (_lb_ - 1) / 2;                 \
             for (int _ib_ = _lb_; _ib_ < _Nb_; _ib_++) {                      \
@@ -3670,7 +3687,7 @@ int nonlinear_pt_loop(
             {
                 int _N = Nmax + 1;
                 double f2 = f * f, f3 = f2 * f, f4 = f3 * f;
-                #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
+                #pragma omp parallel for schedule(static)
                 for (int _l = 0; _l < _N; _l++) {
                     int _count_base = _l * _N - _l * (_l - 1) / 2;
                     for (int _i = _l; _i < _N; _i++) {
@@ -3954,7 +3971,7 @@ int nonlinear_pt_loop(
             TIMER_START(m22fill);
             {
                 int _N = Nmax + 1;
-                #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
+                #pragma omp parallel for schedule(static)
                 for (int _l = 0; _l < _N; _l++) {
                     int _count_base = _l * _N - _l * (_l - 1) / 2;
                     for (int _i = _l; _i < _N; _i++) {
@@ -4032,7 +4049,7 @@ int nonlinear_pt_loop(
                     f * f * (63. + 48. * f) / 35.,
                     f * f * (44. + 70. * f) / 35.,
                     f * f * f * (46. + 35. * f) / 35.};
-                #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
+                #pragma omp parallel for schedule(static)
                 for (int pi_ = 0; pi_ < 6; pi_++) {
                     int _tid = omp_get_thread_num();
                     double *_f13 = (double *)malloc(Nmax * sizeof(double));
@@ -4149,7 +4166,7 @@ int nonlinear_pt_loop(
                 double *_p13w_out[] = {
                     P13_mu0_dd_w, P13_mu2_dd_w, P13_mu2_vd_w,
                     P13_mu4_vv_w, P13_mu4_vd_w, P13_mu6_w};
-                #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
+                #pragma omp parallel for schedule(static)
                 for (int wi_ = 0; wi_ < 6; wi_++) {
                     int _tid = omp_get_thread_num();
                     double *_f13w = (double *)malloc(Nmax * sizeof(double));
@@ -4843,7 +4860,7 @@ int nonlinear_pt_loop(
         TIMER_START(m22fill);
         {
             int _N = Nmax + 1;
-            #pragma omp parallel for schedule(static) if(omp_get_max_threads() <= 8)
+            #pragma omp parallel for schedule(static)
             for (int _l = 0; _l < _N; _l++) {
                 int _count_base = _l * _N - _l * (_l - 1) / 2;
                 for (int _i = _l; _i < _N; _i++) {

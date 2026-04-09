@@ -23,7 +23,7 @@ if b"mvec" not in MVEC_STRING:
 # OpenBLAS (needed for PT module)
 OPENBLAS_PATH = os.environ.get("OPENBLAS_PATH", "/share/software/user/open/openblas/0.3.28/lib")
 openblas_lib_dirs = [OPENBLAS_PATH] if os.path.isdir(OPENBLAS_PATH) else []
-liblist += ["openblas", "pthread"]
+liblist += ["openblas", "gomp", "pthread"]
 
 # define absolute paths
 root_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
