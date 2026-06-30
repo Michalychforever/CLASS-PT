@@ -107,7 +107,7 @@ You can use CLASS-PT freely, provided that in your publications you cite at leas
 
 # Authors
 - [Mikhail (Misha) Ivanov](mailto:ivanov@ias.edu)
-- Anton Chudaykin
+- [Anton Chudaykin](mailto:anton.chudaykin@unige.ch)
 - Marko Simonovic
 - Oliver Philcox
 - Giovanni Cabass
