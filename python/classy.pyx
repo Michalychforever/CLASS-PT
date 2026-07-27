@@ -261,6 +261,10 @@ cdef class Class:
       """Return the scalar tilt n_s (dimensionless) of the primordial scalar spectrum"""
       return CallableFloat(self.pm.n_s)
     @property
+    def A_s(self):
+      """Return the scalar amplitude A_s (dimensionless) of the primordial scalar spectrum"""
+      return CallableFloat(self.pm.A_s)
+    @property
     def sigma8(self):
       """Return sigma8 (dimensionless), the root mean square (rms) of the relative density fluctuation of
         total matter in spheres of radius R= 8 h/Mpc at z=0.
