@@ -306,6 +306,15 @@ int perturb_get_k_list_nl(
  * ~100 individual allocation calls. */
 #include <stddef.h>
 
+/* Source-type index for the cb (cdm+baryon) density.
+ * ppt->index_tp_delta_cb is only assigned by class_define_index() when
+ * ppt->has_source_delta_cb is true, i.e. only with massive neutrinos.
+ * Without ncdm it stays 0 and would silently select the wrong source type,
+ * so fall back to delta_m (identical to delta_cb when there is no ncdm). */
+#define _NLPT_TP_CB_(ppt) ((ppt)->has_source_delta_cb == _TRUE_ ?               \
+                           (ppt)->index_tp_delta_cb : (ppt)->index_tp_delta_m)
+
+
 /** Offsets of all ln_pk_* output arrays in struct nonlinear_pt (87 total) */
 static const size_t ln_pk_offsets[] = {
     offsetof(struct nonlinear_pt, ln_pk_nl),
@@ -1089,7 +1098,7 @@ int nonlinear_pt_init(
                 class_call(array_spline_table_columns(ppt->k[index_md],
                                                       ppt->k_size[index_md],
                                                       ppt->sources[index_md]
-                                                                  [index_ic * ppt->tp_size[index_md] + ppt->index_tp_delta_cb],
+                                                                  [index_ic * ppt->tp_size[index_md] + _NLPT_TP_CB_(ppt)],
                                                       ppt->tau_size,
                                                       pnlpt->dd_sources_tp_delta_cb,
                                                       _SPLINE_EST_DERIV_,
@@ -1103,7 +1112,7 @@ int nonlinear_pt_init(
                             class_call(array_interpolate_spline_one_column(ppt->k[index_md],
                                                                            ppt->k_size[index_md],
                                                                            ppt->sources[index_md]
-                                                                                       [index_ic * ppt->tp_size[index_md] + ppt->index_tp_delta_cb],
+                                                                                       [index_ic * ppt->tp_size[index_md] + _NLPT_TP_CB_(ppt)],
                                                                            pnlpt->tau_size,
                                                                            index_tau,
                                                                            pnlpt->dd_sources_tp_delta_cb,
@@ -1837,7 +1846,7 @@ int nonlinear_pt_pk_l(
                     }
                 } else {
                     if (pnlpt->cb == _TRUE_) {
-                        source_ic1 = ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_cb][index_tau * ppt->k_size[index_md] + index_k];
+                        source_ic1 = ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + _NLPT_TP_CB_(ppt)][index_tau * ppt->k_size[index_md] + index_k];
                     } else {
                         source_ic1 = ppt->sources[index_md][index_ic1 * ppt->tp_size[index_md] + ppt->index_tp_delta_m][index_tau * ppt->k_size[index_md] + index_k];
                     }
@@ -2493,6 +2502,74 @@ static void assemble_P12(int nk, const double *k, const double *f,
         free(dd_sio_);                                                                            \
         if (do_free)                                                                              \
             free(P_in);                                                                           \
+    } while (0)
+
+/* Trimmed variants: the AP-projected arrays are only filled on [Nside, Nmax-Nside);
+ * the edges are memset to 0. Splining across those zero edges makes a natural cubic
+ * spline ring just inside kminnew/kmaxnew. These build the spline on the valid
+ * window only. Interpolation range is already [kdisc[Nside], kdisc[Nmax-1-Nside]]. */
+#define SPLINE_INTERP_OUTPUT_T(P_in, pk_out, kmin_b, kmax_b, interp_expr, extrap_expr, do_free)   \
+    do                                                                                            \
+    {                                                                                             \
+        double *dd_sio_;                                                                          \
+        double out_tmp_ = 0.;                                                                     \
+        int nt_ = Nmax - 2 * Nside;                                                                \
+        class_alloc(dd_sio_, sizeof(double) * Nmax, pnlpt->error_message);                        \
+        class_call(array_spline_table_columns(kdisc + Nside, nt_, (P_in) + Nside, 1, dd_sio_,      \
+                                              _SPLINE_NATURAL_, pnlpt->error_message),            \
+                   pnlpt->error_message, pnlpt->error_message);                                   \
+        last_index = 0;                                                                           \
+        for (index_k = 0; index_k < pnlpt->k_size; index_k++)                                     \
+        {                                                                                         \
+            if (pnlpt->k[index_k] <= (kmax_b) && pnlpt->k[index_k] >= (kmin_b))                   \
+            {                                                                                     \
+                class_call(array_interpolate_spline(kdisc + Nside, nt_, (P_in) + Nside, dd_sio_, 1, \
+                                                    pnlpt->k[index_k], &last_index, &out_tmp_, 1, \
+                                                    pnlpt->error_message),                        \
+                           pnlpt->error_message, pnlpt->error_message);                           \
+                pk_out[index_k] = (interp_expr);                                                  \
+            }                                                                                     \
+            else                                                                                  \
+            {                                                                                     \
+                pk_out[index_k] = (extrap_expr);                                                  \
+            }                                                                                     \
+        }                                                                                         \
+        free(dd_sio_);                                                                            \
+        if (do_free)                                                                              \
+            free(P_in);                                                                           \
+    } while (0)
+
+#define SPLINE_INTERP_BATCH_T(p_in_arr, p_out_arr, n_pairs, kmin_b, kmax_b,   \
+                              interp_expr, extrap_expr, do_free)               \
+    do {                                                                       \
+        for (int sib_i_ = 0; sib_i_ < (n_pairs); sib_i_++) {                  \
+            double *sib_pin_ = (p_in_arr)[sib_i_];                            \
+            double *sib_pout_ = (p_out_arr)[sib_i_];                          \
+            double *dd_sio_;                                                   \
+            double out_tmp_ = 0.;                                              \
+            int nt_ = Nmax - 2 * Nside;                                        \
+            class_alloc(dd_sio_, sizeof(double) * Nmax, pnlpt->error_message); \
+            class_call(array_spline_table_columns(kdisc + Nside, nt_,          \
+                       sib_pin_ + Nside, 1,                                    \
+                       dd_sio_, _SPLINE_NATURAL_, pnlpt->error_message),       \
+                       pnlpt->error_message, pnlpt->error_message);           \
+            last_index = 0;                                                    \
+            for (index_k = 0; index_k < pnlpt->k_size; index_k++) {           \
+                if (pnlpt->k[index_k] <= (kmax_b) &&                          \
+                    pnlpt->k[index_k] >= (kmin_b)) {                          \
+                    class_call(array_interpolate_spline(kdisc + Nside, nt_,    \
+                               sib_pin_ + Nside, dd_sio_, 1, pnlpt->k[index_k],\
+                               &last_index, &out_tmp_, 1,                      \
+                               pnlpt->error_message),                         \
+                               pnlpt->error_message, pnlpt->error_message);   \
+                    sib_pout_[index_k] = (interp_expr);                        \
+                } else {                                                       \
+                    sib_pout_[index_k] = (extrap_expr);                        \
+                }                                                              \
+            }                                                                  \
+            free(dd_sio_);                                                     \
+            if (do_free) free(sib_pin_);                                       \
+        }                                                                      \
     } while (0)
 
 /* Batch spline-interpolate: applies SPLINE_INTERP_OUTPUT to n_pairs arrays at once.
@@ -4612,35 +4689,35 @@ int nonlinear_pt_loop(
         /* Constructing the final output spectra */
 
         TIMER_START(spline_out);
-        SPLINE_INTERP_OUTPUT(P1loop_0_vv, pk_l_0_vv, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(P1loop_0_vv, pk_l_0_vv, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (f * f * (441. + 566. * f + 175. * f * f) / 1225.) + large_for_logs_big, 0);
 
-        SPLINE_INTERP_OUTPUT(P1loop_0_vd, pk_l_0_vd, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(P1loop_0_vd, pk_l_0_vd, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (2. * f * (625. + 558. * f + 315. * f * f) / 1575.) + large_for_logs_big, 0);
 
-        SPLINE_INTERP_OUTPUT(P1loop_0_dd, pk_l_0_dd, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(P1loop_0_dd, pk_l_0_dd, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * ((61. - 2. * f + 35. * f * f) / 105.) + large_for_logs_big, 0);
 
-        SPLINE_INTERP_OUTPUT(P1loop_2_vv, pk_l_2_vv, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(P1loop_2_vv, pk_l_2_vv, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (2. * f * f * (54. + 74. * f + 25. * f * f) / 105.) + large_for_logs_big, 0);
 
-        SPLINE_INTERP_OUTPUT(P1loop_2_vd, pk_l_2_vd, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(P1loop_2_vd, pk_l_2_vd, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * 4. * f * (175. + 180. * f + 126. * f * f) / 441. + large_for_logs_big, 0);
 
-        SPLINE_INTERP_OUTPUT(P1loop_2_dd, pk_l_2_dd, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(P1loop_2_dd, pk_l_2_dd, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (2. * f * (35. * f - 2.) / 105.) + large_for_logs_big, 0);
 
-        SPLINE_INTERP_OUTPUT(P1loop_4_vv, pk_l_4_vv, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(P1loop_4_vv, pk_l_4_vv, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * (24. * f * f * (33. + 58. * f + 25. * f * f) / 1925.) + large_for_logs_big, 0);
 
-        SPLINE_INTERP_OUTPUT(P1loop_4_vd, pk_l_4_vd, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(P1loop_4_vd, pk_l_4_vd, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              -1. * exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * sigmav * 16. * f * f * (22. + 35. * f) / 1225. + large_for_logs_big, 0);
 
@@ -4677,44 +4754,44 @@ int nonlinear_pt_loop(
                 pk_l_fNL_2_vd, pk_l_fNL_2_vd_ortho, pk_l_fNL_2_vv, pk_l_fNL_2_vv_ortho,
                 pk_l_fNL_4_dd, pk_l_fNL_4_dd_ortho, pk_l_fNL_4_vd, pk_l_fNL_4_vd_ortho,
                 pk_l_fNL_4_vv, pk_l_fNL_4_vv_ortho};
-            SPLINE_INTERP_BATCH(_p12_in, _p12_out, 18, kminnew, kmaxnew,
+            SPLINE_INTERP_BATCH_T(_p12_in, _p12_out, 18, kminnew, kmaxnew,
                 out_tmp_ * exp(-pow(pnlpt->k[index_k] / 3., 4.)) + large_for_logs_fNL,
                 large_for_logs_fNL + epsilon_for_logs_fNL, 0);
         }
 
-        SPLINE_INTERP_OUTPUT(P_CTR_0, pk_CTR_0, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(P_CTR_0, pk_CTR_0, kminnew, kmaxnew,
                              (out_tmp_ <= 0 ? 1e-16 : out_tmp_),
                              exp(lnpk_l[index_k] + 2. * lnk_l[index_k]), 0);
 
-        SPLINE_INTERP_OUTPUT(P_CTR_2, pk_CTR_2, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(P_CTR_2, pk_CTR_2, kminnew, kmaxnew,
                              (out_tmp_ <= 0 ? 1e-16 : out_tmp_),
                              exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * f * 2. / 3., 0);
 
-        SPLINE_INTERP_OUTPUT(P_CTR_4, pk_CTR_4, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(P_CTR_4, pk_CTR_4, kminnew, kmaxnew,
                              (out_tmp_ <= 0 ? 1e-16 : out_tmp_),
                              exp(lnpk_l[index_k] + 2. * lnk_l[index_k]) * f * f * 8. / 35., 0);
 
-        SPLINE_INTERP_OUTPUT(Ptree_0_vv, pk_Tree_0_vv, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(Ptree_0_vv, pk_Tree_0_vv, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              exp(lnpk_l[index_k]) * f * f / 5. + large_for_logs_big, 1);
 
-        SPLINE_INTERP_OUTPUT(Ptree_0_vd, pk_Tree_0_vd, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(Ptree_0_vd, pk_Tree_0_vd, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              exp(lnpk_l[index_k]) * 2. * f / 3. + large_for_logs_big, 1);
 
-        SPLINE_INTERP_OUTPUT(Ptree_0_dd, pk_Tree_0_dd, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(Ptree_0_dd, pk_Tree_0_dd, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              exp(lnpk_l[index_k]) + large_for_logs_big, 1);
 
-        SPLINE_INTERP_OUTPUT(Ptree_2_vv, pk_Tree_2_vv, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(Ptree_2_vv, pk_Tree_2_vv, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              exp(lnpk_l[index_k]) * 4. * f * f / 7. + large_for_logs_big, 1);
 
-        SPLINE_INTERP_OUTPUT(Ptree_2_vd, pk_Tree_2_vd, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(Ptree_2_vd, pk_Tree_2_vd, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              exp(lnpk_l[index_k]) * 4. * f / 3. + large_for_logs_big, 1);
 
-        SPLINE_INTERP_OUTPUT(Ptree_4_vv, pk_Tree_4_vv, kminnew, kmaxnew,
+        SPLINE_INTERP_OUTPUT_T(Ptree_4_vv, pk_Tree_4_vv, kminnew, kmaxnew,
                              out_tmp_ + large_for_logs_big,
                              exp(lnpk_l[index_k]) * 8. * f * f / 35. + large_for_logs_big, 1);
         TIMER_ADD(spline_out);
@@ -5397,7 +5474,7 @@ int nonlinear_pt_loop(
                     pk12_l_4_b2, pk12_l_4_b2_ortho, pk12_l_4_bG2, pk12_l_4_bG2_ortho,
                     pk12_l_2_b1b2, pk12_l_2_b1b2_ortho, pk12_l_4_b1b2, pk12_l_4_b1b2_ortho,
                     pk12_l_2_b1bG2, pk12_l_2_b1bG2_ortho, pk12_l_4_b1bG2, pk12_l_4_b1bG2_ortho};
-                SPLINE_INTERP_BATCH(_p12b_in, _p12b_out, 24, kminnew, kmaxnew,
+                SPLINE_INTERP_BATCH_T(_p12b_in, _p12b_out, 24, kminnew, kmaxnew,
                     out_tmp_ + large_for_logs_fNL, large_for_logs_fNL + epsilon_for_logs_fNL, 1);
             } else { /* No fNL: fill with offset constant and free input arrays */
                 double *_p12b_in[] = {
@@ -5423,7 +5500,7 @@ int nonlinear_pt_loop(
             { /* Id2d2/Id2G2/IG2G2 higher multipoles */
                 double *_id_in[] = {P_Id2d2_2, P_Id2d2_4, P_Id2G2_2, P_Id2G2_4, P_IG2G2_2, P_IG2G2_4};
                 double *_id_out[] = {pk_Id2d2_2, pk_Id2d2_4, pk_Id2G2_2, pk_Id2G2_4, pk_IG2G2_2, pk_IG2G2_4};
-                SPLINE_INTERP_BATCH(_id_in, _id_out, 6, kminnew, kmaxnew,
+                SPLINE_INTERP_BATCH_T(_id_in, _id_out, 6, kminnew, kmaxnew,
                     out_tmp_ + large_for_logs_big, large_for_logs_big, 1);
             }
             { /* Biased tracer P22 multipoles */
@@ -5433,14 +5510,14 @@ int nonlinear_pt_loop(
                 double *_bt_out[] = {
                     pk_l_0_b1b2, pk_l_0_b2, pk_l_0_b1bG2, pk_l_2_b1b2, pk_l_4_b1b2, pk_l_0_bG2,
                     pk_l_2_b2, pk_l_2_b1bG2, pk_l_4_b1bG2, pk_l_2_bG2, pk_l_4_b2, pk_l_4_bG2};
-                SPLINE_INTERP_BATCH(_bt_in, _bt_out, 12, kminnew, kmaxnew,
+                SPLINE_INTERP_BATCH_T(_bt_in, _bt_out, 12, kminnew, kmaxnew,
                     out_tmp_ + large_for_logs_big, epsilon_for_logs + large_for_logs_big, 1);
             }
             free(P_IFG2_new);
             { /* IFG2 multipoles */
                 double *_ifg_in[] = {P_IFG2_0b1_x, P_IFG2_0, P_IFG2_2};
                 double *_ifg_out[] = {pk_IFG2_0b1, pk_IFG2_0, pk_IFG2_2};
-                SPLINE_INTERP_BATCH(_ifg_in, _ifg_out, 3, kminnew, kmaxnew,
+                SPLINE_INTERP_BATCH_T(_ifg_in, _ifg_out, 3, kminnew, kmaxnew,
                     out_tmp_ + large_for_logs_big, large_for_logs_big, 0);
             }
             TIMER_ADD(spline_out);
@@ -5457,7 +5534,7 @@ int nonlinear_pt_loop(
         { /* Id2d2/Id2G2/IG2G2 monopole */
             double *_id0_in[] = {P_Id2d2, P_Id2G2, P_IG2G2};
             double *_id0_out[] = {pk_Id2d2, pk_Id2G2, pk_IG2G2};
-            SPLINE_INTERP_BATCH(_id0_in, _id0_out, 3, kminnew, kmaxnew,
+            SPLINE_INTERP_BATCH_T(_id0_in, _id0_out, 3, kminnew, kmaxnew,
                 out_tmp_ + large_for_logs_big, epsilon_for_logs + large_for_logs_big, 1);
         }
         TIMER_ADD(spline_out);
