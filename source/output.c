@@ -14,6 +14,7 @@
  */
 
 #include "output.h"
+#include "nonlinear_pt.h"
 
 int output_total_cl_at_l(
                          struct harmonic * phr,
@@ -114,6 +115,7 @@ int output_init(
                 struct transfer * ptr,
                 struct harmonic * phr,
                 struct fourier * pfo,
+                struct nonlinear_pt * pnlpt,
                 struct lensing * ple,
                 struct distortions * psd,
                 struct output * pop
@@ -170,6 +172,14 @@ int output_init(
       class_call(output_pk(pba,ppt,pfo,pop,pk_analytic_nowiggle),
                  pop->error_message,
                  pop->error_message);
+    }
+
+    if (pnlpt->method != nlpt_none) {
+
+      class_call(output_pk_nl_pt(pba,pnlpt,pop),
+                 pop->error_message,
+                 pop->error_message);
+
     }
   }
 
@@ -1009,6 +1019,488 @@ int output_pk(
     free(ln_pk_ic);
     free(out_pk_ic);
   }
+
+  return _SUCCESS_;
+}
+
+/* Offsets below match the 'large_for_logs_*' constants used in nonlinear_pt.c
+ * to keep log() arguments positive when storing PT spectra; see the comment
+ * near their definition there. NLPT_OFF always subtracts the offset back out;
+ * NLPT_BIASOFF only does so when bias tracers were actually computed (with
+ * 'Bias tracers = no' those arrays hold a flat epsilon placeholder instead). */
+#define NLPT_RAW(field) (exp(pnlpt->field[idx]))
+#define NLPT_OFF(field,off) (NLPT_RAW(field)-(off))
+#define NLPT_BIASOFF(field,off) (pnlpt->bias==bias_yes ? NLPT_OFF(field,off) : NLPT_RAW(field))
+
+/**
+ * This routine writes the non-linear matter and biased-tracer power spectra
+ * computed by the CLASS-PT perturbation-theory module ('non_linear' = 'PT'):
+ * <root>[z%d_]pk_nl_pt.dat (real-space) and, if RSD is on, pk_rsd_0/2/4.dat
+ * (monopole/quadrupole/hexadecapole). Ported from CLASS-PT-master's
+ * output_pk_nl_pt(), adapted to the current pnlpt->ln_pk_* storage and
+ * offset constants (which differ numerically from the old fork).
+ */
+
+int output_pk_nl_pt(
+                    struct background * pba,
+                    struct nonlinear_pt * pnlpt,
+                    struct output * pop
+                    ) {
+
+  FILE * out;
+  FILE * out_0;
+  FILE * out_2;
+  FILE * out_4;
+  FileName file_name;
+  FileName file_name_0;
+  FileName file_name_2;
+  FileName file_name_4;
+  char redshift_suffix[7];
+  int index_k, index_z, idx;
+  double h3 = pow(pba->h,3.);
+
+  for (index_z = 0; index_z < pop->z_pk_num; index_z++) {
+
+    if (pop->z_pk_num == 1)
+      redshift_suffix[0] = '\0';
+    else
+      class_sprintf(redshift_suffix,"z%d_",index_z+1);
+
+    /* --- main file: real-space matter and bias-tracer spectra --- */
+
+    class_sprintf(file_name,"%s%s%s",pop->root,redshift_suffix,"pk_nl_pt.dat");
+
+    class_call(output_open_pk_nlpt_file(pba,pnlpt,pop,&out,file_name,"",pop->z_pk[index_z]),
+               pop->error_message,pop->error_message);
+
+    for (index_k=0; index_k<pnlpt->k_size; index_k++) {
+
+      idx = index_z*pnlpt->k_size+index_k;
+
+      class_call(output_one_line_many_columns_of_pk(out,
+                       pnlpt->k[index_k]/pba->h,
+                       NLPT_OFF(ln_pk_nl,5.e4)*h3,
+                       -1.*NLPT_RAW(ln_pk_CTR)*pba->h,
+                       -1.*NLPT_BIASOFF(ln_pk_Id2d2,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_Id2,100.)*h3,
+                       -1.*NLPT_BIASOFF(ln_pk_IG2,100.)*h3,
+                       -1.*NLPT_BIASOFF(ln_pk_Id2G2,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_IG2G2,1.e6)*h3,
+                       -1.*NLPT_BIASOFF(ln_pk_IFG2,100.)*h3,
+                            NLPT_RAW(ln_pk_Tree)*h3),
+                 pop->error_message,pop->error_message);
+    }
+
+    fclose(out);
+
+    if (pnlpt->rsd != rsd_yes) continue;
+
+    /* --- monopole (l=0) --- */
+
+    class_sprintf(file_name_0,"%s%s%s",pop->root,redshift_suffix,"pk_rsd_0.dat");
+
+    class_call(output_open_pk_rsd_0_file(pba,pnlpt,pop,&out_0,file_name_0,"",pop->z_pk[index_z]),
+               pop->error_message,pop->error_message);
+
+    for (index_k=0; index_k<pnlpt->k_size; index_k++) {
+
+      idx = index_z*pnlpt->k_size+index_k;
+
+      class_call(output_one_line_many_columns_of_pk_rsd(out_0,
+                       pnlpt->k[index_k]/pba->h,
+                       NLPT_OFF(ln_pk_0_vv,1.e6)*h3,
+                       NLPT_OFF(ln_pk_0_vd,1.e6)*h3,
+                       NLPT_OFF(ln_pk_0_dd,1.e6)*h3,
+                       -1.*NLPT_RAW(ln_pk_CTR_0)*pba->h,
+                       -1.*NLPT_BIASOFF(ln_pk_Id2d2,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_0_b1b2,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_0_b2,1.e6)*h3,
+                       -1.*NLPT_BIASOFF(ln_pk_0_b1bG2,1.e6)*h3,
+                       -1.*NLPT_BIASOFF(ln_pk_0_bG2,1.e6)*h3,
+                       -1.*NLPT_BIASOFF(ln_pk_Id2G2,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_IG2G2,1.e6)*h3,
+                       -1.*NLPT_BIASOFF(ln_pk_IFG2_0b1,1.e6)*h3,
+                       -1.*NLPT_BIASOFF(ln_pk_IFG2_0,1.e6)*h3,
+                       NLPT_OFF(ln_pk_Tree_0_vv,1.e6)*h3,
+                       NLPT_OFF(ln_pk_Tree_0_vd,1.e6)*h3,
+                       NLPT_OFF(ln_pk_Tree_0_dd,1.e6)*h3),
+                 pop->error_message,pop->error_message);
+    }
+
+    fclose(out_0);
+
+    /* --- quadrupole (l=2) --- */
+
+    class_sprintf(file_name_2,"%s%s%s",pop->root,redshift_suffix,"pk_rsd_2.dat");
+
+    class_call(output_open_pk_rsd_2_file(pba,pnlpt,pop,&out_2,file_name_2,"",pop->z_pk[index_z]),
+               pop->error_message,pop->error_message);
+
+    for (index_k=0; index_k<pnlpt->k_size; index_k++) {
+
+      idx = index_z*pnlpt->k_size+index_k;
+
+      class_call(output_one_line_many_columns_of_pk_rsd_2(out_2,
+                       pnlpt->k[index_k]/pba->h,
+                       NLPT_OFF(ln_pk_2_vv,1.e6)*h3,
+                       NLPT_OFF(ln_pk_2_vd,1.e6)*h3,
+                       NLPT_OFF(ln_pk_2_dd,1.e6)*h3,
+                       -1.*NLPT_RAW(ln_pk_CTR_2)*pba->h,
+                            NLPT_BIASOFF(ln_pk_2_b1b2,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_2_b2,1.e6)*h3,
+                       -1.*NLPT_BIASOFF(ln_pk_2_b1bG2,1.e6)*h3,
+                       -1.*NLPT_BIASOFF(ln_pk_2_bG2,1.e6)*h3,
+                       -1.*NLPT_BIASOFF(ln_pk_IFG2_2,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_Id2d2_2,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_Id2G2_2,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_IG2G2_2,1.e6)*h3,
+                       NLPT_OFF(ln_pk_Tree_2_vv,1.e6)*h3,
+                       NLPT_OFF(ln_pk_Tree_2_vd,1.e6)*h3),
+                 pop->error_message,pop->error_message);
+    }
+
+    fclose(out_2);
+
+    /* --- hexadecapole (l=4) --- */
+
+    class_sprintf(file_name_4,"%s%s%s",pop->root,redshift_suffix,"pk_rsd_4.dat");
+
+    class_call(output_open_pk_rsd_4_file(pba,pnlpt,pop,&out_4,file_name_4,"",pop->z_pk[index_z]),
+               pop->error_message,pop->error_message);
+
+    for (index_k=0; index_k<pnlpt->k_size; index_k++) {
+
+      idx = index_z*pnlpt->k_size+index_k;
+
+      class_call(output_one_line_many_columns_of_pk_rsd_4(out_4,
+                       pnlpt->k[index_k]/pba->h,
+                       NLPT_OFF(ln_pk_4_vv,1.e6)*h3,
+                       NLPT_OFF(ln_pk_4_vd,1.e6)*h3,
+                       NLPT_OFF(ln_pk_4_dd,1.e6)*h3,
+                       -1.*NLPT_RAW(ln_pk_CTR_4)*pba->h,
+                            NLPT_BIASOFF(ln_pk_4_b2,1.e6)*h3,
+                       -1.*NLPT_BIASOFF(ln_pk_4_bG2,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_4_b1b2,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_4_b1bG2,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_Id2d2_4,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_Id2G2_4,1.e6)*h3,
+                            NLPT_BIASOFF(ln_pk_IG2G2_4,1.e6)*h3,
+                       NLPT_OFF(ln_pk_Tree_4_vv,1.e6)*h3),
+                 pop->error_message,pop->error_message);
+    }
+
+    fclose(out_4);
+
+  } /* end loop over index_z */
+
+  return _SUCCESS_;
+}
+
+#undef NLPT_RAW
+#undef NLPT_OFF
+#undef NLPT_BIASOFF
+
+int output_open_pk_nlpt_file(
+                             struct background * pba,
+                             struct nonlinear_pt * pnlpt,
+                             struct output * pop,
+                             FILE ** pkfile,
+                             FileName filename,
+                             char * first_line,
+                             double z
+                             ) {
+
+  int colnum = 1;
+  class_open(*pkfile,filename,"w",pop->error_message);
+
+  if (pop->write_header == _TRUE_) {
+    fprintf(*pkfile,"# PT power spectra for matter and bias tracers P, P_CTR (for c_s^2 = 1 (Mpc/h)^2 ), Id2d2, Id2, IG2, Id2G2, IG2G2, IFG2, P_Tree %sat redshift z=%g\n",first_line,z);
+    fprintf(*pkfile,"# for k=%g to %g h/Mpc,\n",pnlpt->k[0]/pba->h,pnlpt->k[pnlpt->k_size-1]/pba->h);
+    fprintf(*pkfile,"# number of wavenumbers equal to %d\n",pnlpt->k_size);
+
+    fprintf(*pkfile,"#");
+    class_fprintf_columntitle(*pkfile,"k (h/Mpc)",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_1loop (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_CTR (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Id2d2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Id2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"IG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Id2G2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"IG2G2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"IFG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_Tree (Mpc/h)^3",_TRUE_,colnum);
+    fprintf(*pkfile,"\n");
+  }
+
+  return _SUCCESS_;
+}
+
+int output_open_pk_rsd_0_file(
+                              struct background * pba,
+                              struct nonlinear_pt * pnlpt,
+                              struct output * pop,
+                              FILE ** pkfile,
+                              FileName filename,
+                              char * first_line,
+                              double z
+                              ) {
+
+  int colnum = 1;
+  class_open(*pkfile,filename,"w",pop->error_message);
+
+  if (pop->write_header == _TRUE_) {
+    fprintf(*pkfile,"# Monopole moment of PT power spectra P_vv, P_vd, P_dd, P_CTR, Id2d2, Ib1b2, Ib2, Ib1bG2, IbG2(k), Id2G2, IG2G2, IFG2b1, IFG2, Ptree_vv, Ptree_vd, Ptree_dd %sat redshift z=%g\n",first_line,z);
+    fprintf(*pkfile,"# for k=%g to %g h/Mpc,\n",pnlpt->k[0]/pba->h,pnlpt->k[pnlpt->k_size-1]/pba->h);
+    fprintf(*pkfile,"# number of wavenumbers equal to %d\n",pnlpt->k_size);
+
+    fprintf(*pkfile,"#");
+    class_fprintf_columntitle(*pkfile,"k (h/Mpc)",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_vv (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_vd (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_dd (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_CTR (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Id2d2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ib1b2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ib2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ib1bG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"IbG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Id2G2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"IG2G2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"IFG2b1 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"IFG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"PTree_vv (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"PTree_vd (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"PTree_dd (Mpc/h)^3",_TRUE_,colnum);
+    fprintf(*pkfile,"\n");
+  }
+
+  return _SUCCESS_;
+}
+
+int output_open_pk_rsd_2_file(
+                              struct background * pba,
+                              struct nonlinear_pt * pnlpt,
+                              struct output * pop,
+                              FILE ** pkfile,
+                              FileName filename,
+                              char * first_line,
+                              double z
+                              ) {
+
+  int colnum = 1;
+  class_open(*pkfile,filename,"w",pop->error_message);
+
+  if (pop->write_header == _TRUE_) {
+    fprintf(*pkfile,"# Quadrupole moment of PT power spectra %sat redshift z=%g\n",first_line,z);
+    fprintf(*pkfile,"# for k=%g to %g h/Mpc,\n",pnlpt->k[0]/pba->h,pnlpt->k[pnlpt->k_size-1]/pba->h);
+    fprintf(*pkfile,"# number of wavenumbers equal to %d\n",pnlpt->k_size);
+
+    fprintf(*pkfile,"#");
+    class_fprintf_columntitle(*pkfile,"k (h/Mpc)",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_vv (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_vd (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_dd (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_CTR (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ib1b2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ib2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ib1bG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"IbG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"IFG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ib2b2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ib2bG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"IbG2bG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ptree_vv (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ptree_vd (Mpc/h)^3",_TRUE_,colnum);
+    fprintf(*pkfile,"\n");
+  }
+
+  return _SUCCESS_;
+}
+
+int output_open_pk_rsd_4_file(
+                              struct background * pba,
+                              struct nonlinear_pt * pnlpt,
+                              struct output * pop,
+                              FILE ** pkfile,
+                              FileName filename,
+                              char * first_line,
+                              double z
+                              ) {
+
+  int colnum = 1;
+  class_open(*pkfile,filename,"w",pop->error_message);
+
+  if (pop->write_header == _TRUE_) {
+    fprintf(*pkfile,"# Hexadecapole moment of PT power spectra %sat redshift z=%g\n",first_line,z);
+    fprintf(*pkfile,"# for k=%g to %g h/Mpc,\n",pnlpt->k[0]/pba->h,pnlpt->k[pnlpt->k_size-1]/pba->h);
+    fprintf(*pkfile,"# number of wavenumbers equal to %d\n",pnlpt->k_size);
+
+    fprintf(*pkfile,"#");
+    class_fprintf_columntitle(*pkfile,"k (h/Mpc)",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_vv (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_vd (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_dd (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"P_CTR (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ib2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"IbG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ib1b2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ib1bG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ib2b2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ib2bG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"IbG2bG2 (Mpc/h)^3",_TRUE_,colnum);
+    class_fprintf_columntitle(*pkfile,"Ptree_vv (Mpc/h)^3",_TRUE_,colnum);
+    fprintf(*pkfile,"\n");
+  }
+
+  return _SUCCESS_;
+}
+
+int output_one_line_many_columns_of_pk(
+                                       FILE * pkfile,
+                                       double one_k,
+                                       double one_pk,
+                                       double two_pk,
+                                       double three_pk,
+                                       double four_pk,
+                                       double five_pk,
+                                       double six_pk,
+                                       double seven_pk,
+                                       double eight_pk,
+                                       double nine_pk
+                                       ) {
+
+  fprintf(pkfile," ");
+  class_fprintf_double(pkfile,one_k,_TRUE_);
+  class_fprintf_double(pkfile,one_pk,_TRUE_);
+  class_fprintf_double(pkfile,two_pk,_TRUE_);
+  class_fprintf_double(pkfile,three_pk,_TRUE_);
+  class_fprintf_double(pkfile,four_pk,_TRUE_);
+  class_fprintf_double(pkfile,five_pk,_TRUE_);
+  class_fprintf_double(pkfile,six_pk,_TRUE_);
+  class_fprintf_double(pkfile,seven_pk,_TRUE_);
+  class_fprintf_double(pkfile,eight_pk,_TRUE_);
+  class_fprintf_double(pkfile,nine_pk,_TRUE_);
+  fprintf(pkfile,"\n");
+
+  return _SUCCESS_;
+}
+
+int output_one_line_many_columns_of_pk_rsd(
+                                           FILE * pkfile,
+                                           double one_k,
+                                           double one_pk,
+                                           double two_pk,
+                                           double three_pk,
+                                           double four_pk,
+                                           double five_pk,
+                                           double six_pk,
+                                           double seven_pk,
+                                           double eight_pk,
+                                           double nine_pk,
+                                           double ten_pk,
+                                           double eleven_pk,
+                                           double twelve_pk,
+                                           double thirteen_pk,
+                                           double fourteen_pk,
+                                           double fifteen_pk,
+                                           double sixteen_pk
+                                           ) {
+
+  fprintf(pkfile," ");
+  class_fprintf_double(pkfile,one_k,_TRUE_);
+  class_fprintf_double(pkfile,one_pk,_TRUE_);
+  class_fprintf_double(pkfile,two_pk,_TRUE_);
+  class_fprintf_double(pkfile,three_pk,_TRUE_);
+  class_fprintf_double(pkfile,four_pk,_TRUE_);
+  class_fprintf_double(pkfile,five_pk,_TRUE_);
+  class_fprintf_double(pkfile,six_pk,_TRUE_);
+  class_fprintf_double(pkfile,seven_pk,_TRUE_);
+  class_fprintf_double(pkfile,eight_pk,_TRUE_);
+  class_fprintf_double(pkfile,nine_pk,_TRUE_);
+  class_fprintf_double(pkfile,ten_pk,_TRUE_);
+  class_fprintf_double(pkfile,eleven_pk,_TRUE_);
+  class_fprintf_double(pkfile,twelve_pk,_TRUE_);
+  class_fprintf_double(pkfile,thirteen_pk,_TRUE_);
+  class_fprintf_double(pkfile,fourteen_pk,_TRUE_);
+  class_fprintf_double(pkfile,fifteen_pk,_TRUE_);
+  class_fprintf_double(pkfile,sixteen_pk,_TRUE_);
+  fprintf(pkfile,"\n");
+
+  return _SUCCESS_;
+}
+
+int output_one_line_many_columns_of_pk_rsd_2(
+                                             FILE * pkfile,
+                                             double one_k,
+                                             double one_pk,
+                                             double two_pk,
+                                             double three_pk,
+                                             double four_pk,
+                                             double five_pk,
+                                             double six_pk,
+                                             double seven_pk,
+                                             double eight_pk,
+                                             double nine_pk,
+                                             double ten_pk,
+                                             double eleven_pk,
+                                             double twelve_pk,
+                                             double thirteen_pk,
+                                             double fourteen_pk
+                                             ) {
+
+  fprintf(pkfile," ");
+  class_fprintf_double(pkfile,one_k,_TRUE_);
+  class_fprintf_double(pkfile,one_pk,_TRUE_);
+  class_fprintf_double(pkfile,two_pk,_TRUE_);
+  class_fprintf_double(pkfile,three_pk,_TRUE_);
+  class_fprintf_double(pkfile,four_pk,_TRUE_);
+  class_fprintf_double(pkfile,five_pk,_TRUE_);
+  class_fprintf_double(pkfile,six_pk,_TRUE_);
+  class_fprintf_double(pkfile,seven_pk,_TRUE_);
+  class_fprintf_double(pkfile,eight_pk,_TRUE_);
+  class_fprintf_double(pkfile,nine_pk,_TRUE_);
+  class_fprintf_double(pkfile,ten_pk,_TRUE_);
+  class_fprintf_double(pkfile,eleven_pk,_TRUE_);
+  class_fprintf_double(pkfile,twelve_pk,_TRUE_);
+  class_fprintf_double(pkfile,thirteen_pk,_TRUE_);
+  class_fprintf_double(pkfile,fourteen_pk,_TRUE_);
+  fprintf(pkfile,"\n");
+
+  return _SUCCESS_;
+}
+
+int output_one_line_many_columns_of_pk_rsd_4(
+                                             FILE * pkfile,
+                                             double one_k,
+                                             double one_pk,
+                                             double two_pk,
+                                             double three_pk,
+                                             double four_pk,
+                                             double five_pk,
+                                             double six_pk,
+                                             double seven_pk,
+                                             double eight_pk,
+                                             double nine_pk,
+                                             double ten_pk,
+                                             double eleven_pk,
+                                             double twelve_pk
+                                             ) {
+
+  fprintf(pkfile," ");
+  class_fprintf_double(pkfile,one_k,_TRUE_);
+  class_fprintf_double(pkfile,one_pk,_TRUE_);
+  class_fprintf_double(pkfile,two_pk,_TRUE_);
+  class_fprintf_double(pkfile,three_pk,_TRUE_);
+  class_fprintf_double(pkfile,four_pk,_TRUE_);
+  class_fprintf_double(pkfile,five_pk,_TRUE_);
+  class_fprintf_double(pkfile,six_pk,_TRUE_);
+  class_fprintf_double(pkfile,seven_pk,_TRUE_);
+  class_fprintf_double(pkfile,eight_pk,_TRUE_);
+  class_fprintf_double(pkfile,nine_pk,_TRUE_);
+  class_fprintf_double(pkfile,ten_pk,_TRUE_);
+  class_fprintf_double(pkfile,eleven_pk,_TRUE_);
+  class_fprintf_double(pkfile,twelve_pk,_TRUE_);
+  fprintf(pkfile,"\n");
 
   return _SUCCESS_;
 }
