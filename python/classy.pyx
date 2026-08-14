@@ -4376,6 +4376,9 @@ cdef class Class:
             recompute = True
 
         if (recompute or force) and self.computed:
+            if "nonlinear_pt" in self.ncp:
+                nonlinear_pt_free(&self.nlpt)
+                self.ncp.discard("nonlinear_pt")
             if nonlinear_pt_init(&self.pr, &self.ba, &self.th, &self.pt, &self.pm, &self.nlpt) == _FAILURE_:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.nlpt.error_message)

@@ -357,6 +357,7 @@ extern "C" {
   int transfer_perturbation_sources_free(
                                          struct perturbations * ppt,
                                          struct fourier * pfo,
+                                         struct nonlinear_pt * pnlpt,
                                          struct transfer * ptr,
                                          double *** sources
                                          );

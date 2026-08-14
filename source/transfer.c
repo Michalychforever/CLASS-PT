@@ -391,7 +391,7 @@ int transfer_init(
              ptr->error_message,
              ptr->error_message);
 
-  class_call(transfer_perturbation_sources_free(ppt,pfo,ptr,sources),
+  class_call(transfer_perturbation_sources_free(ppt,pfo,pnlpt,ptr,sources),
              ptr->error_message,
              ptr->error_message);
 
@@ -796,6 +796,7 @@ int transfer_perturbation_source_spline(
 int transfer_perturbation_sources_free(
                                        struct perturbations * ppt,
                                        struct fourier * pfo,
+                                       struct nonlinear_pt * pnlpt,
                                        struct transfer * ptr,
                                        double *** sources
                                        ) {
@@ -806,11 +807,12 @@ int transfer_perturbation_sources_free(
   for (index_md = 0; index_md < ptr->md_size; index_md++) {
     for (index_ic = 0; index_ic < ppt->ic_size[index_md]; index_ic++) {
       for (index_tp = 0; index_tp < ppt->tp_size[index_md]; index_tp++) {
-        if ((pfo->method != nl_none) && (_scalars_) &&
+        if (((pfo->method != nl_none) || (pnlpt->method != nlpt_none)) && (_scalars_) &&
             (((ppt->has_source_delta_m == _TRUE_) && (index_tp == ppt->index_tp_delta_m)) ||
              ((ppt->has_source_theta_m == _TRUE_) && (index_tp == ppt->index_tp_theta_m)) ||
-             ((ppt->has_source_delta_cb == _TRUE_) && (index_tp == ppt->index_tp_delta_cb)) ||
-             ((ppt->has_source_theta_cb == _TRUE_) && (index_tp == ppt->index_tp_theta_cb)) ||
+             ((pfo->method != nl_none) &&
+              (((ppt->has_source_delta_cb == _TRUE_) && (index_tp == ppt->index_tp_delta_cb)) ||
+               ((ppt->has_source_theta_cb == _TRUE_) && (index_tp == ppt->index_tp_theta_cb)))) ||
              ((ppt->has_source_phi == _TRUE_) && (index_tp == ppt->index_tp_phi)) ||
              ((ppt->has_source_phi_prime == _TRUE_) && (index_tp == ppt->index_tp_phi_prime)) ||
              ((ppt->has_source_phi_plus_psi == _TRUE_) && (index_tp == ppt->index_tp_phi_plus_psi)) ||
