@@ -111,6 +111,7 @@ cdef class Class:
 
     cdef int computed # Flag to see if classy has already computed with the given pars
     cdef int allocated # Flag to see if classy structs are allocated already
+    cdef int nlpt_allocated
     cdef object _pars # Dictionary of the parameters
     cdef object ncp   # Keeps track of the structures initialized, in view of cleaning.
 
@@ -353,6 +354,7 @@ cdef class Class:
     def __cinit__(self, default=False):
         cdef char* dumc
         self.allocated = False
+        self.nlpt_allocated = False
         self.computed = False
         self.output_init = False
         self._pars = {}
@@ -461,8 +463,9 @@ cdef class Class:
             harmonic_free(&self.hr)
         if self.tr.is_allocated:
             transfer_free(&self.tr)
-        if "nonlinear_pt" in self.ncp:
+        if self.nlpt_allocated:
             nonlinear_pt_free(&self.nlpt)
+            self.nlpt_allocated = False
         if self.fo.is_allocated:
             fourier_free(&self.fo)
         if self.pm.is_allocated:
@@ -653,6 +656,7 @@ cdef class Class:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.nlpt.error_message)
             self.ncp.add("nonlinear_pt")
+            self.nlpt_allocated = True
 
         if "transfer" in level:
             if transfer_init(&(self.pr), &(self.ba), &(self.th),
@@ -4376,13 +4380,15 @@ cdef class Class:
             recompute = True
 
         if (recompute or force) and self.computed:
-            if "nonlinear_pt" in self.ncp:
+            if self.nlpt_allocated:
                 nonlinear_pt_free(&self.nlpt)
+                self.nlpt_allocated = False
                 self.ncp.discard("nonlinear_pt")
             if nonlinear_pt_init(&self.pr, &self.ba, &self.th, &self.pt, &self.pm, &self.nlpt) == _FAILURE_:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.nlpt.error_message)
             self.ncp.add("nonlinear_pt")
+            self.nlpt_allocated = True
 
     # Gives the PT pk for a given (k,z)
     def pk_pt(self, double k, double z, int no_wiggle=False, double alpha_rs=1.0):
