@@ -197,18 +197,16 @@ M_noIR.initialize_output(khvec2, Z_PK, len(khvec2))
 pk_mult2 = M_noIR.get_pk_mult(khvec2, Z_PK, len(khvec2))
 
 ref['noIR_pk_mm_real'] = M_noIR.pk_mm_real(CS)[ref_idx]
-# Save valid pk_mult components (skip NaN/sentinel-value components)
-known_nan = {49, 73, 85}
-valid_indices = []
-for i in range(96):
-    if i in known_nan:
-        continue
+# This configuration is real-space matter only, so get_pk_mult fills just pk_nl, pk_CTR and
+# pk_Tree.  Selecting rows by inspecting their values instead picks up rows this configuration
+# leaves alone, whose contents depend on what was computed before them.
+noIR_components = (0, 10, 14)
+for i in noIR_components:
     vals = pk_mult2[i, ref_idx]
-    if np.all(np.isfinite(vals)) and not np.all(np.abs(vals) > 999000):
-        valid_indices.append(i)
-        ref[f'noIR_pk_mult_{i}'] = vals
-ref['noIR_valid_indices'] = np.array(valid_indices)
-print(f"noIR config: pk_mm_real + {len(valid_indices)} pk_mult components")
+    assert np.all(np.isfinite(vals)), f'noIR pk_mult[{i}] is not finite'
+    ref[f'noIR_pk_mult_{i}'] = vals
+ref['noIR_valid_indices'] = np.array(noIR_components)
+print(f"noIR config: pk_mm_real + {len(noIR_components)} pk_mult components")
 
 # ============================================================================
 # noAP config reference data
