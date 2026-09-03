@@ -1182,11 +1182,11 @@ int nonlinear_pt_init(
         /* Build full P_L(k, tau), ln P_L, and spline tables over all tau */
         double *lnpk_l_full;
         double *pk_l_full;
-        double *ddlnpk_l_full;
+        double *ddlnpk_l_dlntau; /* d^2 ln P_L / d(ln tau)^2 on the (tau,k) grid */
 
         class_alloc(lnpk_l_full, sizeof(double) * pnlpt->tau_size * pnlpt->k_size, pnlpt->error_message);
         class_alloc(pk_l_full, sizeof(double) * pnlpt->tau_size * pnlpt->k_size, pnlpt->error_message);
-        class_alloc(ddlnpk_l_full, sizeof(double) * pnlpt->tau_size * pnlpt->k_size, pnlpt->error_message);
+        class_alloc(ddlnpk_l_dlntau, sizeof(double) * pnlpt->tau_size * pnlpt->k_size, pnlpt->error_message);
 
         /* Loop over conformal time to fill P_L(k,tau) arrays */
         for (index_tau = pnlpt->tau_size - 1; index_tau >= 0; index_tau--) {
@@ -1196,15 +1196,26 @@ int nonlinear_pt_init(
                        pnlpt->error_message,
                        pnlpt->error_message);
 
-            /* get P_L(k,tau) lnP_L(k,tau) and ddP_L(k,tau) */
+            /* get P_L(k,tau) and lnP_L(k,tau) */
 
             for (index_k = 0; index_k < pnlpt->k_size; index_k++) {
                 lnpk_l_full[index_tau * pnlpt->k_size + index_k] = lnpk_l[index_k];
                 pk_l_full[index_tau * pnlpt->k_size + index_k] = pk_l[index_k];
-                ddlnpk_l_full[index_tau * pnlpt->k_size + index_k] = ddlnpk_l[index_k];
             }
         }
         /*end cycle over tau*/
+
+        /* spline ln P_L along ln(tau), so that it can be interpolated to each
+           requested redshift below */
+        class_call(array_spline_table_lines(pnlpt->ln_tau,
+                                            pnlpt->tau_size,
+                                            lnpk_l_full,
+                                            pnlpt->k_size,
+                                            ddlnpk_l_dlntau,
+                                            _SPLINE_EST_DERIV_,
+                                            pnlpt->error_message),
+                   pnlpt->error_message,
+                   pnlpt->error_message);
 
         class_call(nonlinear_pt_pPRIMk_l(
                        ppt, ppm, pnlpt, lnk_l,
@@ -1333,7 +1344,7 @@ int nonlinear_pt_init(
             class_call(array_interpolate_spline(pnlpt->ln_tau,
                                                 pnlpt->tau_size,
                                                 lnpk_l_full,
-                                                ddlnpk_l_full,
+                                                ddlnpk_l_dlntau,
                                                 pnlpt->k_size,
                                                 log(tau_req[i_z]),
                                                 &last_index,
@@ -1601,7 +1612,7 @@ int nonlinear_pt_init(
             pk_CTR, pk_CTR_0, pk_CTR_2, pk_CTR_4,
             pk_Tree, pk_Tree_0_vv, pk_Tree_0_vd, pk_Tree_0_dd, pk_Tree_2_vv, pk_Tree_2_vd, pk_Tree_4_vv,
             lnk_l, lnpk_l, ddlnpk_l, tau_req,
-            lnpk_l_full, pk_l_full, ddlnpk_l_full,
+            lnpk_l_full, pk_l_full, ddlnpk_l_dlntau,
             ln_pk_l_at_z_req, pk_l_at_z_req, ln_pPRIMk_l_req, pPRIMk_l_req,
             pk_l_fNL_0_vv, pk_l_fNL_0_vd, pk_l_fNL_0_dd,
             pk_l_fNL_2_vv, pk_l_fNL_2_vd, pk_l_fNL_2_dd,
