@@ -418,7 +418,6 @@ cdef extern from "class.h":
         int AP_effect
         int fNL_equil_ortho_switch
         int no_wiggle
-        int wiggle_only
         double alpha_rs
         ErrorMsg error_message
         int z_pk_num

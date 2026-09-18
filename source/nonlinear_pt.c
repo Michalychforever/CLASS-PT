@@ -3069,10 +3069,10 @@ static int nonlinear_pt_ir_resummation(
             Pw[i] = _Pwval_rescaled - _Pnwval_rescaled;
             Tw[i] = Tnw[i] * (Pw[i] / _Pnwval2 / 2. - Pw[i] * Pw[i] / _Pnwval2 / _Pnwval2 / 8. + Pw[i] * Pw[i] * Pw[i] / _Pnwval2 / _Pnwval2 / _Pnwval2 / 16.);
 
-            if (pnlpt->no_wiggle)
+            if (pnlpt->no_wiggle) {
                 Pw[i] = 0.;
-            if (pnlpt->wiggle_only)
-                Pnw[i] = 0.;
+                Tw[i] = 0.;
+            }
 
             Pbin[i] = Pnw[i] + Pw[i] * exp(-SigmaBAO * kdisc[i] * kdisc[i]);
             Tbin[i] = Tnw[i] + Tw[i] * exp(-SigmaBAO * kdisc[i] * kdisc[i]);

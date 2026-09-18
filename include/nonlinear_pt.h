@@ -616,7 +616,6 @@ double * ln_pk_0_b2;
     int replace_pk;
     int replace_background;
     int no_wiggle;
-    int wiggle_only;
     double alpha_rs;
     double replace_Hz_value;
     double replace_DAz_value;
