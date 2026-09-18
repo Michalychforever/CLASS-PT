@@ -114,6 +114,8 @@ cdef class Class:
     cdef int nlpt_allocated
     cdef object _pars # Dictionary of the parameters
     cdef object ncp   # Keeps track of the structures initialized, in view of cleaning.
+    #  _pt_baseline captures (no_wiggle, alpha_rs) exactly as the input configured them.
+    cdef object _pt_baseline
 
     cdef np.ndarray pk_mult
     cdef np.ndarray kh
@@ -612,6 +614,9 @@ cdef class Class:
                 raise CosmoSevereError(
                     "Class did not read input parameter(s): %s\n" % ', '.join(
                     problematic_parameters))
+
+            #  Set baseline no_wiggle and alpha_rs attributes to avoid overwrites
+            self._pt_baseline = (self.nlpt.no_wiggle, self.nlpt.alpha_rs)
 
         # The following list of computation is straightforward. If the "_init"
         # methods fail, call `struct_cleanup` and raise a CosmoComputationError
@@ -1211,7 +1216,7 @@ cdef class Class:
 
         return (lum_distance[0] if np.isscalar(z) else lum_distance)
 
-    def pk(self, double k, double z, int no_wiggle=False, double alpha_rs=1.0):
+    def pk(self, double k, double z, no_wiggle=None, alpha_rs=None):
         """
         Return the power spectrum P(k,z).
 
@@ -1228,9 +1233,11 @@ cdef class Class:
         z : float
             Redshift
         no_wiggle : bool, optional
-            If True, return no-wiggle (broadband) spectrum. Default False.
+            If True, return the no-wiggle (broadband) spectrum.  Omitted means the value
+            configured in the input (`no-wiggle` there), which defaults to False.
         alpha_rs : float, optional
-            Sound horizon rescaling parameter. Default 1.0.
+            Sound horizon rescaling parameter.  Omitted means the value configured in the
+            input (`alpha_rs` there), which defaults to 1.0.
 
         Returns
         -------
@@ -4364,7 +4371,16 @@ cdef class Class:
     # CLASS-PT: Perturbation theory methods                          #
     ##################################################################
 
-    def recompute_nonlinear_pt(self, no_wiggle=False, alpha_rs=1.0, force=False):
+    def recompute_nonlinear_pt(self, no_wiggle=None, alpha_rs=None, force=False):
+        """Bring the PT module into the requested (no_wiggle, alpha_rs) state.
+
+        An omitted argument resolves to the value configured in the input file, else (False, 1.0)."""
+        base_nw, base_ars = (self._pt_baseline if self._pt_baseline is not None
+                             else (_FALSE_, 1.0))
+        if no_wiggle is None:
+            no_wiggle = bool(base_nw)
+        if alpha_rs is None:
+            alpha_rs = base_ars
         recompute=False
         if no_wiggle:
             if self.nlpt.no_wiggle == _FALSE_:
@@ -4391,7 +4407,7 @@ cdef class Class:
             self.nlpt_allocated = True
 
     # Gives the PT pk for a given (k,z)
-    def pk_pt(self, double k, double z, int no_wiggle=False, double alpha_rs=1.0):
+    def pk_pt(self, double k, double z, no_wiggle=None, alpha_rs=None):
         """
         Gives the PT pk components for a given k and z.
         If nlpt.method == 0 (no PT), returns just the standard P(k).
@@ -4617,7 +4633,7 @@ cdef class Class:
         result.append(factor_fNL*(pk12_4_bG2_ortho - large_for_logs_fNL))
         return result
 
-    def get_pk_mult(self, np.ndarray[DTYPE_t,ndim=1] k, double z, int k_size, no_wiggle=False, double alpha_rs=1.0):
+    def get_pk_mult(self, np.ndarray[DTYPE_t,ndim=1] k, double z, int k_size, no_wiggle=None, alpha_rs=None):
         """Fast vectorized function to get the non-linear power spectrum multipole components on a k array.
 
         Calls the C function nonlinear_pt_pk_mult_at_kvec_and_z which computes
