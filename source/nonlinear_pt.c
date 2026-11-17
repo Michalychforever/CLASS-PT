@@ -3388,6 +3388,10 @@ int nonlinear_pt_loop(
         }
     }
 
+    if (pnlpt->AP_effect == AP_effect_yes) {
+        irindex = 1;
+    }
+
     class_call(array_spline_table_columns(kdisc, Nmax, Pnw, 1, dd_Pnw, _SPLINE_NATURAL_, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
     last_index = 0;
     double Pnw_ap_out = 0;
@@ -3750,7 +3754,7 @@ int nonlinear_pt_loop(
                 &P12_2_vv_ortho, &P12_2_vd_ortho, &P12_2_dd_ortho,
                 &P12_4_vv_ortho, &P12_4_vd_ortho};
             for (int ai_ = 0; ai_ < 63; ai_++)
-                class_alloc(*_rsd_ptrs[ai_], Nmax * sizeof(double), pnlpt->error_message);
+                class_calloc(*_rsd_ptrs[ai_], Nmax, sizeof(double), pnlpt->error_message);
         }
 
         if (irindex == 0) {
