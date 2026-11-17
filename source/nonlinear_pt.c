@@ -3388,6 +3388,10 @@ int nonlinear_pt_loop(
         }
     }
 
+    if (pnlpt->AP_effect == AP_effect_yes) {
+        irindex = 1;
+    }
+
     class_call(array_spline_table_columns(kdisc, Nmax, Pnw, 1, dd_Pnw, _SPLINE_NATURAL_, pnlpt->error_message), pnlpt->error_message, pnlpt->error_message);
     last_index = 0;
     double Pnw_ap_out = 0;
