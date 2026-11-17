@@ -3987,7 +3987,7 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
       if ((strstr(string1,"Y") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL)) {
         pnlpt->rsd = rsd_yes;
         class_call(parser_read_string(pfc,"AP",&(string1),&(flag1),errmsg),errmsg,errmsg);
-        if ((strstr(string1,"Y") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL)) {
+        if ((flag1 == _TRUE_) && ((strstr(string1,"Y") != NULL) || (strstr(string1,"Yes") != NULL) || (strstr(string1,"YES") != NULL))) {
           pnlpt->AP_effect = AP_effect_yes;
         } else { pnlpt->AP_effect = AP_effect_no; }
       } else { pnlpt->rsd = rsd_no; }
